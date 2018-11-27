@@ -1,0 +1,8 @@
+export default {
+  apiKey: 'a secret key here',
+  authDomain: 'yourURL.firebaseapp.com',
+  databaseURL: 'https://yourURL.firebaseio.com',
+  projectId: 'yourProjectId',
+  storageBucket: 'yourURL.appspot.com',
+  messagingSenderId: 'yourMessageSenderId',
+};
