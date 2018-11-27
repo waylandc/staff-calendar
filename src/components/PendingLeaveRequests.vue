@@ -6,12 +6,11 @@
         <v-data-table :headers='headers' :items='pendingRequests' hide-actions class='elevation-1'>
           <template slot='items' slot-scope='props'>
             <tr @click='showDetails(props.item.id)'>
-              <!-- <td>{{ props.item.id }}</td> -->
               <td class='mdl-data-table__cell--non-numeric'>{{ props.item.status }}</td>
               <td class='mdl-data-table__cell--non-numeric'>{{ props.item.requestor }}</td>
               <td class='mdl-data-table__cell--non-numeric'>{{ props.item.title }}</td>
-              <td class='mdl-data-table__cell--non-numeric'>{{ props.item.start.format('YYYY MM DD') }}</td>
-              <td class='mdl-data-table__cell--non-numeric'>{{ props.item.end.format('YYYY MM DD') }}</td>
+              <td class='mdl-data-table__cell--non-numeric'>{{ props.item.start }}</td>
+              <td class='mdl-data-table__cell--non-numeric'>{{ props.item.end }}</td>
               <td class='mdl-data-table__cell--non-numeric'>{{ props.item.halfDay }}</td>
             </tr>
           </template>
@@ -63,12 +62,6 @@
             value: 'endDate',
           },
           {
-            text: 'All Day',
-            align: 'left',
-            sortable: true,
-            value: 'allDate',
-          },
-          {
             text: 'Half Day',
             align: 'left',
             sortable: true,
@@ -92,14 +85,13 @@
             var a = {
               id: req.id,
               title: req.data().title,
-              allDay: req.data().allDay,
-              start: moment(),
-              end: moment().add(2, 'd'),
+              start: req.data().startDate.toDate().toDateString(),
+              end: req.data().endDate.toDate().toDateString(),
               halfDay: req.data().halfDay,
               requestor: req.data().user,
               status: req.data().status,
             }
-            console.log(req.id);
+            // console.log(req.id);
             this.pendingRequests.push(a);
           });
           this.loaded = true;
@@ -118,7 +110,7 @@
     },
     methods: {
       showDetails(id) {
-        console.log('showDetails ' + id);
+        // console.log('showDetails ' + id);
         this.$router.push(`/leaveRequests/${id}`);
       },
     }

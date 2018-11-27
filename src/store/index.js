@@ -49,31 +49,40 @@ const store = new Vuex.Store({
 
     userSignIn({ commit }, payload) {
       commit('setLoading', true);
-      firebase.auth().signInWithEmailAndPassword(
-        payload.email, payload.password).then(
-          (firebaseUser) => {
-            // fetch userRole for this user
-            db.collection('userRoles').where('email', '==', firebaseUser.user.email).get()
-            .then(
-              (snaps) => {
-                snaps.forEach((user) => {
-                  commit('setUser', {
-                    email: firebaseUser.user.email,
-                    approver: user.data().approver,
-                    admin: user.data().admin,
-                  });
+      // change Auth state persistence
+      // https://firebase.google.com/docs/auth/web/auth-state-persistence
+      firebase.auth().setPersistence(firebase.auth.Auth.Persistence.SESSION)
+        .then(() => {
+          firebase.auth().signInWithEmailAndPassword(
+            payload.email, payload.password).then(
+              (firebaseUser) => {
+                // fetch userRole for this user
+                // TODO put this in function?? I use it in auto signin
+                db.collection('userRoles').where('email', '==', firebaseUser.user.email).get()
+                .then(
+                  (snaps) => {
+                    snaps.forEach((user) => {
+                      commit('setUser', {
+                        email: firebaseUser.user.email,
+                        approver: user.data().approver,
+                        admin: user.data().admin,
+                      });
+                      commit('setLoading', false);
+                      commit('setError', null);
+                      router.push('/home');
+                    });
+                  },
+                )
+                .catch((error) => {
+                  commit('setError', error); // `Error retrieving user role for ${payload.email}`);
                   commit('setLoading', false);
-                  commit('setError', null);
-                  router.push('/home');
                 });
               },
-            )
-            .catch((error) => {
-              commit('setError', error); // `Error retrieving user role for ${payload.email}`);
-              commit('setLoading', false);
-            });
-          },
-        );
+          );
+        }).catch((error) => {
+          commit('setError', error);
+          commit('setLoading', false);
+        });
     },
 
     changePassword({ commit }, payload) {
@@ -96,13 +105,36 @@ const store = new Vuex.Store({
       }
     },
     autoSignIn({ commit }, payload) {
-      commit('setUser', { email: payload.email });
+      db.collection('userRoles').where('email', '==', payload.email).get()
+      .then(
+        (snaps) => {
+          snaps.forEach((user) => {
+            commit('setUser', {
+              email: user.data().email,
+              approver: user.data().approver,
+              admin: user.data().admin,
+            });
+            commit('setLoading', false);
+            commit('setError', null);
+            router.push('/home');
+          });
+        },
+      )
+      .catch((error) => {
+        commit('setError', error); // `Error retrieving user role for ${payload.email}`);
+        commit('setLoading', false);
+      });
+      // commit('setUser', { email: payload.email });
     },
     userSignOut({ commit }) {
       firebase.auth().signOut();
       commit('setUser', null);
       router.push('/');
     },
+    // createRequest({ commit }, payload) {
+    //   console.log(payload);
+    //   router.push('/leaveRequests');
+    // },
   },
   getters: {
     isAuthenticated(state) {

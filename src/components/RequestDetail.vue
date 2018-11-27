@@ -21,6 +21,7 @@
               v-model='request.title' 
               label='Title' 
               autocomplete="off" 
+              :readonly="true"
               box>
             </v-text-field>
           </v-flex>
@@ -29,6 +30,7 @@
               v-model='startString'
               label='Start Date' 
               autocomplete="off" 
+              :readonly="true"
               box>
             </v-text-field>
           </v-flex>
@@ -37,24 +39,19 @@
               v-model='endString' 
               label='End Date' 
               autocomplete="off" 
+              :readonly="true"
               box>
             </v-text-field>
           </v-flex>
           <v-flex xs6>
-            <v-checkbox
-              v-model='request.fullDay' 
-              label='Full Day'
-              :readonly="true" 
-              box>
-            </v-checkbox>
-          </v-flex>
-          <v-flex xs6>
-            <v-checkbox
+            <v-text-field
               v-model='request.halfDay' 
               label='Half Day' 
               :readonly="true" 
               box>
-            </v-checkbox>
+            </v-text-field>
+          </v-flex>
+          <v-flex xs6>
           </v-flex>
           <v-flex v-if="this.$store.state.user.approver" class="text-xs-center" mt-5>
             <v-btn 
@@ -91,17 +88,17 @@
         propId: '',
         startString: '',
         endString: '',
+        //halfString: '',
       };
     },
     created() {
       this.loaded = false;
       this.propId = this.$route.params.id;
       const docRef = db.collection('leaveRequests').doc(this.propId);
-      console.log('are we admin, ' + this.$store.state.user.admin);
-      console.log('are we approver, ' + this.$store.state.user.approver);
+      console.log(this.$store.state.user.email + ' is admin, ' + this.$store.state.user.admin);
+      console.log(this.$store.state.user.email + ' is approver, ' + this.$store.state.user.approver);
       docRef.get().then((doc) => {
         if (doc.exists) {
-          // console.log('document data: ', doc.data());
           this.request = doc.data();
           this.loaded = true;
         } else {
@@ -118,10 +115,11 @@
       },
     },
     methods: {
-      editProperty() {
-        console.log('calling editRequest')
-        this.$router.push(`/leaveRequest/edit/${this.propId}`);
-      },
+      // TODO don't support edit request yet
+      // editProperty() {
+      //   console.log('calling editRequest')
+      //   this.$router.push(`/leaveRequest/edit/${this.propId}`);
+      // },
       approve() {
         console.log('approve clicked');
       },
@@ -134,14 +132,11 @@
       // doesn't support formatting of the v-model object. so create a formatted string
       // here and display it on form instead of the v-model 
       'request.startDate': function(val, oldVal) {
-        console.log(val.toDate());
-        //var a = new Date(val.val());
         this.startString = val.toDate().toDateString();
-        // console.log();
       },
       'request.endDate': function(val, oldVal) {
         this.endString = val.toDate().toDateString();
-      }
+      },
     }
   };
 </script>

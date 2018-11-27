@@ -68,7 +68,7 @@ export default {
       config: {
         defaultView: 'month',
         eventRender: function(event, element) {
-          console.log(event);
+          // console.log(event);
           // element.attr('employee', event.employee);
         }
       },

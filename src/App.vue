@@ -59,6 +59,7 @@
             // first line of drawer is covered by banner so HACK here
             { title: 'Not Found', link: '/', icon: 'settings' },
             { title: 'Home', link: '/home', icon: 'home' },
+            { title: 'Apply Leave', link: '/createRequest', icon: 'settings' },
             { title: 'Leave Requests', link: '/leaveRequests', icon: 'home' },
             { title: 'Admin', link: '/admin', icon: 'settings' },
             { title: 'User Profile', link: '/profile', icon: 'settings' },

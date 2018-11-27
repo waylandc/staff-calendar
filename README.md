@@ -1,6 +1,6 @@
 # truetify
 
-> Vue PWA app using truetify, google MD, vuelidate, axios, vuex, yarn
+> Vue PWA app using vuejs, vuetify, google MD, axios, vuex
 
 ## Build Setup
 

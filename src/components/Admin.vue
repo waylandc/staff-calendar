@@ -73,16 +73,13 @@ export default {
       .get()
       .then((querySnapshot) => {
         this.loaded = false;
-        console.log(querySnapshot.size);
         querySnapshot.forEach((doc) => {
-          console.log(doc.data());
           const data = {
             email: doc.data().email,
             admin: doc.data().admin,
             approver: doc.data().approver,
           };
           this.users.push(data);
-          console.log(data.size);
         });
         this.loaded = true;
       });

@@ -12,6 +12,7 @@ const routerOptions = [
   { path: '/home', component: 'Home', meta: { requiresAuth: true } },
   { path: '/admin', component: 'Admin', meta: { requiresAuth: true } },
   { path: '/leaveRequests', component: 'PendingLeaveRequests', meta: { requiresAuth: true } },
+  { path: '/createRequest', component: 'CreateEvent', meta: { requiresAuth: true } },
   {
     path: '/leaveRequests/:id',
     component: 'RequestDetail',
