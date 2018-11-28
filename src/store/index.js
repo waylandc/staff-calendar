@@ -105,10 +105,12 @@ const store = new Vuex.Store({
       }
     },
     autoSignIn({ commit }, payload) {
+      console.log('auto signing in, ', payload.email);
       db.collection('userRoles').where('email', '==', payload.email).get()
       .then(
         (snaps) => {
           snaps.forEach((user) => {
+            console.log(user.data());
             commit('setUser', {
               email: user.data().email,
               approver: user.data().approver,
@@ -116,11 +118,13 @@ const store = new Vuex.Store({
             });
             commit('setLoading', false);
             commit('setError', null);
-            router.push('/home');
+            // router.push('/home');
           });
+          console.log('done committing, ', this.state.user.email);
         },
       )
       .catch((error) => {
+        console.log('ERROR auto signin', error);
         commit('setError', error); // `Error retrieving user role for ${payload.email}`);
         commit('setLoading', false);
       });
@@ -131,10 +135,6 @@ const store = new Vuex.Store({
       commit('setUser', null);
       router.push('/');
     },
-    // createRequest({ commit }, payload) {
-    //   console.log(payload);
-    //   router.push('/leaveRequests');
-    // },
   },
   getters: {
     isAuthenticated(state) {

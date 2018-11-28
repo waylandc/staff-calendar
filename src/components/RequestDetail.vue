@@ -88,18 +88,22 @@
         propId: '',
         startString: '',
         endString: '',
-        //halfString: '',
+        user: null,
+        documentRef: null,
       };
     },
     created() {
+      this.user = this.$store.state.user;
       this.loaded = false;
       this.propId = this.$route.params.id;
+      console.log('loading request, ', this.propId);
       const docRef = db.collection('leaveRequests').doc(this.propId);
-      console.log(this.$store.state.user.email + ' is admin, ' + this.$store.state.user.admin);
-      console.log(this.$store.state.user.email + ' is approver, ' + this.$store.state.user.approver);
+      console.log(this.user.email + ' is admin, ' + this.user.admin);
+      console.log(this.user.email + ' is approver, ' + this.user.approver);
       docRef.get().then((doc) => {
         if (doc.exists) {
           this.request = doc.data();
+          this.documentRef = docRef;
           this.loaded = true;
         } else {
           this.error = 'Error, No such document';
@@ -121,10 +125,20 @@
       //   this.$router.push(`/leaveRequest/edit/${this.propId}`);
       // },
       approve() {
-        console.log('approve clicked');
-      },
+        console.log('approve clicked, ', this.propId);
+        var o = {};
+        o.status = 1;
+        o.approver = this.$store.state.user.email;
+        this.documentRef.update(o);
+        this.$router.push('/leaveRequests');
+     },
       reject() {
         console.log('reject clicked');
+        var o = {};
+        o.status = 2;
+        o.approver = this.$store.state.user.email;
+        this.documentRef.update(o);
+        this.$router.push('/leaveRequests');
       }
     },
     watch: {

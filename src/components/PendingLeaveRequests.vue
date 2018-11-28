@@ -75,7 +75,7 @@
     created() {
       NProgress.start();
 
-      // let's load all pending requests
+      // load all pending requests
       // TODO only load requests for current user, unless approver
       db.collection('leaveRequests').where('status', '==', Constants.PENDING).get()
       .then(
