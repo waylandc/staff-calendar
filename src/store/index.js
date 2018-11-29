@@ -105,7 +105,7 @@ const store = new Vuex.Store({
       }
     },
     autoSignIn({ commit }, payload) {
-      console.log('auto signing in, ', payload.email);
+      // console.log('auto signing in, ', payload.email);
       db.collection('userRoles').where('email', '==', payload.email).get()
       .then(
         (snaps) => {
@@ -118,9 +118,9 @@ const store = new Vuex.Store({
             });
             commit('setLoading', false);
             commit('setError', null);
+            // auto route them to home if you wish or leave commented out to refresh current page
             // router.push('/home');
           });
-          console.log('done committing, ', this.state.user.email);
         },
       )
       .catch((error) => {

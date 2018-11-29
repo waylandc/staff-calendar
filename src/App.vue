@@ -27,11 +27,7 @@
       </v-flex>
     </v-toolbar>
     <v-content>
-      <!-- <v-container fluid fill-height>
-        <v-layout justify-center> -->
-          <router-view></router-view>
-        <!-- </v-layout>
-      </v-container> -->
+      <router-view></router-view>
     </v-content>
     <v-footer app fixed>
       <span>&copy; 2018 Wayland Chan</span>
@@ -57,12 +53,12 @@
         if (this.isAuthenticated) {
           return [
             // first line of drawer is covered by banner so HACK here
-            { title: 'Not Found', link: '/', icon: 'settings' },
-            { title: 'Home', link: '/home', icon: 'home' },
+            // { title: 'Not Found', link: '/', icon: 'settings' },
+            { title: 'Calendar', link: '/home', icon: 'home' },
             { title: 'Apply Leave', link: '/createRequest', icon: 'settings' },
             { title: 'Leave Requests', link: '/leaveRequests', icon: 'home' },
-            { title: 'Admin', link: '/admin', icon: 'settings' },
-            { title: 'User Profile', link: '/profile', icon: 'settings' },
+            { title: 'Users', link: '/users', icon: 'settings' },
+            { title: 'Change Password', link: '/changePassword', icon: 'settings' },
           ];
         } // else
         return [

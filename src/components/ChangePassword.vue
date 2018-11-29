@@ -1,6 +1,6 @@
 <template>
   <v-container grid-list-md text-xs-center>
-    <h1>User Profile</h1>
+    <h1>Change Password</h1>
     <!-- <div v-if="error != ''" class='display-1' style='text-align: center; color: #ff0000'>
       {{ error }}
     </div> -->
@@ -34,8 +34,6 @@
 </template>
 
 <script>
-  // import db from '../config/firebaseInit';
-
   export default {
     data() {
       return {

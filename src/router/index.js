@@ -8,9 +8,14 @@ const routerOptions = [
   { path: '/', component: 'Landing' },
   { path: '/signin', component: 'Signin' },
   { path: '/register', component: 'Registration' },
-  { path: '/profile', component: 'UserProfile', meta: { requiresAuth: true } },
+  { path: '/changePassword', component: 'ChangePassword', meta: { requiresAuth: true } },
   { path: '/home', component: 'Home', meta: { requiresAuth: true } },
-  { path: '/admin', component: 'Admin', meta: { requiresAuth: true } },
+  { path: '/users', component: 'Users', meta: { requiresAuth: true } },
+  {
+    path: '/users/:id',
+    component: 'UserDetails',
+    meta: { requiresAuth: true },
+  },
   { path: '/leaveRequests', component: 'PendingLeaveRequests', meta: { requiresAuth: true } },
   { path: '/createRequest', component: 'CreateEvent', meta: { requiresAuth: true } },
   {
