@@ -50,7 +50,6 @@ const store = new Vuex.Store({
     userSignUp({ commit }, p) {
       commit('setLoading', true);
       const u = new User(p.email, p.password, false, false, 0, 0, 0, 0);
-
       createUser(u)
         .then((user) => {
           commit('setLoggedInUser', { email: user.email });

@@ -5,20 +5,13 @@ import { User } from '../models/User';
 
 // TODO return a promise
 export function saveUser(data) {
-  console.log('saveUser...', data);
+  console.log('api.saveUser...', data);
   return new Promise((resolve, reject) => {
-    db.collection('users').add(
-      {
-        email: data.email,
-        isAdmin: data.isAdmin,
-        isApprover: data.isApprover,
-        daysAnnualLeave: data.daysAnnualLeave,
-        daysCarryOver: data.daysCarryOver,
-        daysCompLeave: data.daysCompLeave,
-        daysBooked: data.daysBooked,
-      },
-    ).then(() => resolve())
-    .catch(error => reject(error));
+    const u = new User(data.email, data.password, false, false, data.daysAnnualLeave,
+      data.daysCarryOver, data.daysCompLeave, data.daysBooked);
+    db.collection('users').add(u.toJSON())
+      .then(() => resolve(u))
+      .catch(error => reject(error));
   });
 }
 
@@ -30,22 +23,16 @@ export function saveUser(data) {
  * @return error
  */
 export function createUser(newUser) {
-  console.log('createUser...');
+  console.log('api.createUser...');
   return new Promise((resolve, reject) => {
     firebase.auth().createUserWithEmailAndPassword(newUser.email, newUser.password)
       .then((firebaseUser) => {
-        db.collection('users').add(
-          {
-            email: firebaseUser.user.email,
-            admin: false,
-            approver: false,
-            daysAnnualLeave: newUser.daysAnnualLeave,
-            daysCarryOver: newUser.daysCarryOver,
-            daysCompLeave: newUser.daysCompLeave,
-            daysBooked: newUser.daysBooked,
-          },
-        );
-        resolve();
+        const u = new User(firebaseUser.user.email, newUser.password, false, false,
+          newUser.daysAnnualLeave, newUser.daysCarryOver, newUser.daysCompLeave,
+          newUser.daysBooked);
+        db.collection('users').add(u.toJSON())
+          .then(() => resolve(u))
+          .catch(error => reject(error));
       })
       .catch((error) => {
         console.log(error);
@@ -63,6 +50,7 @@ export function createUser(newUser) {
  * @param {string} email
  */
 export function autoLogin(email) {
+  console.log('api.autoLogin...');
   return new Promise((resolve, reject) => {
     db.collection('users').where('email', '==', email).get()
     .then(
@@ -90,7 +78,7 @@ export function autoLogin(email) {
  * @return User
  */
 export function login(email, password) {
-  console.log('login...');
+  console.log('api.login...');
   return new Promise((resolve, reject) => {
     // change Auth state persistence
     // https://firebase.google.com/docs/auth/web/auth-state-persistence
@@ -117,5 +105,6 @@ export function login(email, password) {
 }
 
 export function logout() {
+  console.log('api.logout...');
   firebase.auth().signOut();
 }
