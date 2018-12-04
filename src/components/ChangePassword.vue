@@ -34,6 +34,9 @@
 </template>
 
 <script>
+  import firebase from 'firebase';
+  import store from '../store';
+
   export default {
     data() {
       return {
@@ -45,7 +48,8 @@
     },
     created() {
       this.loaded = false;
-      this.user = this.$store.state.user;
+      this.user = this.$store.state.loggedInUser;
+      // console.log(this.user);
       this.loaded = true;
     },
     methods: {

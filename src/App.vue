@@ -22,7 +22,7 @@
       <v-toolbar-side-icon @click.stop="drawer = !drawer" dark></v-toolbar-side-icon>
       <v-flex xl24 class="text-sm-center headline" mx-auto>
       <router-link to="/" tag="span" style="cursor: pointer">
-        {{ appTitle }}
+        OAX Staff Calendar
       </router-link>
       </v-flex>
     </v-toolbar>
@@ -38,14 +38,10 @@
 <script>
   export default {
     data: () => ({
-      // appTitle: 'TRUE',
       miniVariant: false, // condenses nav drawer width
       drawer: false,
     }),
     computed: {
-      appTitle() {
-        return this.$store.state.appTitle;
-      },
       isAuthenticated() {
         return this.$store.getters.isAuthenticated;
       },
@@ -53,7 +49,8 @@
         if (this.isAuthenticated) {
           return [
             // first line of drawer is covered by banner so HACK here
-            // { title: 'Not Found', link: '/', icon: 'settings' },
+            // not found isn't really a link, but we put it in so Calendar link is visible
+            { title: 'Not Found', link: '/', icon: 'settings' },
             { title: 'Calendar', link: '/home', icon: 'home' },
             { title: 'Apply Leave', link: '/createRequest', icon: 'settings' },
             { title: 'Leave Requests', link: '/leaveRequests', icon: 'home' },

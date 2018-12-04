@@ -2,20 +2,42 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 import firebase from 'firebase';
 import router from '@/router';
-import db from '../config/firebaseInit';
+import { User } from '../models/User';
+import { createUser, login, autoLogin, logout } from '../utils/api';
 
 Vue.use(Vuex);
 
+/**
+ * Notes about vuex
+ * -mutations are simply setter methods.
+ *    - i.e. store.commit('mutationName')
+ *      i.e. store.commit('mutationName, params)
+ * -comitting mutations are the ONLY way to change state within the store
+ * -mutations are synchronous. This is important to note as you cannot perform
+ * an async operation within it
+ * -if we require an async operation, use actions
+ *    -one practice is to create an action that does an async axios update,
+ * then invokes the mutation afterwards
+ * -$dispatch triggers actions
+ *    -use dispatch from within routes/components
+ * -commit triggers mutation
+ *    -NEVER commit from route/component. commit should only be done from within
+ * an action. commits are sync whic
+ *     might freeze the UI
+ * -getters are computed properties for our store. results are cached and only
+ * recomputed when it's dependencies change
+ * -getters always receive state as their first param
+ *    i.e. store.getters.getMethodName
+ */
 const store = new Vuex.Store({
   state: {
-    appTitle: 'OAX Staff Calendar',
-    user: null,
+    loggedInUser: null, // instance of User.js
     error: null,
     loading: false,
   },
   mutations: {
-    setUser(state, payload) {
-      state.user = payload;
+    setLoggedInUser(state, payload) {
+      state.loggedInUser = payload;
     },
     setError(state, payload) {
       state.error = payload;
@@ -25,63 +47,34 @@ const store = new Vuex.Store({
     },
   },
   actions: {
-    userSignUp({ commit }, payload) {
+    userSignUp({ commit }, p) {
       commit('setLoading', true);
-      firebase.auth().createUserWithEmailAndPassword(
-        payload.email, payload.password).then(
-          (firebaseUser) => {
-            // create a default userRole
-            db.collection('userRoles').add(
-              {
-                email: firebaseUser.user.email,
-                admin: false,
-                approver: false,
-              },
-            );
-            commit('setUser', { email: firebaseUser.user.email });
-            commit('setLoading', false);
-            router.push('/home');
-          }).catch((error) => {
-            commit('setError', error.message);
-            commit('setLoading', false);
-          });
+      const u = new User(p.email, p.password, false, false, 0, 0, 0, 0);
+
+      createUser(u)
+        .then((user) => {
+          commit('setLoggedInUser', { email: user.email });
+          commit('setLoading', false);
+          router.push('/home');
+        })
+        .catch((err) => {
+          commit('setError', err.message);
+          commit('setLoading', false);
+        });
     },
 
     userSignIn({ commit }, payload) {
       commit('setLoading', true);
-      // change Auth state persistence
-      // https://firebase.google.com/docs/auth/web/auth-state-persistence
-      firebase.auth().setPersistence(firebase.auth.Auth.Persistence.SESSION)
-        .then(() => {
-          firebase.auth().signInWithEmailAndPassword(
-            payload.email, payload.password).then(
-              (firebaseUser) => {
-                // fetch userRole for this user
-                // TODO put this in function?? I use it in auto signin
-                db.collection('userRoles').where('email', '==', firebaseUser.user.email).get()
-                .then(
-                  (snaps) => {
-                    snaps.forEach((user) => {
-                      commit('setUser', {
-                        email: firebaseUser.user.email,
-                        approver: user.data().approver,
-                        admin: user.data().admin,
-                      });
-                      commit('setLoading', false);
-                      commit('setError', null);
-                      router.push('/home');
-                    });
-                  },
-                )
-                .catch((error) => {
-                  commit('setError', error); // `Error retrieving user role for ${payload.email}`);
-                  commit('setLoading', false);
-                });
-              },
-          );
-        }).catch((error) => {
-          commit('setError', error);
+
+      login(payload.email, payload.password)
+        .then((user) => {
+          commit('setLoggedInUser', user);
           commit('setLoading', false);
+          router.push('/home');
+        })
+        .catch((error) => {
+          console.log('error signin, ', error);
+          commit('setError', error);
         });
     },
 
@@ -104,41 +97,42 @@ const store = new Vuex.Store({
         });
       }
     },
+
     autoSignIn({ commit }, payload) {
-      // console.log('auto signing in, ', payload.email);
-      db.collection('userRoles').where('email', '==', payload.email).get()
-      .then(
-        (snaps) => {
-          snaps.forEach((user) => {
-            console.log(user.data());
-            commit('setUser', {
-              email: user.data().email,
-              approver: user.data().approver,
-              admin: user.data().admin,
-            });
-            commit('setLoading', false);
-            commit('setError', null);
-            // auto route them to home if you wish or leave commented out to refresh current page
-            // router.push('/home');
-          });
-        },
-      )
-      .catch((error) => {
-        console.log('ERROR auto signin', error);
-        commit('setError', error); // `Error retrieving user role for ${payload.email}`);
-        commit('setLoading', false);
+      commit('setLoading', true);
+      return new Promise((resolve, reject) => {
+        autoLogin(payload.email)
+        .then((user) => {
+          commit('setLoggedInUser', user);
+          commit('setLoading', false);
+          resolve(user);
+        })
+        .catch((error) => {
+          console.log('error autosignin, ', error);
+          commit('setError', error);
+          reject(error);
+          commit('setLoading', false);
+        });
       });
-      // commit('setUser', { email: payload.email });
     },
+
     userSignOut({ commit }) {
-      firebase.auth().signOut();
-      commit('setUser', null);
+      logout();
+      commit('setLoggedInUser', null);
       router.push('/');
     },
   },
   getters: {
     isAuthenticated(state) {
-      return state.user !== null && state.user !== undefined;
+      return state.loggedInUser !== null && state.loggedInUser !== undefined;
+    },
+    isApprover(state) {
+      return state.loggedInUser !== null && state.loggedInUser !== undefined
+        && state.loggedInUser.isApprover;
+    },
+    isAdmin(state) {
+      return state.loggedInUser !== null && state.loggedInUser !== undefined
+        && state.loggedInUser.isAdmin;
     },
   },
 });

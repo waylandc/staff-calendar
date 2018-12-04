@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import Router from 'vue-router';
-import firebase from 'firebase';
-import NProgress from 'nprogress';
+// import firebase from 'firebase';
+// import NProgress from 'nprogress';
 
 const routerOptions = [
   { path: '*', component: 'NotFound' },
@@ -45,25 +45,34 @@ const router = new Router({
   routes,
 });
 
-router.beforeEach((to, from, next) => {
-  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
-  const isAuthenticated = firebase.auth().currentUser;
-  if (requiresAuth && !isAuthenticated) {
-    next('/signin');
-  } else {
-    next();
-  }
-});
+/**
+ * guard routes that require user to be authenticated
+ */
+// router.beforeEach((to, from, next) => {
+//   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+//   if (requiresAuth) {
+//     firebase.auth().onAuthStateChanged((firebaseUser) => {
+//       if (firebaseUser) {
+//         this.$store.dispatch('autoSignIn', firebaseUser);
+//         next();
+//       } else {
+//         next('/signin');
+//       }
+//     });
+//   } else {
+//     next();
+//   }
+// });
 
-router.beforeResolve((to, from, next) => {
-  if (to.name) {
-    NProgress.start();
-  }
-  next();
-});
+// router.beforeResolve((to, from, next) => {
+//   if (to.name) {
+//     NProgress.start();
+//   }
+//   next();
+// });
 
-router.afterEach(() => {
-  NProgress.done();
-});
+// router.afterEach(() => {
+//   NProgress.done();
+// });
 
 export default router;

@@ -3,14 +3,12 @@
 import Vue from 'vue';
 import firebase from 'firebase';
 import NProgress from 'nprogress';
-// import Vuelidate from 'vuelidate';
 import Vuetify from 'vuetify';
 import FullCalendar from 'vue-full-calendar';
 /* eslint-disable  */
 import 'fullcalendar/dist/fullcalendar.min.css';
 import 'material-design-icons/iconfont/material-icons.css';
 import 'vuetify/dist/vuetify.css';
-// import colors from 'vuetify/es5/util/colors';
 import App from './App';
 import router from './router';
 import store from './store';
@@ -43,15 +41,34 @@ const unsubscribe = firebase.auth()
       el: '#app',
       router,
       store,
-      created() {
-        if (firebaseUser) {
-          store.dispatch('autoSignIn', firebaseUser);
-        }
-      },
       render: h => h(App),
     });
     unsubscribe();
   });
+
+
+/**
+ * guard routes that require user to be authenticated
+ */
+router.beforeEach((to, from, next) => {
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+  if(requiresAuth) {
+    firebase.auth().onAuthStateChanged((firebaseUser) => {
+      // TODO not sure if I need the 2nd part of this if condition
+      if (firebaseUser != null) {
+        store.dispatch('autoSignIn', firebaseUser).then(response => {
+          next();
+        }, error => {
+          next('/signin');
+        });
+      } else {
+        next('/signin');
+      }
+    })
+  } else {
+    next();
+  }
+});
 
 /**
  * beforeResolve and afterResolve used here to display nprogress bar
