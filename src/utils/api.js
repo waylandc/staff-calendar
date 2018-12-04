@@ -7,7 +7,7 @@ import { User } from '../models/User';
 export function saveUser(data) {
   console.log('api.saveUser...', data);
   return new Promise((resolve, reject) => {
-    const u = new User(data.email, data.password, false, false, data.daysAnnualLeave,
+    const u = new User(data.email, false, false, data.daysAnnualLeave,
       data.daysCarryOver, data.daysCompLeave, data.daysBooked);
     db.collection('users').add(u.toJSON())
       .then(() => resolve(u))
@@ -27,9 +27,10 @@ export function createUser(newUser) {
   return new Promise((resolve, reject) => {
     firebase.auth().createUserWithEmailAndPassword(newUser.email, newUser.password)
       .then((firebaseUser) => {
-        const u = new User(firebaseUser.user.email, newUser.password, false, false,
+        const u = new User(firebaseUser.user.email, false, false,
           newUser.daysAnnualLeave, newUser.daysCarryOver, newUser.daysCompLeave,
           newUser.daysBooked);
+        // TODO if this add() fails, I think we need to delete the user from firebase
         db.collection('users').add(u.toJSON())
           .then(() => resolve(u))
           .catch(error => reject(error));
@@ -57,7 +58,7 @@ export function autoLogin(email) {
       (snaps) => {
         snaps.forEach((user) => {
           const u = new User(
-            user.data().email, user.data().password, user.data().isAdmin,
+            user.data().email, user.data().isAdmin,
             user.data().isApprover, user.data().daysAnnualLeave,
             user.data().daysCompLeave, user.data().daysCarryOver,
             user.data().daysBooked);
@@ -90,7 +91,7 @@ export function login(email, password) {
           (snaps) => {
             snaps.forEach((user) => {
               const u = new User(
-                user.data().email, user.data().password, user.data().isAdmin,
+                user.data().email, user.data().isAdmin,
                 user.data().isApprover, user.data().daysAnnualLeave,
                 user.data().daysCompLeave, user.data().daysCarryOver,
                 user.data().daysBooked);
@@ -101,6 +102,22 @@ export function login(email, password) {
         )
         .catch(error => reject(error));
       });
+  });
+}
+
+// changePassword wraps Firebase.Auth's change password API which is
+// strange b/c they don't ask to verify current password.
+export function changePassword(newPass) {
+  console.log('api.changePassword...');
+  return new Promise((resolve, reject) => {
+    const fbUser = firebase.auth().currentUser;
+    if (fbUser === null) {
+      reject('You are currently not logged in.');
+    }
+
+    fbUser.updatePassword(newPass)
+      .then(() => resolve())
+      .catch(error => reject(error));
   });
 }
 

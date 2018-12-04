@@ -1,9 +1,8 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-import firebase from 'firebase';
 import router from '@/router';
 import { User } from '../models/User';
-import { createUser, login, autoLogin, logout } from '../utils/api';
+import { createUser, login, autoLogin, logout, changePassword } from '../utils/api';
 
 Vue.use(Vuex);
 
@@ -78,27 +77,22 @@ const store = new Vuex.Store({
     },
 
     changePassword({ commit }, payload) {
-      const user = firebase.auth().currentUser;
-      if (user === null) {
-        commit('setError', 'You are not currently logged in');
-        return;
-      }
-
-      if (payload.newPassword !== payload.confirmPassword) {
-        commit('setError', 'New passwords don\'t match');
-      } else {
-        commit('setLoading', true);
-        user.updatePassword(payload.newPassword).then(() => {
+      commit('setLoading', true);
+      changePassword(payload.newPassword)
+        .then(() => {
           commit('setLoading', false);
           router.push('/home');
-        }).catch((error) => {
+        })
+        .catch((error) => {
+          commit('setLoading', false);
           commit('setError', error.message);
         });
-      }
     },
 
     autoSignIn({ commit }, payload) {
       commit('setLoading', true);
+      // important to wrap this in a Promise or else the UI tries to render
+      // before we load the user into store
       return new Promise((resolve, reject) => {
         autoLogin(payload.email)
         .then((user) => {

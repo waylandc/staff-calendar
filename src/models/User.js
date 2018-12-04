@@ -1,9 +1,8 @@
 export class User {
-  constructor(email, pass, admin, approver, al, cl, co, db) {
+  constructor(email, admin, approver, al, cl, co, db) {
     this.email = email;
     this.isAdmin = admin;
     this.isApprover = approver;
-    this.password = pass;
     this.daysAnnualLeave = al;
     this.daysBooked = db;
     this.daysCarryOver = co;
@@ -13,7 +12,6 @@ export class User {
   toJSON() {
     return {
       email: this.email,
-      password: this.password,
       isAdmin: this.isAdmin,
       isApprover: this.isApprover,
       daysAnnualLeave: this.daysAnnualLeave,

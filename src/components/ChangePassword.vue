@@ -20,10 +20,6 @@
             <v-text-field v-model='newPassword' label='New Password' type="password" autocomplete="new-password" :readonly="false" box>
             </v-text-field>
           </v-flex>
-          <v-flex>
-            <v-text-field v-model='confirmPassword' label='Confirm Password' type="password" autocomplete="new-password" :readonly="false" box>
-            </v-text-field>
-          </v-flex>
           <v-flex class="text-xs-center" mt-5>
             <v-btn color="primary" type="submit">Change Password</v-btn>
           </v-flex>
@@ -42,7 +38,6 @@
       return {
         user: '',
         newPassword: '',
-        confirmPassword: '',
         alert: false,
       }
     },
@@ -54,12 +49,7 @@
     },
     methods: {
       changePassword () {
-        this.$store.dispatch('changePassword',
-          {
-            newPassword: this.newPassword,
-            confirmPassword: this.confirmPassword,
-          }
-        );
+        this.$store.dispatch('changePassword', {newPassword: this.newPassword});
       },
     },
     computed: {
