@@ -18,6 +18,7 @@ import moment from 'moment';
 export default {
   name: 'HomeCalendar',
   data () {
+    // TODO load events from DB
     return {
       events: [
         {

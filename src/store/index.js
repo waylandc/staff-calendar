@@ -2,7 +2,7 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 import router from '@/router';
 import { User } from '../models/User';
-import { createUser, login, autoLogin, logout, changePassword } from '../utils/api';
+import { createUser, login, autoLogin, logout, changePassword, saveUser } from '../utils/api';
 
 Vue.use(Vuex);
 
@@ -46,10 +46,24 @@ const store = new Vuex.Store({
     },
   },
   actions: {
+    // saveUser payload {user: u, userId: id}
+    saveUser({ commit }, payload) {
+      commit('setLoading', true);
+      saveUser(payload)
+        .then((user) => {
+          commit('setLoggedInUser', user);
+          commit('setLoading', false);
+        })
+        .catch((error) => {
+          console.log('store error, ', error);
+          commit('setError', error);
+          commit('setLoading', false);
+        });
+    },
     userSignUp({ commit }, p) {
       commit('setLoading', true);
-      const u = new User(p.email, p.password, false, false, 0, 0, 0, 0);
-      createUser(u)
+      const u = new User(p.email, false, false, 0, 0, 0, 0);
+      createUser(u, p.password)
         .then((user) => {
           commit('setLoggedInUser', { email: user.email });
           commit('setLoading', false);

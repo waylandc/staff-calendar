@@ -1,4 +1,7 @@
+// We use Firebase for user authentication but we need
+// to store additional fields for our app
 export class User {
+  // new User(...)
   constructor(email, admin, approver, al, cl, co, db) {
     this.email = email;
     this.isAdmin = admin;
@@ -22,6 +25,8 @@ export class User {
   }
 }
 
-export function createUser(data) {
-  return new User(data);
+// createUser({email: e, ...})
+export function createUserModel(d) {
+  return new User(d.email, d.isAdmin, d.isApprover, d.daysAnnualLeave,
+    d.daysBooked, d.daysCarryOver, d.daysCompLeave);
 }

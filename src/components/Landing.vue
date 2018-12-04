@@ -19,5 +19,6 @@
 </template>
 
 <script>
+// TODO add check, if logged in, forward to /home
 export default {};
 </script>

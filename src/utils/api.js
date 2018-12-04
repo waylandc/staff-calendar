@@ -3,15 +3,19 @@ import firebase from 'firebase';
 import db from '../config/firebaseInit';
 import { User } from '../models/User';
 
-// TODO return a promise
 export function saveUser(data) {
   console.log('api.saveUser...', data);
   return new Promise((resolve, reject) => {
-    const u = new User(data.email, false, false, data.daysAnnualLeave,
-      data.daysCarryOver, data.daysCompLeave, data.daysBooked);
-    db.collection('users').add(u.toJSON())
-      .then(() => resolve(u))
-      .catch(error => reject(error));
+    const dr = db.collection('users');
+    dr.doc(data.userId).update(data.user.toJSON())
+    .then(() => {
+      console.log('OK saved user, ', data.user.toJSON());
+      resolve(data.user);
+    })
+    .catch((error) => {
+      console.log('error saving user, ', data.user.toJSON());
+      reject(error);
+    });
   });
 }
 
@@ -22,10 +26,10 @@ export function saveUser(data) {
  * @param {*} newUser User.js
  * @return error
  */
-export function createUser(newUser) {
+export function createUser(newUser, passwd) {
   console.log('api.createUser...');
   return new Promise((resolve, reject) => {
-    firebase.auth().createUserWithEmailAndPassword(newUser.email, newUser.password)
+    firebase.auth().createUserWithEmailAndPassword(newUser.email, passwd)
       .then((firebaseUser) => {
         const u = new User(firebaseUser.user.email, false, false,
           newUser.daysAnnualLeave, newUser.daysCarryOver, newUser.daysCompLeave,

@@ -17,19 +17,19 @@
             </v-text-field>
           </v-flex>
           <v-flex>
-            <v-text-field v-model='user.daysAnnualLeave' label='Annual Leave' :readonly="false" box>
+            <v-text-field v-model.number='user.daysAnnualLeave' label='Annual Leave' :readonly="false" box>
             </v-text-field>
           </v-flex>
           <v-flex>
-            <v-text-field v-model='user.daysCompLeave' label='Comp Leave' :readonly="false" box>
+            <v-text-field v-model.number='user.daysCompLeave' label='Comp Leave' :readonly="false" box>
             </v-text-field>
           </v-flex>
           <v-flex>
-            <v-text-field v-model='user.daysCarryOver' label='Carry Over' :readonly="false" box>
+            <v-text-field v-model.number='user.daysCarryOver' label='Carry Over' :readonly="false" box>
             </v-text-field>
           </v-flex>
           <v-flex>
-            <v-text-field v-model='user.daysBooked' label='Booked' :readonly="true" box>
+            <v-text-field v-model.number='user.daysBooked' label='Booked' :readonly="true" box>
             </v-text-field>
           </v-flex>
           <v-flex class="text-xs-center" mt-5>
@@ -43,6 +43,7 @@
 
 <script>
   import db from '../config/firebaseInit';
+  import { createUserModel } from '../models/User';
 
   export default {
     data() {
@@ -59,9 +60,11 @@
       this.userId = this.$route.params.id;
       console.log('loading user, ', this.userId);
       const docRef = db.collection('users').doc(this.userId);
+      // console.log(docRef);
       docRef.get().then((doc) => {
         if (doc.exists) {
-          this.user = doc.data();
+          this.user = createUserModel(doc.data());
+          console.log('retrieved user, ', doc.data());
           this.documentRef = docRef;
           this.loaded = true;
         } else {
@@ -77,12 +80,7 @@
     },
     methods: {
       save() {
-        this.$store.dispatch('changePassword',
-          {
-            newPassword: this.newPassword,
-            confirmPassword: this.confirmPassword,
-          }
-        );
+        this.$store.dispatch('saveUser', { userId: this.userId, user: this.user});
       },
     },
     computed: {
