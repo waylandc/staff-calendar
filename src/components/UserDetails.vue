@@ -29,7 +29,7 @@
             </v-text-field>
           </v-flex>
           <v-flex>
-            <v-text-field v-model.number='user.daysBooked' label='Booked' :readonly="!this.isAdmin" box>
+            <v-text-field v-model.number='user.daysBooked' label='Booked' disabled box>
             </v-text-field>
           </v-flex>
           <v-layout>

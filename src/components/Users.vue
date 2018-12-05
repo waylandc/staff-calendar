@@ -3,7 +3,7 @@
     <v-flex xs10 offset-xs1 v-if="loaded">
       <div>
         <h2>Users</h2>
-        <v-data-table :headers='headers' :items='users' hide-actions class='elevation-1'>
+        <v-data-table :headers='headers' :items='users' hide-actions dark class='elevation-1'>
           <template slot='items' slot-scope='props'>
             <tr @click='showDetails(props.item.id)'>
               <td class='mdl-data-table__cell--non-numeric'>{{ props.item.email }}</td>
@@ -26,6 +26,7 @@ import NProgress from 'nprogress';
 import db from '../config/firebaseInit';
 
 // This page should only be viewable by admin/approvers for privacy issues
+// protected by router beforeEach guard
 export default {
   name: 'UserList',
   data() {

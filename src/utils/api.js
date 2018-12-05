@@ -100,13 +100,13 @@ export function login(email, password) {
                 user.data().isApprover, user.data().daysAnnualLeave,
                 user.data().daysCompLeave, user.data().daysCarryOver,
                 user.data().daysBooked, user.id);
-              console.log(u);
               resolve(u);
             });
           },
         )
         .catch(error => reject(error));
-      });
+      })
+      .catch(error => reject(error));
   });
 }
 

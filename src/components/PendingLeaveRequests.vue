@@ -3,7 +3,7 @@
     <v-flex xs10 offset-xs1 v-if="loaded">
       <div>
         <h2>Pending Leave Requests</h2>
-        <v-data-table :headers='headers' :items='pendingRequests' hide-actions class='elevation-1'>
+        <v-data-table :headers='headers' :items='pendingRequests' hide-actions dark class='elevation-1'>
           <template slot='items' slot-scope='props'>
             <tr @click='showDetails(props.item.id)'>
               <td class='mdl-data-table__cell--non-numeric'>{{ props.item.status }}</td>
@@ -58,13 +58,13 @@
           {
             text: 'End',
             align: 'left',
-            sortable: true,
+            sortable: false,
             value: 'endDate',
           },
           {
             text: 'Half Day',
             align: 'left',
-            sortable: true,
+            sortable: false,
             value: 'halfDay',
           },
         ],
