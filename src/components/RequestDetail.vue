@@ -53,7 +53,7 @@
           </v-flex>
           <v-flex xs6>
           </v-flex>
-          <v-flex v-if="this.$store.state.user.approver" class="text-xs-center" mt-5>
+          <v-flex v-if="this.$store.state.loggedInUser.isApprover" class="text-xs-center" mt-5>
             <v-btn 
               color="approve"
               @click.stop="approve"
@@ -93,13 +93,13 @@
       };
     },
     created() {
-      this.user = this.$store.state.user;
+      this.user = this.$store.state.loggedInUser;
       this.loaded = false;
       this.propId = this.$route.params.id;
       console.log('loading request, ', this.propId);
       const docRef = db.collection('leaveRequests').doc(this.propId);
-      console.log(this.user.email + ' is admin, ' + this.user.admin);
-      console.log(this.user.email + ' is approver, ' + this.user.approver);
+      console.log(this.user.email + ' is admin, ' + this.user.isAdmin);
+      console.log(this.user.email + ' is approver, ' + this.user.isApprover);
       docRef.get().then((doc) => {
         if (doc.exists) {
           this.request = doc.data();
@@ -128,7 +128,7 @@
         console.log('approve clicked, ', this.propId);
         var o = {};
         o.status = 1;
-        o.approver = this.$store.state.user.email;
+        o.approver = this.$store.state.loggedInUser.email;
         this.documentRef.update(o);
         this.$router.push('/leaveRequests');
      },
@@ -136,7 +136,7 @@
         console.log('reject clicked');
         var o = {};
         o.status = 2;
-        o.approver = this.$store.state.user.email;
+        o.approver = this.$store.state.loggedInUser.email;
         this.documentRef.update(o);
         this.$router.push('/leaveRequests');
       }

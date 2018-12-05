@@ -46,6 +46,7 @@
         return this.$store.getters.isAuthenticated;
       },
       menuItems() {
+        // Return a different menu depending on whether user is logged in or not and if admin
         if (this.isAdmin) {
           return [
             // first line of drawer is covered by banner so HACK here
@@ -77,6 +78,7 @@
       },
     },
     props: {
+      // TODO - is this needed? Search shows nothing. Dec 5
       source: String,
     },
     methods: {

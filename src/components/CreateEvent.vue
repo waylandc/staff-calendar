@@ -162,7 +162,7 @@
         db.collection('leaveRequests').add(
           {
             title: this.title,
-            user: this.$store.state.user.email,
+            user: this.$store.state.loggedInUser.email,
             startDate: this.sDate,
             endDate: this.eDate,
             halfDay: halfDay,

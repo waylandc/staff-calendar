@@ -1,4 +1,4 @@
-# truetify
+# Calendar App to track annual leave for staff
 
 > Vue PWA app using vuejs, vuetify, google MD, axios, vuex
 
