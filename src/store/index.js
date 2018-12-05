@@ -2,9 +2,9 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 import router from '@/router';
 import { User } from '../models/User';
-import { createUser, login, autoLogin, logout, changePassword, saveUser, createEvent } from '../utils/api';
+import { createUser, login, autoLogin, logout, changePassword, saveUser, createEvent, getUsers, getEvents } from '../utils/api';
 import { SET_LOGGED_IN_USER, SET_ERROR, SET_LOADING } from './mutation-types';
-import { AUTO_LOGIN, USER_LOGIN, USER_SIGNUP, CHANGE_PASSWORD, SAVE_USER, USER_LOGOUT, ADD_EVENT } from './action-types';
+import { AUTO_LOGIN, USER_LOGIN, USER_SIGNUP, CHANGE_PASSWORD, SAVE_USER, USER_LOGOUT, ADD_EVENT, GET_USERS, GET_EVENTS } from './action-types';
 
 Vue.use(Vuex);
 
@@ -76,6 +76,17 @@ const store = new Vuex.Store({
         });
     },
 
+    [GET_USERS]({ commit }) {
+      commit('SET_LOADING', true);
+      return new Promise((resolve, reject) => {
+        getUsers()
+          .then((users) => {
+            resolve(users);
+          })
+          .catch(error => reject(error));
+      });
+    },
+
     [USER_LOGIN]({ commit }, payload) {
       commit('SET_LOADING', true);
 
@@ -141,6 +152,21 @@ const store = new Vuex.Store({
           commit('SET_ERROR', error);
           commit('SET_LOADING', false);
         });
+    },
+
+    [GET_EVENTS]({ commit }, status) {
+      commit('SET_LOADING', true);
+      return new Promise((resolve, reject) => {
+        getEvents(status)
+        .then((events) => {
+          commit('SET_LOADING', false);
+          resolve(events);
+        })
+        .catch((error) => {
+          commit('SET_LOADING', false);
+          reject(error);
+        });
+      });
     },
   },
   getters: {

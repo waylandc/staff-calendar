@@ -5,7 +5,7 @@
         <h2>Pending Leave Requests</h2>
         <v-data-table :headers='headers' :items='pendingRequests' hide-actions dark class='elevation-1'>
           <template slot='items' slot-scope='props'>
-            <tr @click='showDetails(props.item.id)'>
+            <tr @click='showDetails(props.item.docId)'>
               <td class='mdl-data-table__cell--non-numeric'>{{ props.item.status }}</td>
               <td class='mdl-data-table__cell--non-numeric'>{{ props.item.requestor }}</td>
               <td class='mdl-data-table__cell--non-numeric'>{{ props.item.title }}</td>
@@ -21,9 +21,7 @@
 </template>
 
 <script>
-  import db from '../config/firebaseInit';
   import NProgress from 'nprogress';
-  import moment from 'moment';
   import Constants from '../models/common.js';
 
   export default {
@@ -70,42 +68,41 @@
         ],
         loaded: false,
         pendingRequests: [],
+        alert: false,
+        error: '',
       }
     },
     created() {
       NProgress.start();
 
-      // load all pending requests
-      // TODO only load requests for current user, unless approver
-      db.collection('leaveRequests').where('status', '==', Constants.PENDING).get()
-      .then(
-        (snaps) => {
-            this.loaded = false;
-            snaps.forEach((req) => {
-            var a = {
-              id: req.id,
-              title: req.data().title,
-              start: req.data().startDate.toDate().toDateString(),
-              end: req.data().endDate.toDate().toDateString(),
-              halfDay: req.data().halfDay,
-              requestor: req.data().user,
-              status: req.data().status,
-            }
-            // console.log(req.id);
-            this.pendingRequests.push(a);
-          });
+      this.loaded = false;
+
+      this.$store.dispatch('GET_EVENTS', { status: Constants.PENDING, user: this.$store.state.loggedInUser })
+        .then(events => { 
+          this.pendingRequests = events;
           this.loaded = true;
-          // console.log(this.pendingRequests)
-        },
-      )
-      .catch((error) => {
-        console.log(error);
-      });
+        })
+        .catch((err) => {
+          this.error = err;
+        });
+
       NProgress.done();
     },
     computed: {
       loading() {
         return this.$store.state.loading;
+      },
+    },
+    watch: {
+      error(value) {
+        if (value) {
+          this.alert = true;
+        }
+      },
+      alert(value) {
+        if (!value) {
+          this.$store.commit('SET_ERROR', null);
+        }
       },
     },
     methods: {

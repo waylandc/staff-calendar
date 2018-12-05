@@ -2,6 +2,7 @@ import firebase from 'firebase';
 
 import db from '../config/firebaseInit';
 import { User } from '../models/User';
+import { CalendarEvent } from '../models/CalendarEvent';
 
 export function saveUser(data) {
   console.log('api.saveUser...', data);
@@ -46,6 +47,80 @@ export function createUser(newUser, passwd) {
         reject(error);
       },
     );
+  });
+}
+
+/**
+ * getUsers retrieves the entire users table in firebase
+ *
+ * @return {[User]} users
+ */
+export function getUsers() {
+  console.log('api.getUsers...');
+  return new Promise((resolve, reject) => {
+    db
+      .collection('users')
+      .orderBy('email')
+      .get()
+      .then((querySnapshot) => {
+        const users = [];
+        let u;
+        querySnapshot.forEach((doc) => {
+          u = new User(
+            doc.data().email,
+            doc.data().isAdmin,
+            doc.data().isApprover,
+            doc.data().daysAnnualLeave,
+            doc.data().daysCarryOver,
+            doc.data().daysCompLeave,
+            doc.data().daysBooked,
+            doc.id,
+          );
+          users.push(u);
+        });
+        resolve(users);
+      })
+      .catch((error) => {
+        console.log(error);
+        reject(error);
+      });
+  });
+}
+
+/**
+ * getEvents returns the leaveRequests for a given status
+ *
+ * @param {Constants} status
+ * @return {[CalendarEvent]} events
+ */
+export function getEvents(data) {
+  console.log('api.getEvents...');
+  return new Promise((resolve, reject) => {
+    db
+      .collection('leaveRequests')
+      .where('status', '==', data.status).get()
+      .then((querySnapshot) => {
+        const events = [];
+        let u;
+        querySnapshot.forEach((doc) => {
+          u = new CalendarEvent(
+            doc.data().title,
+            doc.data().start, // TODO convert to a moment
+            doc.data().end,
+            doc.data().halfDay,
+            doc.data().user,
+            doc.data().approver,
+            doc.data().status,
+            doc.id,
+          );
+          events.push(u);
+        });
+        resolve(events);
+      })
+      .catch((error) => {
+        console.log(error);
+        reject(error);
+      });
   });
 }
 

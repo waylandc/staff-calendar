@@ -37,7 +37,7 @@ export default {
         {
           text: 'Email',
           align: 'left',
-          sortable: true,
+          sortable: false, // TODO sortable true doesn't work
           value: 'name',
         },
         {
@@ -78,33 +78,20 @@ export default {
         }
       ],
       users: [],
+      error: '',
     };
   },
   created() {
     NProgress.start();
-    // TODO should we put this in API??
-    db
-      .collection('users')
-      .orderBy('email')
-      .get()
-      .then((querySnapshot) => {
-        this.loaded = false;
-        querySnapshot.forEach((doc) => {
-          var data = {
-            id: doc.id,
-            email: doc.data().email,
-            daysAnnualLeave: doc.data().daysAnnualLeave,
-            daysCompensation: doc.data().daysCompLeave,
-            daysCarryOver: doc.data().daysCarryOver,
-            daysBooked: doc.data().daysBooked,
-            isAdmin: doc.data().isAdmin,
-            isApprover: doc.data().isApprover,
-          };
-          this.users.push(data);
-        });
+    this.loaded = false;
+    this.$store.dispatch('GET_USERS')
+      .then(users => { 
+        this.users = users;
         this.loaded = true;
+      })
+      .catch((err) => {
+        this.error = err;
       });
-
     NProgress.done();
   },
   computed: {
@@ -118,6 +105,18 @@ export default {
     },
     showDetails(id) {
       this.$router.push(`/users/${id}`);
+    },
+  },
+  watch: {
+    error(value) {
+      if (value) {
+        this.alert = true;
+      }
+    },
+    alert(value) {
+      if (!value) {
+        this.$store.commit('SET_ERROR', null);
+      }
     },
   },
 };
