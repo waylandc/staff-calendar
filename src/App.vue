@@ -86,7 +86,7 @@
     },
     methods: {
       userSignOut() {
-        this.$store.dispatch('userSignOut');
+        this.$store.dispatch('USER_LOGOUT');
       },
     },
   };

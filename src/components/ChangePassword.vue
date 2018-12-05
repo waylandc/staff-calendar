@@ -44,12 +44,11 @@
     created() {
       this.loaded = false;
       this.user = this.$store.state.loggedInUser;
-      // console.log(this.user);
       this.loaded = true;
     },
     methods: {
       changePassword () {
-        this.$store.dispatch('changePassword', {newPassword: this.newPassword});
+        this.$store.dispatch('CHANGE_PASSWORD', {newPassword: this.newPassword});
       },
     },
     computed: {

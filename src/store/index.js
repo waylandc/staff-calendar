@@ -4,6 +4,7 @@ import router from '@/router';
 import { User } from '../models/User';
 import { createUser, login, autoLogin, logout, changePassword, saveUser } from '../utils/api';
 import { SET_LOGGED_IN_USER, SET_ERROR, SET_LOADING } from './mutation-types';
+import { AUTO_LOGIN, USER_LOGIN, USER_SIGNUP, CHANGE_PASSWORD, SAVE_USER, USER_LOGOUT } from './action-types';
 
 Vue.use(Vuex);
 
@@ -48,7 +49,7 @@ const store = new Vuex.Store({
   },
   actions: {
     // saveUser payload {user: u, userId: id}
-    saveUser({ commit }, payload) {
+    [SAVE_USER]({ commit }, payload) {
       commit('SET_LOADING', true);
       saveUser(payload)
         .then((user) => {
@@ -61,7 +62,7 @@ const store = new Vuex.Store({
           commit('SET_LOADING', false);
         });
     },
-    userSignUp({ commit }, p) {
+    [USER_SIGNUP]({ commit }, p) {
       commit('SET_LOADING', true);
       const u = new User(p.email, false, false, 0, 0, 0, 0);
       createUser(u, p.password)
@@ -76,7 +77,7 @@ const store = new Vuex.Store({
         });
     },
 
-    userSignIn({ commit }, payload) {
+    [USER_LOGIN]({ commit }, payload) {
       commit('SET_LOADING', true);
 
       login(payload.email, payload.password)
@@ -91,7 +92,7 @@ const store = new Vuex.Store({
         });
     },
 
-    changePassword({ commit }, payload) {
+    [CHANGE_PASSWORD]({ commit }, payload) {
       commit('SET_LOADING', true);
       changePassword(payload.newPassword)
         .then(() => {
@@ -104,7 +105,7 @@ const store = new Vuex.Store({
         });
     },
 
-    autoSignIn({ commit }, payload) {
+    [AUTO_LOGIN]({ commit }, payload) {
       commit('SET_LOADING', true);
       // important to wrap this in a Promise or else the UI tries to render
       // before we load the user into store
@@ -116,7 +117,6 @@ const store = new Vuex.Store({
           resolve(user);
         })
         .catch((error) => {
-          console.log('error autosignin, ', error);
           commit('SET_ERROR', error);
           reject(error);
           commit('SET_LOADING', false);
@@ -124,7 +124,7 @@ const store = new Vuex.Store({
       });
     },
 
-    userSignOut({ commit }) {
+    [USER_LOGOUT]({ commit }) {
       logout();
       commit('SET_LOGGED_IN_USER', null);
       router.push('/');

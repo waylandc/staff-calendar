@@ -80,7 +80,7 @@
     },
     methods: {
       save() {
-        this.$store.dispatch('saveUser', { userId: this.userId, user: this.user});
+        this.$store.dispatch('SAVE_USER', { userId: this.userId, user: this.user});
       },
     },
     computed: {

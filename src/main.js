@@ -2,11 +2,8 @@
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue';
 import firebase from 'firebase';
-// import NProgress from 'nprogress';
 import Vuetify from 'vuetify';
 import FullCalendar from 'vue-full-calendar';
-/* eslint-disable  */
-import 'fullcalendar/dist/fullcalendar.min.css';
 import 'material-design-icons/iconfont/material-icons.css';
 import 'vuetify/dist/vuetify.css';
 import App from './App';
@@ -18,7 +15,6 @@ import '../node_modules/nprogress/nprogress.css';
 Vue.use(FullCalendar);
 Vue.config.productionTip = false;
 
-// Vue.use(Vuelidate);
 Vue.use(Vuetify, {
   theme: {
     // use https://vuetifyjs.com/en/theme-generator to generate scheme
@@ -34,9 +30,9 @@ Vue.use(Vuetify, {
   },
 });
 
-/* eslint-disable no-new */
 const unsubscribe = firebase.auth()
-  .onAuthStateChanged((firebaseUser) => {
+  .onAuthStateChanged(() => {
+    /* eslint-disable no-new */
     new Vue({
       el: '#app',
       router,
@@ -46,42 +42,3 @@ const unsubscribe = firebase.auth()
     unsubscribe();
   });
 
-
-/**
- * guard routes that require user to be authenticated
- */
-// router.beforeEach((to, from, next) => {
-//   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
-//   if(requiresAuth) {
-//     firebase.auth().onAuthStateChanged((firebaseUser) => {
-//       // TODO not sure if I need the 2nd part of this if condition
-//       if (firebaseUser != null) {
-//         store.dispatch('autoSignIn', firebaseUser).then(() => {
-//           next();
-//         }, () => {
-//           next('/signin');
-//         });
-//       } else {
-//         next('/signin');
-//       }
-//     })
-//   } else {
-//     next();
-//   }
-// });
-
-// /**
-//  * beforeResolve and afterResolve used here to display nprogress bar
-//  * while loading routes
-//  */
-// router.beforeResolve((to, from, next) => {
-//   if (to.name) {
-//     NProgress.start();
-//   }
-//   next();
-// });
-
-// /* eslint-disable no-unused-vars */
-// router.afterEach((to, from) => {
-//   NProgress.done();
-// });
