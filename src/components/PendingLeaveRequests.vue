@@ -77,7 +77,7 @@
 
       this.loaded = false;
 
-      this.$store.dispatch('GET_EVENTS', { status: Constants.PENDING, user: this.$store.state.loggedInUser })
+      this.$store.dispatch('GET_EVENTS', { status: Constants.PENDING, user: this.$store.state.loggedInUser.email })
         .then(events => { 
           this.pendingRequests = events;
           this.loaded = true;

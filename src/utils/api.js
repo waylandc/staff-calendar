@@ -103,17 +103,21 @@ export function getEvents(data) {
         const events = [];
         let u;
         querySnapshot.forEach((doc) => {
-          u = new CalendarEvent(
-            doc.data().title,
-            doc.data().start, // TODO convert to a moment
-            doc.data().end,
-            doc.data().halfDay,
-            doc.data().user,
-            doc.data().approver,
-            doc.data().status,
-            doc.id,
-          );
-          events.push(u);
+          // magic here as firebase doesn't support multiple where clauses
+          // so I'll filter for user here
+          if (doc.data().user === data.user) {
+            u = new CalendarEvent(
+              doc.data().title,
+              doc.data().start, // TODO convert to a moment
+              doc.data().end,
+              doc.data().halfDay,
+              doc.data().user,
+              doc.data().approver,
+              doc.data().status,
+              doc.id,
+            );
+            events.push(u);
+          }
         });
         resolve(events);
       })
