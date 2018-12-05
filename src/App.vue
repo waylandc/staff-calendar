@@ -46,7 +46,7 @@
         return this.$store.getters.isAuthenticated;
       },
       menuItems() {
-        if (this.isAuthenticated) {
+        if (this.isAdmin) {
           return [
             // first line of drawer is covered by banner so HACK here
             // not found isn't really a link, but we put it in so Calendar link is visible
@@ -57,7 +57,19 @@
             { title: 'Users', link: '/users', icon: 'settings' },
             { title: 'Change Password', link: '/changePassword', icon: 'settings' },
           ];
-        } // else
+        }
+
+        if (this.isAuthenticated) {
+          return [
+            // first line of drawer is covered by banner so HACK here
+            // not found isn't really a link, but we put it in so Calendar link is visible
+            { title: 'Not Found', link: '/', icon: 'settings' },
+            { title: 'Calendar', link: '/home', icon: 'home' },
+            { title: 'Apply Leave', link: '/createRequest', icon: 'settings' },
+            { title: 'Leave Requests', link: '/leaveRequests', icon: 'home' },
+            { title: 'Change Password', link: '/changePassword', icon: 'settings' },
+          ];
+        }
         return [
           { title: 'Register', link: '/register', icon: 'face' },
           { title: 'Sign In', link: '/signin', icon: 'lock_open' },

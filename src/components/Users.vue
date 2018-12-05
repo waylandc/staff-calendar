@@ -23,6 +23,7 @@
 import NProgress from 'nprogress';
 import db from '../config/firebaseInit';
 
+// This page should only be viewable by admin/approvers for privacy issues
 export default {
   name: 'UserList',
   data() {
@@ -66,6 +67,7 @@ export default {
   },
   created() {
     NProgress.start();
+    // TODO should we put this in API??
     db
       .collection('users')
       .orderBy('email')
