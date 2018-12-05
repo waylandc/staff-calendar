@@ -2,9 +2,9 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 import router from '@/router';
 import { User } from '../models/User';
-import { createUser, login, autoLogin, logout, changePassword, saveUser } from '../utils/api';
+import { createUser, login, autoLogin, logout, changePassword, saveUser, createEvent } from '../utils/api';
 import { SET_LOGGED_IN_USER, SET_ERROR, SET_LOADING } from './mutation-types';
-import { AUTO_LOGIN, USER_LOGIN, USER_SIGNUP, CHANGE_PASSWORD, SAVE_USER, USER_LOGOUT } from './action-types';
+import { AUTO_LOGIN, USER_LOGIN, USER_SIGNUP, CHANGE_PASSWORD, SAVE_USER, USER_LOGOUT, ADD_EVENT } from './action-types';
 
 Vue.use(Vuex);
 
@@ -128,6 +128,19 @@ const store = new Vuex.Store({
       logout();
       commit('SET_LOGGED_IN_USER', null);
       router.push('/');
+    },
+
+    [ADD_EVENT]({ commit }, payload) {
+      commit('SET_LOADING', true);
+      createEvent(payload)
+        .then(() => {
+          commit('SET_LOADING', false);
+          router.push('/leaveRequests');
+        })
+        .catch((error) => {
+          commit('SET_ERROR', error);
+          commit('SET_LOADING', false);
+        });
     },
   },
   getters: {

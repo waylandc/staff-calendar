@@ -159,22 +159,23 @@
         } else if (this.pm) {
           halfDay = 'PM';
         }
-        db.collection('leaveRequests').add(
-          {
-            title: this.title,
-            user: this.$store.state.loggedInUser.email,
-            startDate: this.sDate,
-            endDate: this.eDate,
-            halfDay: halfDay,
-            status: 0,
-          },
-        ).then((docRef) => {
-          // console.log('doc written with id, ', docRef.id);
-          this.$router.push('/leaveRequests');
-        }).catch((error) => {
-          // TODO stay on page and display error to use
-          console.error('error adding doc: ', error);
-        });
+        const req = {
+          title: this.title,
+          user: this.$store.state.loggedInUser.email,
+          startDate: this.sDate,
+          endDate: this.eDate,
+          halfDay: halfDay,
+          status: 0,
+        };
+
+        this.$store.dispatch('ADD_EVENT', req)
+          .then((docRef) => {
+            // console.log('doc written with id, ', docRef.id);
+            this.$router.push('/leaveRequests');
+          }).catch((error) => {
+            // TODO stay on page and display error to use
+            console.error('error adding doc: ', error);
+          });
       },
     }
 

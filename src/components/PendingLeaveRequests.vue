@@ -1,5 +1,5 @@
 <template>
-  <v-container grid-list-md text-xs-center>
+  <v-container grid-list-md>
     <v-flex xs10 offset-xs1 v-if="loaded">
       <div>
         <h2>Pending Leave Requests</h2>

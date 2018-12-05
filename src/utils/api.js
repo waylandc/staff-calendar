@@ -130,3 +130,12 @@ export function logout() {
   console.log('api.logout...');
   firebase.auth().signOut();
 }
+
+export function createEvent(data) {
+  console.log('api.createEvent...');
+  return new Promise((resolve, reject) => {
+    db.collection('leaveRequests').add(data)
+      .then(docRef => resolve(docRef))
+      .catch(error => reject(error));
+  });
+}
