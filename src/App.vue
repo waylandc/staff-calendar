@@ -45,6 +45,9 @@
       isAuthenticated() {
         return this.$store.getters.isAuthenticated;
       },
+      isAdmin() {
+        return this.$store.getters.isAdmin;
+      },
       menuItems() {
         // Return a different menu depending on whether user is logged in or not and if admin
         if (this.isAdmin) {

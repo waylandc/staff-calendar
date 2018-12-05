@@ -24,7 +24,7 @@
   import db from '../config/firebaseInit';
   import NProgress from 'nprogress';
   import moment from 'moment';
-  import Constants from '../config/common.js';
+  import Constants from '../models/common.js';
 
   export default {
     name: 'EventRequests',

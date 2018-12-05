@@ -59,6 +59,7 @@ router.beforeEach((to, from, next) => {
   if (requiresAdmin) {
     // ensure user is authenticated first
     firebase.auth().onAuthStateChanged((firebaseUser) => {
+      // apologies, this is messy due to having 2 user objects
       if (firebaseUser != null && store.state.loggedInUser == null) {
         store.dispatch('autoSignIn', firebaseUser).then(() => {
           if (store.state.loggedInUser.isAdmin) {

@@ -3,6 +3,7 @@ import Vuex from 'vuex';
 import router from '@/router';
 import { User } from '../models/User';
 import { createUser, login, autoLogin, logout, changePassword, saveUser } from '../utils/api';
+import { SET_LOGGED_IN_USER, SET_ERROR, SET_LOADING } from './mutation-types';
 
 Vue.use(Vuex);
 
@@ -35,111 +36,110 @@ const store = new Vuex.Store({
     loading: false,
   },
   mutations: {
-    setLoggedInUser(state, payload) {
+    [SET_LOGGED_IN_USER](state, payload) {
       state.loggedInUser = payload;
     },
-    setError(state, payload) {
+    [SET_ERROR](state, payload) {
       state.error = payload;
     },
-    setLoading(state, payload) {
+    [SET_LOADING](state, payload) {
       state.loading = payload;
     },
   },
   actions: {
     // saveUser payload {user: u, userId: id}
     saveUser({ commit }, payload) {
-      commit('setLoading', true);
+      commit('SET_LOADING', true);
       saveUser(payload)
         .then((user) => {
-          commit('setLoggedInUser', user);
-          commit('setLoading', false);
+          commit('SET_LOGGED_IN_USER', user);
+          commit('SET_LOADING', false);
         })
         .catch((error) => {
           console.log('store error, ', error);
-          commit('setError', error);
-          commit('setLoading', false);
+          commit('SET_ERROR', error);
+          commit('SET_LOADING', false);
         });
     },
     userSignUp({ commit }, p) {
-      commit('setLoading', true);
+      commit('SET_LOADING', true);
       const u = new User(p.email, false, false, 0, 0, 0, 0);
       createUser(u, p.password)
         .then((user) => {
-          commit('setLoggedInUser', { email: user.email });
-          commit('setLoading', false);
+          commit('SET_LOGGED_IN_USER', { email: user.email });
+          commit('SET_LOADING', false);
           router.push('/home');
         })
         .catch((err) => {
-          commit('setError', err.message);
-          commit('setLoading', false);
+          commit('SET_ERROR', err.message);
+          commit('SET_LOADING', false);
         });
     },
 
     userSignIn({ commit }, payload) {
-      commit('setLoading', true);
+      commit('SET_LOADING', true);
 
       login(payload.email, payload.password)
         .then((user) => {
-          commit('setLoggedInUser', user);
-          commit('setLoading', false);
+          commit('SET_LOGGED_IN_USER', user);
+          commit('SET_LOADING', false);
           router.push('/home');
         })
         .catch((error) => {
           console.log('error signin, ', error);
-          commit('setError', error);
+          commit('SET_ERROR', error);
         });
     },
 
     changePassword({ commit }, payload) {
-      commit('setLoading', true);
+      commit('SET_LOADING', true);
       changePassword(payload.newPassword)
         .then(() => {
-          commit('setLoading', false);
+          commit('SET_LOADING', false);
           router.push('/home');
         })
         .catch((error) => {
-          commit('setLoading', false);
-          commit('setError', error.message);
+          commit('SET_LOADING', false);
+          commit('SET_ERROR', error.message);
         });
     },
 
     autoSignIn({ commit }, payload) {
-      commit('setLoading', true);
+      commit('SET_LOADING', true);
       // important to wrap this in a Promise or else the UI tries to render
       // before we load the user into store
       return new Promise((resolve, reject) => {
         autoLogin(payload.email)
         .then((user) => {
-          commit('setLoggedInUser', user);
-          commit('setLoading', false);
+          commit('SET_LOGGED_IN_USER', user);
+          commit('SET_LOADING', false);
           resolve(user);
         })
         .catch((error) => {
           console.log('error autosignin, ', error);
-          commit('setError', error);
+          commit('SET_ERROR', error);
           reject(error);
-          commit('setLoading', false);
+          commit('SET_LOADING', false);
         });
       });
     },
 
     userSignOut({ commit }) {
       logout();
-      commit('setLoggedInUser', null);
+      commit('SET_LOGGED_IN_USER', null);
       router.push('/');
     },
   },
   getters: {
     isAuthenticated(state) {
-      return state.loggedInUser !== null && state.loggedInUser !== undefined;
+      return state.loggedInUser != null;
     },
     isApprover(state) {
-      return state.loggedInUser !== null && state.loggedInUser !== undefined
-        && state.loggedInUser.isApprover;
+      return state.loggedInUser != null && state.loggedInUser.isApprover;
     },
     isAdmin(state) {
-      return state.loggedInUser !== null && state.loggedInUser !== undefined
-        && state.loggedInUser.isAdmin;
+      console.log(state.loggedInUser);
+      return state.loggedInUser != null && state.loggedInUser.isAdmin;
     },
   },
 });

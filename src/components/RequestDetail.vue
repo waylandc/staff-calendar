@@ -96,7 +96,6 @@
       this.user = this.$store.state.loggedInUser;
       this.loaded = false;
       this.propId = this.$route.params.id;
-      console.log('loading request, ', this.propId);
       const docRef = db.collection('leaveRequests').doc(this.propId);
       console.log(this.user.email + ' is admin, ' + this.user.isAdmin);
       console.log(this.user.email + ' is approver, ' + this.user.isApprover);
@@ -110,6 +109,7 @@
           console.log(this.error);
         }
       }).catch((error) => {
+        this.error = 'Error loading document';
         console.log('error getting document: ', error);
       });
     },
@@ -120,6 +120,7 @@
     },
     methods: {
       // TODO don't support edit request yet
+      // https://gitlab.com/waylandc/oax-staff-calendar/issues/5
       // editProperty() {
       //   console.log('calling editRequest')
       //   this.$router.push(`/leaveRequest/edit/${this.propId}`);

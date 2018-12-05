@@ -91,7 +91,7 @@
 
 <script>
   import db from '../config/firebaseInit';
-  import * as common from '../config/common.js';
+  import * as common from '../models/common.js';
 
   export default {
     name: 'CreateEvent',

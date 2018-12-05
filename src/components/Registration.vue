@@ -13,6 +13,12 @@
               </v-alert>
             </v-flex>
             <v-flex>
+              <v-text-field name="firstName" label="First Name" id="firstName" type="text" v-model="firstName" required></v-text-field>
+            </v-flex>
+            <v-flex>
+              <v-text-field name="lastName" label="Last Name" id="lastName" type="text" v-model="lastName" required></v-text-field>
+            </v-flex>
+            <v-flex>
               <v-text-field name="email" label="Email" id="email" type="email" v-model="email" required></v-text-field>
             </v-flex>
             <v-flex>
@@ -34,7 +40,11 @@
 <script>
 export default {
   data() {
+    // firstName and lastName not used for firebase auth.
+    // TODO we might want to store it somewhere for mmore personalization
     return {
+      firstName: '',
+      lastName: '',
       email: '',
       password: '',
       confirmPassword: '',
