@@ -11,6 +11,8 @@
               <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysCompensation }}</td>
               <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysBooked }}</td>
               <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysCarryOver }}</td>
+              <td class='mdl-data-table__cell--non-numeric'>{{ props.item.isApprover }}</td>
+              <td class='mdl-data-table__cell--non-numeric'>{{ props.item.isAdmin }}</td>
             </tr>
           </template>
         </v-data-table>
@@ -61,6 +63,18 @@ export default {
           sortable: false,
           value: 'booked',
         },
+        {
+          text: 'Approver',
+          align: 'left',
+          sortable: false,
+          value: 'approver',
+        },
+        {
+          text: 'Admin',
+          align: 'left',
+          sortable: false,
+          value: 'admin',
+        }
       ],
       users: [],
     };
@@ -82,6 +96,8 @@ export default {
             daysCompensation: doc.data().daysCompLeave,
             daysCarryOver: doc.data().daysCarryOver,
             daysBooked: doc.data().daysBooked,
+            isAdmin: doc.data().isAdmin,
+            isApprover: doc.data().isApprover,
           };
           this.users.push(data);
         });

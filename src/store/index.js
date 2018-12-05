@@ -52,8 +52,7 @@ const store = new Vuex.Store({
     [SAVE_USER]({ commit }, payload) {
       commit('SET_LOADING', true);
       saveUser(payload)
-        .then((user) => {
-          commit('SET_LOGGED_IN_USER', user);
+        .then(() => {
           commit('SET_LOADING', false);
         })
         .catch((error) => {
@@ -88,7 +87,8 @@ const store = new Vuex.Store({
         })
         .catch((error) => {
           console.log('error signin, ', error);
-          commit('SET_ERROR', error);
+          commit('SET_ERROR', error.message);
+          commit('SET_LOADING', false);
         });
     },
 
@@ -138,7 +138,6 @@ const store = new Vuex.Store({
       return state.loggedInUser != null && state.loggedInUser.isApprover;
     },
     isAdmin(state) {
-      console.log(state.loggedInUser);
       return state.loggedInUser != null && state.loggedInUser.isAdmin;
     },
   },

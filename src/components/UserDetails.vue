@@ -13,26 +13,40 @@
             </v-alert>
           </v-flex>
           <v-flex>
-            <v-text-field v-model='user.email' label='email' autocomplete="email" :readonly="true" box>
+            <v-text-field v-model='user.email' label='email' autocomplete="email" disabled box>
             </v-text-field>
           </v-flex>
           <v-flex>
-            <v-text-field v-model.number='user.daysAnnualLeave' label='Annual Leave' :readonly="false" box>
+            <v-text-field v-model.number='user.daysAnnualLeave' label='Annual Leave' :readonly="!this.isAdmin" box>
             </v-text-field>
           </v-flex>
           <v-flex>
-            <v-text-field v-model.number='user.daysCompLeave' label='Comp Leave' :readonly="false" box>
+            <v-text-field v-model.number='user.daysCompLeave' label='Comp Leave' :readonly="!this.isAdmin" box>
             </v-text-field>
           </v-flex>
           <v-flex>
-            <v-text-field v-model.number='user.daysCarryOver' label='Carry Over' :readonly="false" box>
+            <v-text-field v-model.number='user.daysCarryOver' label='Carry Over' :readonly="!this.isAdmin" box>
             </v-text-field>
           </v-flex>
           <v-flex>
-            <v-text-field v-model.number='user.daysBooked' label='Booked' :readonly="true" box>
+            <v-text-field v-model.number='user.daysBooked' label='Booked' :readonly="!this.isAdmin" box>
             </v-text-field>
           </v-flex>
-          <v-flex class="text-xs-center" mt-5>
+          <v-layout>
+          <v-flex xs6>
+            <v-switch
+              :label="`Administrator: ${user.isAdmin.toString()}`"
+              v-model="user.isAdmin"
+            ></v-switch>
+          </v-flex>
+          <v-flex xs6>
+            <v-switch
+              :label="`Approver: ${user.isApprover.toString()}`"
+              v-model="user.isApprover"
+            ></v-switch>
+          </v-flex>
+          </v-layout>
+          <v-flex class="text-xs-center" mt-5 v-if="this.isAdmin">
             <v-btn color="primary" @click.stop="save">Save</v-btn>
           </v-flex>
         </v-layout>
@@ -57,13 +71,17 @@
     },
     created() {
       this.loaded = false;
-      this.userId = this.$route.params.id;
-      console.log('loading user, ', this.userId);
+      if (this.$route.params.id != null) {
+        this.userId = this.$route.params.id;
+      } else {
+        this.userId = this.$store.state.loggedInUser.docId;
+      }
+
       const docRef = db.collection('users').doc(this.userId);
-      // console.log(docRef);
       docRef.get().then((doc) => {
         if (doc.exists) {
           this.user = createUserModel(doc.data());
+          this.user.docId = this.userId;
           console.log('retrieved user, ', doc.data());
           this.documentRef = docRef;
           this.loaded = true;
@@ -90,6 +108,10 @@
       loading() {
         return this.$store.state.loading;
       },
+      isAdmin() {
+        return this.$store.getters.isAdmin;
+      },
+
     },
     watch: {
       error(value) {

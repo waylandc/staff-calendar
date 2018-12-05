@@ -67,7 +67,7 @@ export default {
       if (this.comparePasswords !== true) {
         return;
       }
-      this.$store.dispatch('userSignUp', { email: this.email, password: this.password });
+      this.$store.dispatch('USER_SIGNUP', { email: this.email, password: this.password });
     },
   },
   watch: {
@@ -78,7 +78,7 @@ export default {
     },
     alert(value) {
       if (!value) {
-        this.$store.commit('setError', null);
+        this.$store.commit('SET_ERROR', null);
       }
     },
   },

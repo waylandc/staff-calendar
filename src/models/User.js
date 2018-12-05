@@ -2,7 +2,7 @@
 // to store additional fields for our app
 export class User {
   // new User(...)
-  constructor(email, admin, approver, al, cl, co, db) {
+  constructor(email, admin, approver, al, cl, co, db, id) {
     this.email = email;
     this.isAdmin = admin;
     this.isApprover = approver;
@@ -10,6 +10,7 @@ export class User {
     this.daysBooked = db;
     this.daysCarryOver = co;
     this.daysCompLeave = cl;
+    this.docId = id;  // docId is the document id in firebase
   }
 
   toJSON() {
@@ -21,6 +22,7 @@ export class User {
       daysBooked: this.daysBooked,
       daysCarryOver: this.daysCarryOver,
       daysCompLeave: this.daysCompLeave,
+      docId: this.docId,
     };
   }
 }
@@ -28,5 +30,5 @@ export class User {
 // createUser({email: e, ...})
 export function createUserModel(d) {
   return new User(d.email, d.isAdmin, d.isApprover, d.daysAnnualLeave,
-    d.daysBooked, d.daysCarryOver, d.daysCompLeave);
+    d.daysBooked, d.daysCarryOver, d.daysCompLeave, d.docId);
 }

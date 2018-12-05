@@ -31,9 +31,11 @@ export function createUser(newUser, passwd) {
   return new Promise((resolve, reject) => {
     firebase.auth().createUserWithEmailAndPassword(newUser.email, passwd)
       .then((firebaseUser) => {
+        // TODO need to get doc.id to put in User object
+        console.log('document id is... ', firebaseUser.id);
         const u = new User(firebaseUser.user.email, false, false,
           newUser.daysAnnualLeave, newUser.daysCarryOver, newUser.daysCompLeave,
-          newUser.daysBooked);
+          newUser.daysBooked, null);
         // TODO if this add() fails, I think we need to delete the user from firebase
         db.collection('users').add(u.toJSON())
           .then(() => resolve(u))
@@ -65,8 +67,7 @@ export function autoLogin(email) {
             user.data().email, user.data().isAdmin,
             user.data().isApprover, user.data().daysAnnualLeave,
             user.data().daysCompLeave, user.data().daysCarryOver,
-            user.data().daysBooked);
-          // console.log(u);
+            user.data().daysBooked, user.id);
           resolve(u);
         });
       },
@@ -98,7 +99,7 @@ export function login(email, password) {
                 user.data().email, user.data().isAdmin,
                 user.data().isApprover, user.data().daysAnnualLeave,
                 user.data().daysCompLeave, user.data().daysCarryOver,
-                user.data().daysBooked);
+                user.data().daysBooked, user.id);
               console.log(u);
               resolve(u);
             });

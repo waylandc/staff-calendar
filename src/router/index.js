@@ -18,6 +18,11 @@ const routerOptions = [
     component: 'UserDetails',
     meta: { requiresAuth: true },
   },
+  {
+    path: '/myDetails',
+    component: 'UserDetails',
+    meta: { requiresAuth: true },
+  },
   { path: '/leaveRequests', component: 'PendingLeaveRequests', meta: { requiresAuth: true } },
   { path: '/createRequest', component: 'CreateEvent', meta: { requiresAuth: true } },
   {

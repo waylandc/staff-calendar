@@ -58,6 +58,7 @@
             { title: 'Calendar', link: '/home', icon: 'home' },
             { title: 'Apply Leave', link: '/createRequest', icon: 'settings' },
             { title: 'Leave Requests', link: '/leaveRequests', icon: 'home' },
+            { title: 'User Details', link: '/myDetails', icon: 'settings' },
             { title: 'Users', link: '/users', icon: 'settings' },
             { title: 'Change Password', link: '/changePassword', icon: 'settings' },
           ];
@@ -71,6 +72,7 @@
             { title: 'Calendar', link: '/home', icon: 'home' },
             { title: 'Apply Leave', link: '/createRequest', icon: 'settings' },
             { title: 'Leave Requests', link: '/leaveRequests', icon: 'home' },
+            { title: 'User Details', link: '/myDetails', icon: 'settings' },
             { title: 'Change Password', link: '/changePassword', icon: 'settings' },
           ];
         }
