@@ -1,14 +1,14 @@
 <template>
   <v-container grid-list-md text-xs-center>
     <h1>User Profile</h1>
+    <v-flex>
+      <v-alert type="error" dismissible v-model="alert">
+        {{ error }}
+      </v-alert>
+    </v-flex>
     <v-flex xs12 sm6 offset-sm3 mt-3>
       <v-form v-if="loaded" >
         <v-layout column>
-          <v-flex>
-            <v-alert type="error" dismissible v-model="alert">
-              {{ error }}
-            </v-alert>
-          </v-flex>
           <v-flex>
             <v-text-field v-model='user.email' label='email' autocomplete="email" disabled box>
             </v-text-field>
@@ -67,7 +67,6 @@
       }
     },
     created() {
-      console.log(this.$route);
       this.loaded = false;
       this.userId = this.$route.params.id;
 
@@ -80,12 +79,11 @@
           this.documentRef = docRef;
           this.loaded = true;
         } else {
-        // TODO errors don't work on this page. something about no setter for 'error'
-          this.error = 'Error, No such user';
+          this.$store.commit('SET_ERROR', 'Error, user does not exist');
           console.log(this.error);
         }
       }).catch((error) => {
-        // TODO errors don't work on this page. something about no setter for 'error'
+        this.$store.commit('SET_ERROR', error.message);
         console.log('error getting document: ', error);
       });
 

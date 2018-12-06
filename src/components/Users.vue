@@ -1,10 +1,13 @@
 <template>
-  <v-container grid-list-md>
+  <v-container grid-list-md text-xs-center>
+    <h2>Users</h2>
+    <v-flex>
+      <v-alert type="error" dismissible v-model="alert">
+        {{ error }}
+      </v-alert>
+    </v-flex>
     <v-layout row wrap>
       <v-flex xs12 v-if="loaded">
-        <div align='center'>
-            <h2>Users</h2>
-        </div>
         <div>
           <v-data-table :headers='headers' :items='users' hide-actions dark class='elevation-1'>
             <template slot='items' slot-scope='props'>
@@ -82,23 +85,26 @@ export default {
         }
       ],
       users: [],
-      error: '',
+      alert: false,
     };
   },
   created() {
     NProgress.start();
     this.loaded = false;
     this.$store.dispatch('GET_USERS')
-      .then(users => { 
+      .then(users => {
         this.users = users;
         this.loaded = true;
       })
       .catch((err) => {
-        this.error = err;
+        this.$store.commit('SET_ERROR', err.message);
       });
     NProgress.done();
   },
   computed: {
+    error() {
+      return this.$store.state.error;
+    },
     loading() {
       return this.$store.state.loading;
     },

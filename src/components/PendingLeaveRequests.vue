@@ -1,15 +1,13 @@
 <template>
   <v-container grid-list-md text-xs-center>
+    <h1>Pending Leave Requests</h1>
+    <v-flex>
+      <v-alert type="error" dismissible v-model="alert">
+        {{ error }}
+      </v-alert>
+    </v-flex>
     <v-layout row wrap>
       <v-flex xs12 v-if="loaded">
-        <div align='center'>
-          <h1>Pending Leave Requests</h1>
-        </div>
-        <v-flex>
-          <v-alert type="error" dismissible v-model="alert">
-            {{ error }}
-          </v-alert>
-        </v-flex>
         <div>
           <v-data-table :headers='headers' :items='pendingRequests' hide-actions dark class='elevation-1'>
             <template slot='items' slot-scope='props'>

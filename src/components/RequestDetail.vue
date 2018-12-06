@@ -1,15 +1,13 @@
 <template>
   <v-container grid-list-md text-xs-center>
+    <h1>Request Details</h1>
+    <v-flex>
+      <v-alert type="error" dismissible v-model="alert">
+        {{ error }}
+      </v-alert>
+    </v-flex>
     <v-layout row wrap>
-      <v-flex>
-        <h1>Request Details</h1>
-      </v-flex>
       <v-flex xs12 v-if="loaded">
-        <v-flex>
-          <v-alert type="error" dismissible v-model="alert">
-            {{ error }}
-          </v-alert>
-        </v-flex>
         <v-form>
           <v-layout row wrap>
             <v-flex xs6>

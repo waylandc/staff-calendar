@@ -1,9 +1,11 @@
 <template>
   <v-container grid-list-md text-xs-center>
-    <h2>Apply New Leave</h2>
-    <div v-if="error != ''" class='display-1' style='text-align: center; color: #ff0000'>
-      {{ error }}
-    </div>
+    <h1>Apply New Leave</h1>
+    <v-flex>
+      <v-alert type="error" dismissible v-model="alert">
+        {{ error }}
+      </v-alert>
+    </v-flex>
     <v-flex xs12>
       <v-form>
         <v-layout row wrap>
@@ -97,7 +99,6 @@
     name: 'CreateEvent',
     data() {
       return {
-        error: '',
         drawer: false,
         title: '',
         loaded: false,
@@ -111,6 +112,7 @@
         menu2: false,
         sDate: new Date(),
         eDate: new Date(),
+        alert: false,
       };
     },
     watch: {
@@ -123,7 +125,25 @@
         // console.log('start date, ' + this.sDate);
         // console.log('end date, ' + this.eDate);
         // console.log('watched end date');
-      }
+      },
+      error(value) {
+        if (value) {
+          this.alert = true;
+        }
+      },
+      alert(value) {
+        if (!value) {
+          this.$store.commit('SET_ERROR', null);
+        }
+      },
+    },
+    computed: {
+      error() {
+        return this.$store.state.error;
+      },
+      loading() {
+        return this.$store.state.loading;
+      },
     },
     methods: {
       /**
@@ -173,7 +193,7 @@
             // console.log('doc written with id, ', docRef.id);
             this.$router.push('/leaveRequests');
           }).catch((error) => {
-            // TODO stay on page and display error to use
+            this.$store.commit('SET_ERROR', error.message);
             console.error('error adding doc: ', error);
           });
       },

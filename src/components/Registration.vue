@@ -1,22 +1,15 @@
 <template>
   <v-container grid-list-md text-xs-center>
-      <div align='center'>
-        <h1>Sign Up</h1>
-      </div>
+    <h1>Sign Up</h1>
+    <v-flex>
+      <v-alert type="error" dismissible v-model="alert">
+        {{ error }}
+      </v-alert>
+    </v-flex>
     <v-layout row wrap>
-      <v-flex>
-        <v-alert type="error" dismissible v-model="alert">
-          {{ error }}
-        </v-alert>
-      </v-flex>
       <v-flex xs12>
         <form @submit.prevent="userSignUp">
           <v-layout column>
-            <v-flex>
-              <v-alert type="error" dismissible v-model="alert">
-                {{ error }}
-              </v-alert>
-            </v-flex>
             <v-flex>
               <v-text-field name="firstName" label="First Name" id="firstName" type="text" v-model="firstName" required></v-text-field>
             </v-flex>
@@ -33,7 +26,7 @@
               <v-text-field name="confirmPassword" label="Confirm Password" id="confirmPassword" type="password" v-model="confirmPassword" required :rules="[comparePasswords]"></v-text-field>
             </v-flex>
             <v-flex class="text-xs-center" mt-5>
-              <v-btn color="primary" type="submit" :disabled="loading">Sign Up</v-btn>
+              <v-btn color="primary" type="submit">Sign Up</v-btn>
             </v-flex>
           </v-layout>
         </form>
@@ -70,6 +63,7 @@ export default {
   methods: {
     userSignUp() {
       if (this.comparePasswords !== true) {
+        this.$store.commit('SET_ERROR', 'Passwords don\'t match');
         return;
       }
       this.$store.dispatch('USER_SIGNUP', { email: this.email, password: this.password });
