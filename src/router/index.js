@@ -20,7 +20,7 @@ const routerOptions = [
   },
   {
     path: '/myDetails',
-    component: 'UserDetails',
+    component: 'MyDetails',
     meta: { requiresAuth: true },
   },
   { path: '/leaveRequests', component: 'PendingLeaveRequests', meta: { requiresAuth: true } },

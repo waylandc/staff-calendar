@@ -1,16 +1,16 @@
 <template>
   <v-container grid-list-md text-xs-center>
-    <h1>User Profile</h1>
+    <h1>My Details</h1>
+    <v-flex>
+      <v-alert type="error" dismissible v-model="alert">
+        {{ error }}
+      </v-alert>
+    </v-flex>
     <v-flex xs12 sm6 offset-sm3 mt-3>
-      <v-form v-if="loaded" >
+      <v-form v-if="loaded">
         <v-layout column>
           <v-flex>
-            <v-alert type="error" dismissible v-model="alert">
-              {{ error }}
-            </v-alert>
-          </v-flex>
-          <v-flex>
-            <v-text-field v-model='user.email' label='email' autocomplete="email" disabled box>
+            <v-text-field v-model='user.email' label='Email' disabled box>
             </v-text-field>
           </v-flex>
           <v-flex>
@@ -62,33 +62,27 @@
         user: null,
         userId: '',
         alert: false,
-        documentRef: null,
         loaded: false,
       }
     },
     created() {
-      console.log(this.$route);
       this.loaded = false;
-      this.userId = this.$route.params.id;
-
+      this.userId = this.$store.state.loggedInUser.docId;
       const docRef = db.collection('users').doc(this.userId);
+
       docRef.get().then((doc) => {
         if (doc.exists) {
           this.user = createUserModel(doc.data());
           this.user.docId = this.userId;
-          // console.log('retrieved user, ', doc.data());
-          this.documentRef = docRef;
           this.loaded = true;
         } else {
-        // TODO errors don't work on this page. something about no setter for 'error'
-          this.error = 'Error, No such user';
-          console.log(this.error);
+          this.$store.commit('SET_ERROR', 'Error, user does not exist');
+          console.log('error loading user, ', this.userId);
         }
       }).catch((error) => {
-        // TODO errors don't work on this page. something about no setter for 'error'
-        console.log('error getting document: ', error);
+        this.$store.commit('SET_ERROR', error.message);
+        console.log('Error getting document: ', error);
       });
-
     },
     methods: {
       save() {
