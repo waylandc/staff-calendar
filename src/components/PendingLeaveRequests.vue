@@ -1,24 +1,34 @@
 <template>
-  <v-container grid-list-md>
-    <v-flex xs10 offset-xs1 v-if="loaded">
-      <div>
-        <h2>Pending Leave Requests</h2>
-        <v-data-table :headers='headers' :items='pendingRequests' hide-actions dark class='elevation-1'>
-          <template slot='items' slot-scope='props'>
-            <tr @click='showDetails(props.item.docId)'>
-              <td class='mdl-data-table__cell--non-numeric'>{{ props.item.status }}</td>
-              <td class='mdl-data-table__cell--non-numeric'>{{ props.item.requestor }}</td>
-              <td class='mdl-data-table__cell--non-numeric'>{{ props.item.title }}</td>
-              <td class='mdl-data-table__cell--non-numeric'>{{ props.item.start }}</td>
-              <td class='mdl-data-table__cell--non-numeric'>{{ props.item.end }}</td>
-              <td class='mdl-data-table__cell--non-numeric'>{{ props.item.halfDay }}</td>
-            </tr>
-          </template>
-        </v-data-table>
-      </div>
-    </v-flex>
+  <v-container grid-list-md text-xs-center>
+    <v-layout row wrap>
+      <v-flex xs12 v-if="loaded">
+        <div align='center'>
+          <h1>Pending Leave Requests</h1>
+        </div>
+        <v-flex>
+          <v-alert type="error" dismissible v-model="alert">
+            {{ error }}
+          </v-alert>
+        </v-flex>
+        <div>
+          <v-data-table :headers='headers' :items='pendingRequests' hide-actions dark class='elevation-1'>
+            <template slot='items' slot-scope='props'>
+              <tr @click='showDetails(props.item.docId)'>
+                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.status }}</td>
+                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.requestor }}</td>
+                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.title }}</td>
+                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.start }}</td>
+                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.end }}</td>
+                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.halfDay }}</td>
+              </tr>
+            </template>
+          </v-data-table>
+        </div>
+      </v-flex>
+    </v-layout>
   </v-container>
 </template>
+
 
 <script>
   import NProgress from 'nprogress';
@@ -69,7 +79,6 @@
         loaded: false,
         pendingRequests: [],
         alert: false,
-        error: '',
       }
     },
     created() {
@@ -82,13 +91,16 @@
           this.pendingRequests = events;
           this.loaded = true;
         })
-        .catch((err) => {
-          this.error = err;
+        .catch((error) => {
+          this.$store.commit('SET_ERROR', error);
         });
 
       NProgress.done();
     },
     computed: {
+      error() {
+        return this.$store.state.error;
+      },
       loading() {
         return this.$store.state.loading;
       },

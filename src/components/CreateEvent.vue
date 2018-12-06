@@ -4,7 +4,7 @@
     <div v-if="error != ''" class='display-1' style='text-align: center; color: #ff0000'>
       {{ error }}
     </div>
-    <v-flex xs10 offset-xs1>
+    <v-flex xs12>
       <v-form>
         <v-layout row wrap>
           <v-flex xs12>

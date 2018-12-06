@@ -103,19 +103,6 @@ const store = new Vuex.Store({
         });
     },
 
-    [CHANGE_PASSWORD]({ commit }, payload) {
-      commit('SET_LOADING', true);
-      changePassword(payload.newPassword)
-        .then(() => {
-          commit('SET_LOADING', false);
-          router.push('/home');
-        })
-        .catch((error) => {
-          commit('SET_LOADING', false);
-          commit('SET_ERROR', error.message);
-        });
-    },
-
     [AUTO_LOGIN]({ commit }, payload) {
       commit('SET_LOADING', true);
       // important to wrap this in a Promise or else the UI tries to render
@@ -139,6 +126,20 @@ const store = new Vuex.Store({
       logout();
       commit('SET_LOGGED_IN_USER', null);
       router.push('/');
+    },
+
+    [CHANGE_PASSWORD]({ commit }, payload) {
+      commit('SET_LOADING', true);
+      changePassword(payload.newPassword)
+        .then(() => {
+          commit('SET_ERROR', 'testing errors');
+          commit('SET_LOADING', false);
+          router.push('/home');
+        })
+        .catch((error) => {
+          commit('SET_LOADING', false);
+          commit('SET_ERROR', error.message);
+        });
     },
 
     [ADD_EVENT]({ commit }, payload) {

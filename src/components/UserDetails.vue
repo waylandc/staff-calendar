@@ -1,9 +1,6 @@
 <template>
   <v-container grid-list-md text-xs-center>
     <h1>User Profile</h1>
-    <!-- <div v-if="error != ''" class='display-1' style='text-align: center; color: #ff0000'>
-      {{ error }}
-    </div> -->
     <v-flex xs12 sm6 offset-sm3 mt-3>
       <v-form v-if="loaded" >
         <v-layout column>
@@ -82,7 +79,7 @@
         if (doc.exists) {
           this.user = createUserModel(doc.data());
           this.user.docId = this.userId;
-          console.log('retrieved user, ', doc.data());
+          // console.log('retrieved user, ', doc.data());
           this.documentRef = docRef;
           this.loaded = true;
         } else {

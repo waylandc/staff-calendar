@@ -1,76 +1,81 @@
 <template>
   <v-container grid-list-md text-xs-center>
-    <h2>Request Details</h2>
-    <div v-if="error != ''" class='display-1' style='text-align: center; color: #ff0000'>
-      {{ error }}
-    </div>
-    <v-flex xs10 offset-xs1 v-if="loaded">
-      <v-form>
-        <v-layout row wrap>
-          <v-flex xs6>
-            <v-text-field
-              v-model='request.user' 
-              label='Requestor' 
-              autocomplete="name" 
-              :readonly="true" 
-              box>
-            </v-text-field>
-          </v-flex>
-          <v-flex xs6>
-            <v-text-field
-              v-model='request.title' 
-              label='Title' 
-              autocomplete="off" 
-              :readonly="true"
-              box>
-            </v-text-field>
-          </v-flex>
-          <v-flex xs6>
-            <v-text-field
-              v-model='startString'
-              label='Start Date' 
-              autocomplete="off" 
-              :readonly="true"
-              box>
-            </v-text-field>
-          </v-flex>
-          <v-flex xs6>
-            <v-text-field
-              v-model='endString' 
-              label='End Date' 
-              autocomplete="off" 
-              :readonly="true"
-              box>
-            </v-text-field>
-          </v-flex>
-          <v-flex xs6>
-            <v-text-field
-              v-model='request.halfDay' 
-              label='Half Day' 
-              :readonly="true" 
-              box>
-            </v-text-field>
-          </v-flex>
-          <v-flex xs6>
-          </v-flex>
-          <v-flex v-if="this.$store.state.loggedInUser.isApprover" class="text-xs-center" mt-5>
-            <v-btn 
-              color="approve"
-              @click.stop="approve"
-              >
-              Approve
-            </v-btn>
-            <v-btn 
-              color="reject"
-              @click.stop="reject"
-              >
-              Reject
-            </v-btn>
-          </v-flex>
-
-        </v-layout>
-      </v-form>
-    </v-flex>
+    <v-layout row wrap>
+      <v-flex>
+        <h1>Request Details</h1>
+      </v-flex>
+      <v-flex xs12 v-if="loaded">
+        <v-flex>
+          <v-alert type="error" dismissible v-model="alert">
+            {{ error }}
+          </v-alert>
+        </v-flex>
+        <v-form>
+          <v-layout row wrap>
+            <v-flex xs6>
+              <v-text-field
+                v-model='request.user' 
+                label='Requestor' 
+                autocomplete="name" 
+                :readonly="true" 
+                box>
+              </v-text-field>
+            </v-flex>
+            <v-flex xs6>
+              <v-text-field
+                v-model='request.title' 
+                label='Title' 
+                autocomplete="off" 
+                :readonly="true"
+                box>
+              </v-text-field>
+            </v-flex>
+            <v-flex xs6>
+              <v-text-field
+                v-model='startString'
+                label='Start Date' 
+                autocomplete="off" 
+                :readonly="true"
+                box>
+              </v-text-field>
+            </v-flex>
+            <v-flex xs6>
+              <v-text-field
+                v-model='endString' 
+                label='End Date' 
+                autocomplete="off" 
+                :readonly="true"
+                box>
+              </v-text-field>
+            </v-flex>
+            <v-flex xs6>
+              <v-text-field
+                v-model='request.halfDay' 
+                label='Half Day' 
+                :readonly="true" 
+                box>
+              </v-text-field>
+            </v-flex>
+            <v-flex xs6>
+            </v-flex>
+            <v-flex v-if="this.$store.state.loggedInUser.isApprover" class="text-xs-center" mt-5>
+              <v-btn 
+                color="approve"
+                @click.stop="approve"
+                >
+                Approve
+              </v-btn>
+              <v-btn 
+                color="reject"
+                @click.stop="reject"
+                >
+                Reject
+              </v-btn>
+            </v-flex>
+          </v-layout>
+        </v-form>
+      </v-flex>
+    </v-layout>
   </v-container>
 </template>
 
@@ -81,7 +86,6 @@
     name: 'RequestDetail',
     data() {
       return {
-        error: '',
         drawer: false,
         request: '',
         loaded: false,
@@ -90,6 +94,7 @@
         endString: '',
         user: null,
         documentRef: null,
+        alert: false,
       };
     },
     created() {
@@ -105,15 +110,18 @@
           this.documentRef = docRef;
           this.loaded = true;
         } else {
-          this.error = 'Error, No such document';
+          this.$store.commit('SET_ERROR', 'Error, No such document');
           console.log(this.error);
         }
       }).catch((error) => {
-        this.error = 'Error loading document';
+        this.$store.commit('SET_ERROR', 'Error loading document');
         console.log('error getting document: ', error);
       });
     },
     computed: {
+      error() {
+        return this.$store.state.error;
+      },
       loading() {
         return this.$store.state.loading;
       },
@@ -151,6 +159,16 @@
       },
       'request.endDate': function(val, oldVal) {
         this.endString = val.toDate().toDateString();
+      },
+      error(value) {
+        if (value) {
+          this.alert = true;
+        }
+      },
+      alert(value) {
+        if (!value) {
+          this.$store.commit('SET_ERROR', null);
+        }
       },
     }
   };

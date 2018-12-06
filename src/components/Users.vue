@@ -1,23 +1,27 @@
 <template>
   <v-container grid-list-md>
-    <v-flex xs10 offset-xs1 v-if="loaded">
-      <div>
-        <h2>Users</h2>
-        <v-data-table :headers='headers' :items='users' hide-actions dark class='elevation-1'>
-          <template slot='items' slot-scope='props'>
-            <tr @click='showDetails(props.item.id)'>
-              <td class='mdl-data-table__cell--non-numeric'>{{ props.item.email }}</td>
-              <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysAnnualLeave }}</td>
-              <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysCompensation }}</td>
-              <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysBooked }}</td>
-              <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysCarryOver }}</td>
-              <td class='mdl-data-table__cell--non-numeric'>{{ props.item.isApprover }}</td>
-              <td class='mdl-data-table__cell--non-numeric'>{{ props.item.isAdmin }}</td>
-            </tr>
-          </template>
-        </v-data-table>
-      </div>
-    </v-flex>
+    <v-layout row wrap>
+      <v-flex xs12 v-if="loaded">
+        <div align='center'>
+            <h2>Users</h2>
+        </div>
+        <div>
+          <v-data-table :headers='headers' :items='users' hide-actions dark class='elevation-1'>
+            <template slot='items' slot-scope='props'>
+              <tr @click='showDetails(props.item.docId)'>
+                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.email }}</td>
+                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysAnnualLeave }}</td>
+                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysCompensation }}</td>
+                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysBooked }}</td>
+                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysCarryOver }}</td>
+                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.isApprover }}</td>
+                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.isAdmin }}</td>
+              </tr>
+            </template>
+          </v-data-table>
+        </div>
+      </v-flex>
+    </v-layout>
   </v-container>
 </template>
 

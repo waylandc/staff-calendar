@@ -1,4 +1,5 @@
 import firebase from 'firebase';
+import moment from 'moment';
 
 import db from '../config/firebaseInit';
 import { User } from '../models/User';
@@ -108,8 +109,8 @@ export function getEvents(data) {
           if (doc.data().user === data.user) {
             u = new CalendarEvent(
               doc.data().title,
-              doc.data().start, // TODO convert to a moment
-              doc.data().end,
+              moment(doc.data().start), // TODO convert to a moment
+              moment(doc.data().end),
               doc.data().halfDay,
               doc.data().user,
               doc.data().approver,

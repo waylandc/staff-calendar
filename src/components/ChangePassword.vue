@@ -1,31 +1,30 @@
 <template>
   <v-container grid-list-md text-xs-center>
-    <h1>Change Password</h1>
-    <!-- <div v-if="error != ''" class='display-1' style='text-align: center; color: #ff0000'>
-      {{ error }}
-    </div> -->
-    <v-flex xs12 sm6 offset-sm3 mt-3>
-      <v-form v-if="loaded" @submit.prevent="changePassword">
-        <v-layout column>
-          <v-flex>
-            <v-alert type="error" dismissible v-model="alert">
-              {{ error }}
-            </v-alert>
-          </v-flex>
-          <v-flex>
-            <v-text-field v-model='user.email' label='User' autocomplete="email" :readonly="true" box>
-            </v-text-field>
-          </v-flex>
-          <v-flex>
-            <v-text-field v-model='newPassword' label='New Password' type="password" autocomplete="new-password" :readonly="false" box>
-            </v-text-field>
-          </v-flex>
-          <v-flex class="text-xs-center" mt-5>
-            <v-btn color="primary" type="submit">Change Password</v-btn>
-          </v-flex>
-        </v-layout>
-      </v-form>
-    </v-flex>
+    <v-layout row wrap>
+      <v-flex xs12 text-xs-center>
+        <h1>Change Password</h1>
+      </v-flex>
+      <v-flex xs12 sm6 offset-sm3 mt-3>
+        <v-alert type="error" dismissible v-model="alert">
+          {{ error }}
+        </v-alert>
+        <v-form v-if="loaded" @submit.prevent="changePassword">
+          <v-layout column>
+            <v-flex>
+              <v-text-field v-model='user.email' label='User' autocomplete="email" :readonly="true" box>
+              </v-text-field>
+            </v-flex>
+            <v-flex>
+              <v-text-field v-model='newPassword' label='New Password' type="password" autocomplete="new-password" :readonly="false" box>
+              </v-text-field>
+            </v-flex>
+            <v-flex class="text-xs-center" mt-5>
+              <v-btn color="primary" type="submit">Change Password</v-btn>
+            </v-flex>
+          </v-layout>
+        </v-form>
+      </v-flex>
+    </v-layout>
   </v-container>
 </template>
 

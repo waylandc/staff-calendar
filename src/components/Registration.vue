@@ -1,10 +1,15 @@
 <template>
-  <v-container fluid>
-    <v-layout row wrap>
-      <v-flex xs12 class="text-xs-center" mt-5>
+  <v-container grid-list-md text-xs-center>
+      <div align='center'>
         <h1>Sign Up</h1>
+      </div>
+    <v-layout row wrap>
+      <v-flex>
+        <v-alert type="error" dismissible v-model="alert">
+          {{ error }}
+        </v-alert>
       </v-flex>
-      <v-flex xs12 sm6 offset-sm3 mt-3>
+      <v-flex xs12>
         <form @submit.prevent="userSignUp">
           <v-layout column>
             <v-flex>
