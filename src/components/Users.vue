@@ -14,7 +14,7 @@
               <tr @click='showDetails(props.item.docId)'>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.email }}</td>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysAnnualLeave }}</td>
-                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysCompensation }}</td>
+                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysCompLeave }}</td>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysBooked }}</td>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysCarryOver }}</td>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.isApprover }}</td>
@@ -134,8 +134,10 @@ export default {
 
 // not sure how to change fonts. I could've created custom class but didn't want to add it everywhere so this seems to 
 // override it within this component
+// TODO should this be put in master css?
 <style scoped>
   .mdl-data-table__cell--non-numeric {
     font-size: 12px;
+    text-align: left;
   }
 </style>

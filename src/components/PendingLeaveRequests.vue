@@ -14,7 +14,7 @@
             <template slot='items' slot-scope='props'>
               <tr @click='showDetails(props.item.docId)'>
                 <td class='mdl-data-table__cell--non-numeric'>
-                  {{ props.item.status }}
+                  {{ getStatus(props.item.status) }}
                 </td>
                 <td class='mdl-data-table__cell--non-numeric'>
                   {{ props.item.requestor }}
@@ -138,7 +138,30 @@
         // console.log('showDetails ' + id);
         this.$router.push(`/leaveRequests/${id}`);
       },
+      //TODO getStatus should be refactored to be in common.js for reuse
+      getStatus(s) {
+        switch (s) {
+          case Constants.PENDING:
+            return "Pending";
+            break;
+          case Constants.APPROVED: 
+            return "Approved";
+            break;
+          case Constants.REJECTED:
+            return "Rejected";
+            break;
+          default:
+            return "Invalid status";
+        };
+      }
     }
   }
 
 </script>
+
+<style scoped>
+  .mdl-data-table__cell--non-numeric {
+    font-size: 12px;
+    text-align: left;
+  }
+</style>
