@@ -19,6 +19,7 @@
 import NProgress from 'nprogress';
 import FullCalendar from 'vue-full-calendar';
 import moment from 'moment';
+import Constants from '../models/common.js';
 
 export default {
   name: 'HomeCalendar',
@@ -39,8 +40,8 @@ export default {
   created() {
     NProgress.start();
     this.loaded = false;
-    this.$store.dispatch('GET_SOME_EVENTS',
-      { start: moment().subtract(6, 'M'), end: moment().add(1, 'y'), user: '' })
+    this.$store.dispatch('GET_EVENTS',
+      { start: moment().subtract(6, 'M'), end: moment().add(1, 'y'), user: '', status: Constants.APPROVED })
       .then((events) => {
         events.forEach((e) => {
           this.events.push(e.toCalendarEvent());

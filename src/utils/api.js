@@ -94,15 +94,49 @@ export function getUsers() {
   });
 }
 
+function validateDateParams(d) {
+  // both start/end were not passed in
+  if ((d.start === '' && d.end === '') || (d.start === undefined && d.end === undefined)) {
+    return true;
+  }
+
+  if (d.start !== '' || d.start !== undefined) {
+    if (d.end === '' || d.end === undefined) {
+      // start passed in but no end
+      return false;
+    }
+  }
+
+  if (d.end !== '' || d.end !== undefined) {
+    if (d.start === '' || d.start === undefined) {
+      // end passed in but no start
+      return false;
+    }
+  }
+
+  return true;
+}
 /**
  * getSomeEvents returns CalendarEvents based on filter criteria
- *
- * @param {{ start:moment, end: moment, user: email }} data
+ * Can filter on:
+ *  -start date
+ *  -end date
+ *  -user
+ *  -status
+ * @param {{ start:moment, end: moment, user: email, status:Constants }} data
  */
-export function getSomeEvents(data) {
+export function getEvents(data) {
   console.log('api.getSomeEvents...');
 
   return new Promise((resolve, reject) => {
+    // validate filter params. i.e. if they pass in a start/end date, they must pass in both
+    if (!validateDateParams(data)) {
+      const errorDateMsg = 'Error, you must provide both start/end dates for this query';
+      console.log('warning, ', errorDateMsg);
+      console.log(data);
+      reject(errorDateMsg);
+    }
+
     db.collection('leaveRequests')
       .where('startDate', '>', data.start.toDate())
       .get()
@@ -120,66 +154,40 @@ export function getSomeEvents(data) {
             doc.id);
 
           //  NOTE - firestore queries don't support multiple fields
-          //    so we need to filter on the server
+          //    so we need to filter on the server. YES THIS IS A BLOODY MESS but we need
+          //    to provide query capability.
+          let isFiltered = false; // set to true if we fail filter criteria
+          // if user param is present, test that this event requestor matches filter
+          if ((data.user !== '' && data.user !== undefined) && data.user !== ce.requestor) {
+            isFiltered = true;
+          }
+          console.log('done user check, ', isFiltered);
+          // check end date filters
+          if (!isFiltered) {
+            // is end date of db event AFTER the end date parameter?
+            if ((data.end !== '' && data.end !== undefined) && ce.endDate.isAfter(data.end)) {
+              isFiltered = true;
+            }
 
-          // if user param is '', we retrieve all users if endDate is valid
-          if (data.user === '' || data.user === undefined) {
-            // console.log('no user filter');
-            if ((data.end !== '' && data.end !== undefined) && data.end.isAfter(ce.endDate)) {
-              results.push(ce);
+            // if ((data.start !== '' && data.start !== undefined) && ce.startDate.isBefore(data.start)) {
+            //   isFiltered = true;
+            // }
+          }
+          console.log('done date check, ', isFiltered);
+          // filter on status
+          if (!isFiltered) {
+            if ((data.status !== '' && data.status !== undefined) && data.status !== ce.status) {
+              isFiltered = true;
             }
-          } else if (data.user === ce.requestor) {
-            // console.log('user filter passed, ', data.user);
-            if ((data.end !== '' && data.end !== undefined) && data.end.isAfter(ce.endDate)) {
-              results.push(ce);
-            }
-          } else {
-            // console.log('ignoring request from, ', data.user);
+            console.log(ce.title, ' status is, ', ce.status, ', want ', data.status, '. filtered ', data.status === ce.status);
+          }
+          // console.log('done ', data.status, ' status check, ', isFiltered);
+          if (!isFiltered) {
+            results.push(ce);
           }
         });
         console.log('api.getSomeEvents returning ', results.length);
         resolve(results);
-      })
-      .catch((error) => {
-        console.log(error);
-        reject(error);
-      });
-  });
-}
-
-/**
- * getEvents returns the leaveRequests for a given status
- *
- * @param {{ status:Constants.status, user:email }} status
- * @return {[CalendarEvent]} events
- */
-export function getEvents(data) {
-  console.log('api.getEvents...', data);
-  return new Promise((resolve, reject) => {
-    db
-      .collection('leaveRequests')
-      .where('status', '==', data.status).get()
-      .then((querySnapshot) => {
-        const events = [];
-        let u;
-        querySnapshot.forEach((doc) => {
-          // magic here as firebase doesn't support multiple where clauses
-          // so I'll filter for user here
-          if (doc.data().requestor === data.user) {
-            u = new CalendarEvent(
-              doc.data().title,
-              moment(doc.data().startDate.toDate()), // TODO convert to a moment
-              moment(doc.data().endDate.toDate()),
-              doc.data().halfDay,
-              doc.data().requestor,
-              doc.data().approver,
-              doc.data().status,
-              doc.id,
-            );
-            events.push(u);
-          }
-        });
-        resolve(events);
       })
       .catch((error) => {
         console.log(error);

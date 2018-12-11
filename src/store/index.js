@@ -167,25 +167,10 @@ const store = new Vuex.Store({
         });
     },
 
-    [action.GET_EVENTS]({ commit }, status) {
+    [action.GET_EVENTS]({ commit }, payload) {
       commit(mutant.SET_LOADING, true);
       return new Promise((resolve, reject) => {
-        api.getEvents(status)
-        .then((events) => {
-          commit(mutant.SET_LOADING, false);
-          resolve(events);
-        })
-        .catch((error) => {
-          commit(mutant.SET_LOADING, false);
-          reject(error);
-        });
-      });
-    },
-
-    [action.GET_SOME_EVENTS]({ commit }, payload) {
-      commit(mutant.SET_LOADING, true);
-      return new Promise((resolve, reject) => {
-        api.getSomeEvents(payload)
+        api.getEvents(payload)
           .then((events) => {
             commit(mutant.SET_LOADING, false);
             // returns an array of CalendarEvents

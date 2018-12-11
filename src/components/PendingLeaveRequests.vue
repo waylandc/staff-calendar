@@ -44,6 +44,7 @@
 <script>
   import NProgress from 'nprogress';
   import Constants from '../models/common.js';
+  import moment from 'moment';
 
   export default {
     name: 'EventRequests',
@@ -99,8 +100,9 @@
 
       this.$store.dispatch('GET_EVENTS',
         {
+          start: moment().subtract(6, 'M'), end: moment().add(1, 'y'),
           status: Constants.PENDING,
-          user: this.$store.state.loggedInUser.email
+          user: '' //this.$store.state.loggedInUser.email
         })
         .then(events => {
           this.pendingRequests = events;
