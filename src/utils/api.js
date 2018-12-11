@@ -38,7 +38,7 @@ export function createUser(newUser, passwd) {
         const u = new User(firebaseUser.user.email, false, false,
           newUser.daysAnnualLeave, newUser.daysCarryOver, newUser.daysCompLeave,
           newUser.daysBooked, null);
-        // TODO if this add() fails, I think we need to delete the user from firebase
+        // TODO if this add() fails, we need to delete the user from firebase
         db.collection('users').add(u.toJSON())
           .then(() => resolve(u))
           .catch(error => reject(error));
@@ -89,13 +89,66 @@ export function getUsers() {
 }
 
 /**
+ * getSomeEvents returns CalendarEvents based on filter criteria
+ *
+ * @param {{ start:moment, end: moment, user: email }} data
+ */
+export function getSomeEvents(data) {
+  console.log('api.getSomeEvents...');
+
+  return new Promise((resolve, reject) => {
+    db.collection('leaveRequests')
+      .where('startDate', '>', data.start.toDate())
+      .get()
+      .then((querySnapshot) => {
+        const results = [];
+        querySnapshot.forEach((doc) => {
+          const ce = new CalendarEvent(
+            doc.data().title,
+            moment(doc.data().startDate.toDate()),
+            moment(doc.data().endDate.toDate()),
+            doc.data().halfDay,
+            doc.data().requestor,
+            doc.data().approver,
+            doc.data().status,
+            doc.id);
+
+          //  NOTE - firestore queries don't support multiple fields
+          //    so we need to filter on the server
+
+          // if user param is '', we retrieve all users if endDate is valid
+          if (data.user === '' || data.user === undefined) {
+            // console.log('no user filter');
+            if ((data.end !== '' && data.end !== undefined) && data.end.isAfter(ce.endDate)) {
+              results.push(ce);
+            }
+          } else if (data.user === ce.requestor) {
+            // console.log('user filter passed, ', data.user);
+            if ((data.end !== '' && data.end !== undefined) && data.end.isAfter(ce.endDate)) {
+              results.push(ce);
+            }
+          } else {
+            // console.log('ignoring request from, ', data.user);
+          }
+        });
+        console.log('api.getSomeEvents returning ', results.length);
+        resolve(results);
+      })
+      .catch((error) => {
+        console.log(error);
+        reject(error);
+      });
+  });
+}
+
+/**
  * getEvents returns the leaveRequests for a given status
  *
- * @param {Constants} status
+ * @param {{ status:Constants.status, user:email }} status
  * @return {[CalendarEvent]} events
  */
 export function getEvents(data) {
-  console.log('api.getEvents...');
+  console.log('api.getEvents...', data);
   return new Promise((resolve, reject) => {
     db
       .collection('leaveRequests')
@@ -106,13 +159,13 @@ export function getEvents(data) {
         querySnapshot.forEach((doc) => {
           // magic here as firebase doesn't support multiple where clauses
           // so I'll filter for user here
-          if (doc.data().user === data.user) {
+          if (doc.data().requestor === data.user) {
             u = new CalendarEvent(
               doc.data().title,
-              moment(doc.data().start), // TODO convert to a moment
-              moment(doc.data().end),
+              moment(doc.data().startDate.toDate()), // TODO convert to a moment
+              moment(doc.data().endDate.toDate()),
               doc.data().halfDay,
-              doc.data().user,
+              doc.data().requestor,
               doc.data().approver,
               doc.data().status,
               doc.id,
@@ -140,19 +193,19 @@ export function autoLogin(email) {
   console.log('api.autoLogin...');
   return new Promise((resolve, reject) => {
     db.collection('users').where('email', '==', email).get()
-    .then(
-      (snaps) => {
-        snaps.forEach((user) => {
-          const u = new User(
-            user.data().email, user.data().isAdmin,
-            user.data().isApprover, user.data().daysAnnualLeave,
-            user.data().daysCompLeave, user.data().daysCarryOver,
-            user.data().daysBooked, user.id);
-          resolve(u);
-        });
-      },
-    )
-    .catch(error => reject(error));
+      .then(
+        (snaps) => {
+          snaps.forEach((user) => {
+            const u = new User(
+              user.data().email, user.data().isAdmin,
+              user.data().isApprover, user.data().daysAnnualLeave,
+              user.data().daysCompLeave, user.data().daysCarryOver,
+              user.data().daysBooked, user.id);
+            resolve(u);
+          });
+        },
+      )
+      .catch(error => reject(error));
   });
 }
 
@@ -172,19 +225,19 @@ export function login(email, password) {
       .then(() => firebase.auth().signInWithEmailAndPassword(email, password))
       .then(() => {
         db.collection('users').where('email', '==', email).get()
-        .then(
-          (snaps) => {
-            snaps.forEach((user) => {
-              const u = new User(
-                user.data().email, user.data().isAdmin,
-                user.data().isApprover, user.data().daysAnnualLeave,
-                user.data().daysCompLeave, user.data().daysCarryOver,
-                user.data().daysBooked, user.id);
-              resolve(u);
-            });
-          },
-        )
-        .catch(error => reject(error));
+          .then(
+            (snaps) => {
+              snaps.forEach((user) => {
+                const u = new User(
+                  user.data().email, user.data().isAdmin,
+                  user.data().isApprover, user.data().daysAnnualLeave,
+                  user.data().daysCompLeave, user.data().daysCarryOver,
+                  user.data().daysBooked, user.id);
+                resolve(u);
+              });
+            },
+          )
+          .catch(error => reject(error));
       })
       .catch(error => reject(error));
   });
@@ -211,11 +264,18 @@ export function logout() {
   firebase.auth().signOut();
 }
 
+/**
+ * Create an event in our calendar using the CalendarEvent class
+ * @param {CalendarEvent.toJSON} data
+ */
 export function createEvent(data) {
-  console.log('api.createEvent...');
+  console.log('api.createEvent...', data);
   return new Promise((resolve, reject) => {
     db.collection('leaveRequests').add(data)
       .then(docRef => resolve(docRef))
-      .catch(error => reject(error));
+      .catch((error) => {
+        console.log(error);
+        reject(error);
+      });
   });
 }

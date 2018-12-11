@@ -1,8 +1,19 @@
+// CalendarEvent is a JSON representation of a calendar event
+// {
+//   title: string,
+//   startDate: moment,
+//   endDate: moment,
+//   halfDay: string[AM|PM|''],
+//   requestor: string[email],
+//   approver: string[email],
+//   status: int[PENDING|APPROVED|REJECTED],
+//   docId: string,
+// }
 export class CalendarEvent {
   constructor(title, start, end, half, requestor, approver, status, id) {
     this.title = title;
-    this.start = start;
-    this.end = end;
+    this.startDate = start;
+    this.endDate = end;
     this.halfDay = half;
     this.requestor = requestor;
     this.approver = approver;
@@ -13,13 +24,21 @@ export class CalendarEvent {
   toJSON() {
     return {
       title: this.title,
-      start: this.start,
-      end: this.end,
+      startDate: this.startDate,
+      endDate: this.endDate,
       halfDay: this.halfDay,
       requestor: this.requestor,
       approver: this.approver,
       status: this.status,
-      docId: this.docId,
+    };
+  }
+
+  toCalendarEvent() {
+    return {
+      title: this.title,
+      allDay: (this.halfDay === ''),
+      start: this.startDate,
+      end: this.endDate,
     };
   }
 }

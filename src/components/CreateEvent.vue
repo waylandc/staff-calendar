@@ -93,7 +93,10 @@
 
 <script>
   import db from '../config/firebaseInit';
-  import * as common from '../models/common.js';
+  import Constants from '../models/common.js';
+  import { CalendarEvent } from '../models/CalendarEvent';
+  import * as mutant from '../store/mutation-types';
+  import * as action from '../store/action-types';
 
   export default {
     name: 'CreateEvent',
@@ -116,6 +119,8 @@
       };
     },
     watch: {
+      // The calendar uses strings so we use this method to parse the string
+      // and return a Date object to store
       'startDate': function(val, oldVal) {
         this.sDate = new Date(Date.parse(val));
         // console.log('watched start date')
@@ -133,7 +138,7 @@
       },
       alert(value) {
         if (!value) {
-          this.$store.commit('SET_ERROR', null);
+          this.$store.commit(mutant.SET_ERROR, null);
         }
       },
     },
@@ -179,21 +184,23 @@
         } else if (this.pm) {
           halfDay = 'PM';
         }
-        const req = {
-          title: this.title,
-          user: this.$store.state.loggedInUser.email,
-          startDate: this.sDate,
-          endDate: this.eDate,
-          halfDay: halfDay,
-          status: 0,
-        };
-
-        this.$store.dispatch('ADD_EVENT', req)
+        const req = new CalendarEvent(
+          this.title,
+          this.sDate,
+          this.eDate,
+          halfDay,
+          this.$store.state.loggedInUser.email,
+          '', // approver is set when someone approves
+          Constants.PENDING,
+          null, // docId is populated on a fetch
+        );
+console.log(req);
+        this.$store.dispatch(action.ADD_EVENT, req.toJSON())
           .then((docRef) => {
             // console.log('doc written with id, ', docRef.id);
             this.$router.push('/leaveRequests');
           }).catch((error) => {
-            this.$store.commit('SET_ERROR', error.message);
+            this.$store.commit(mutant.SET_ERROR, error.message);
             console.error('error adding doc: ', error);
           });
       },

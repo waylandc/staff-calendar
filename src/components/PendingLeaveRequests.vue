@@ -9,15 +9,28 @@
     <v-layout row wrap>
       <v-flex xs12 v-if="loaded">
         <div>
-          <v-data-table :headers='headers' :items='pendingRequests' hide-actions dark class='elevation-1'>
+          <v-data-table :headers='headers' :items='pendingRequests'
+            hide-actions dark class='elevation-1'>
             <template slot='items' slot-scope='props'>
               <tr @click='showDetails(props.item.docId)'>
-                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.status }}</td>
-                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.requestor }}</td>
-                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.title }}</td>
-                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.start }}</td>
-                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.end }}</td>
-                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.halfDay }}</td>
+                <td class='mdl-data-table__cell--non-numeric'>
+                  {{ props.item.status }}
+                </td>
+                <td class='mdl-data-table__cell--non-numeric'>
+                  {{ props.item.requestor }}
+                </td>
+                <td class='mdl-data-table__cell--non-numeric'>
+                  {{ props.item.title }}
+                </td>
+                <td class='mdl-data-table__cell--non-numeric'>
+                  {{ props.item.startDate.toDate().toDateString() }}
+                </td>
+                <td class='mdl-data-table__cell--non-numeric'>
+                  {{ props.item.endDate.toDate().toDateString() }}
+                </td>
+                <td class='mdl-data-table__cell--non-numeric'>
+                  {{ props.item.halfDay }}
+                </td>
               </tr>
             </template>
           </v-data-table>
@@ -84,9 +97,14 @@
 
       this.loaded = false;
 
-      this.$store.dispatch('GET_EVENTS', { status: Constants.PENDING, user: this.$store.state.loggedInUser.email })
-        .then(events => { 
+      this.$store.dispatch('GET_EVENTS',
+        {
+          status: Constants.PENDING,
+          user: this.$store.state.loggedInUser.email
+        })
+        .then(events => {
           this.pendingRequests = events;
+          console.log(this.pendingRequests);
           this.loaded = true;
         })
         .catch((error) => {

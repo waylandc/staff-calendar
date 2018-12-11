@@ -9,3 +9,4 @@ export const AUTO_LOGIN = 'AUTO_LOGIN';
 export const USER_LOGOUT = 'USER_LOGOUT';
 export const ADD_EVENT = 'ADD_EVENT';
 export const GET_EVENTS = 'GET_EVENTS';
+export const GET_SOME_EVENTS = 'GET_SOME_EVENTS';
