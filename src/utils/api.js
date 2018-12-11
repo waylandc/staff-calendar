@@ -25,22 +25,28 @@ export function saveUser(data) {
  * Create a firebase user as well as our internal User
  * We could separate the 2 functions but I see no need at the moment
  *
- * @param {*} newUser User.js
+ * @param {User} newUser User.js
+ * @param {string} passwd
  * @return error
  */
 export function createUser(newUser, passwd) {
-  console.log('api.createUser...');
+  console.log('api.createUser...', newUser.email);
   return new Promise((resolve, reject) => {
     firebase.auth().createUserWithEmailAndPassword(newUser.email, passwd)
       .then((firebaseUser) => {
         // TODO need to get doc.id to put in User object
-        console.log('document id is... ', firebaseUser.id);
-        const u = new User(firebaseUser.user.email, false, false,
-          newUser.daysAnnualLeave, newUser.daysCarryOver, newUser.daysCompLeave,
-          newUser.daysBooked, null);
+        console.log(firebaseUser);
+        /* eslint-disable no-param-reassign */
+        // newUser.docId = firebaseUser.id;
+        // const u = new User(firebaseUser.user.email, false, false,
+        //   newUser.daysAnnualLeave, newUser.daysCarryOver, newUser.daysCompLeave,
+        //   newUser.daysBooked, null);
         // TODO if this add() fails, we need to delete the user from firebase
-        db.collection('users').add(u.toJSON())
-          .then(() => resolve(u))
+        db.collection('users').add(newUser.toJSON())
+          .then((u) => {
+            newUser.docId = u.id;
+            resolve(newUser);
+          })
           .catch(error => reject(error));
       })
       .catch((error) => {
@@ -200,7 +206,8 @@ export function autoLogin(email) {
               user.data().email, user.data().isAdmin,
               user.data().isApprover, user.data().daysAnnualLeave,
               user.data().daysCompLeave, user.data().daysCarryOver,
-              user.data().daysBooked, user.id);
+              user.data().daysBooked, user.id, user.data().firstName, user.data().lastName);
+            console.log('auto logged in, ', u);
             resolve(u);
           });
         },
@@ -232,7 +239,8 @@ export function login(email, password) {
                   user.data().email, user.data().isAdmin,
                   user.data().isApprover, user.data().daysAnnualLeave,
                   user.data().daysCompLeave, user.data().daysCarryOver,
-                  user.data().daysBooked, user.id);
+                  user.data().daysBooked, user.id, user.data().firstName, user.data().lastName);
+                console.log('logged in, ', u);
                 resolve(u);
               });
             },

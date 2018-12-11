@@ -8,28 +8,35 @@
     </v-flex>
     <v-flex xs12 sm6 offset-sm3 mt-3>
       <v-form v-if="loaded">
-        <v-layout column>
-          <v-flex>
+        <v-layout row wrap>
+          <v-flex xs6>
+            <v-text-field v-model='user.firstName' label='firstName' disabled box>
+            </v-text-field>
+          </v-flex>
+          <v-flex xs6>
+            <v-text-field v-model='user.lastName' label='lastName' disabled box>
+            </v-text-field>
+          </v-flex>
+          <v-flex xs12>
             <v-text-field v-model='user.email' label='Email' disabled box>
             </v-text-field>
           </v-flex>
-          <v-flex>
+          <v-flex xs6>
             <v-text-field v-model.number='user.daysAnnualLeave' label='Annual Leave' :readonly="!this.isAdmin" box>
             </v-text-field>
           </v-flex>
-          <v-flex>
+          <v-flex xs6>
             <v-text-field v-model.number='user.daysCompLeave' label='Comp Leave' :readonly="!this.isAdmin" box>
             </v-text-field>
           </v-flex>
-          <v-flex>
+          <v-flex xs6>
             <v-text-field v-model.number='user.daysCarryOver' label='Carry Over' :readonly="!this.isAdmin" box>
             </v-text-field>
           </v-flex>
-          <v-flex>
+          <v-flex xs6>
             <v-text-field v-model.number='user.daysBooked' label='Booked' disabled box>
             </v-text-field>
           </v-flex>
-          <v-layout>
           <v-flex xs6>
             <v-switch
               :label="`Administrator: ${user.isAdmin.toString()}`"
@@ -42,7 +49,6 @@
               v-model="user.isApprover"
             ></v-switch>
           </v-flex>
-          </v-layout>
           <v-flex class="text-xs-center" mt-5 v-if="this.isAdmin">
             <v-btn color="primary" @click.stop="save">Save</v-btn>
           </v-flex>

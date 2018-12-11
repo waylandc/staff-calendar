@@ -6,7 +6,7 @@
         {{ error }}
       </v-alert>
     </v-flex>
-    <v-flex xs12>
+    <v-flex xs12 mr-5 ml-5>
       <v-form>
         <v-layout row wrap>
           <v-flex xs12>
@@ -184,8 +184,9 @@
         } else if (this.pm) {
           halfDay = 'PM';
         }
+        const niceTitle = this.$store.state.loggedInUser.firstName + '- ' + this.title;
         const req = new CalendarEvent(
-          this.title,
+          niceTitle,
           this.sDate,
           this.eDate,
           halfDay,

@@ -61,12 +61,21 @@ const store = new Vuex.Store({
           commit(mutant.SET_LOADING, false);
         });
     },
+    // USER_SIGNUP payload {email: e, password: p, firstName: fn, lastName: ln}
     [action.USER_SIGNUP]({ commit }, p) {
       commit(mutant.SET_LOADING, true);
-      const u = new User(p.email, false, false, 0, 0, 0, 0);
+      const u = new User(p.email, false, false, 0, 0, 0, 0, null, p.firstName, p.lastName);
       api.createUser(u, p.password)
+        .then(() => {
+          // commit(mutant.SET_LOGGED_IN_USER, { email: user.email });
+        // })
+        // .then(() => {
+          commit(mutant.SET_LOADING, true);
+          api.autoLogin(u.email);
+        })
         .then((user) => {
-          commit(mutant.SET_LOGGED_IN_USER, { email: user.email });
+          commit(mutant.SET_LOGGED_IN_USER, user);
+
           commit(mutant.SET_LOADING, false);
           router.push('/home');
         })

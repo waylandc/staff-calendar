@@ -6,32 +6,30 @@
         {{ error }}
       </v-alert>
     </v-flex>
-    <v-layout row wrap>
-      <v-flex xs12>
-        <form @submit.prevent="userSignUp">
-          <v-layout column>
-            <v-flex>
-              <v-text-field name="firstName" label="First Name" id="firstName" type="text" v-model="firstName" required></v-text-field>
-            </v-flex>
-            <v-flex>
-              <v-text-field name="lastName" label="Last Name" id="lastName" type="text" v-model="lastName" required></v-text-field>
-            </v-flex>
-            <v-flex>
-              <v-text-field name="email" label="Email" id="email" type="email" v-model="email" required></v-text-field>
-            </v-flex>
-            <v-flex>
-              <v-text-field name="password" label="Password" id="password" type="password" v-model="password" required></v-text-field>
-            </v-flex>
-            <v-flex>
-              <v-text-field name="confirmPassword" label="Confirm Password" id="confirmPassword" type="password" v-model="confirmPassword" required :rules="[comparePasswords]"></v-text-field>
-            </v-flex>
-            <v-flex class="text-xs-center" mt-5>
-              <v-btn color="primary" type="submit">Sign Up</v-btn>
-            </v-flex>
-          </v-layout>
-        </form>
-      </v-flex>
-    </v-layout>
+    <v-flex xs12 ml-5 mr-5>
+      <v-form>
+        <v-layout column>
+          <v-flex>
+            <v-text-field name="firstName" label="First Name" id="firstName" type="text" v-model="firstName" required></v-text-field>
+          </v-flex>
+          <v-flex>
+            <v-text-field name="lastName" label="Last Name" id="lastName" type="text" v-model="lastName" required></v-text-field>
+          </v-flex>
+          <v-flex>
+            <v-text-field name="email" label="Email" id="email" type="email" v-model="email" required></v-text-field>
+          </v-flex>
+          <v-flex>
+            <v-text-field name="password" label="Password" id="password" type="password" v-model="password" required></v-text-field>
+          </v-flex>
+          <v-flex>
+            <v-text-field name="confirmPassword" label="Confirm Password" id="confirmPassword" type="password" v-model="confirmPassword" required :rules="[comparePasswords]"></v-text-field>
+          </v-flex>
+          <v-flex class="text-xs-center" mt-5>
+            <v-btn color="primary" @click.stop="userSignUp">Sign Up</v-btn>
+          </v-flex>
+        </v-layout>
+      </v-form>
+    </v-flex>
   </v-container>
 </template>
 
@@ -66,7 +64,8 @@ export default {
         this.$store.commit('SET_ERROR', 'Passwords don\'t match');
         return;
       }
-      this.$store.dispatch('USER_SIGNUP', { email: this.email, password: this.password });
+      this.$store.dispatch('USER_SIGNUP', 
+        { email: this.email, password: this.password, firstName: this.firstName, lastName: this.lastName });
     },
   },
   watch: {
