@@ -7,10 +7,10 @@
 //   requestor: string[email],
 //   approver: string[email],
 //   status: int[PENDING|APPROVED|REJECTED],
-//   docId: string,
+//   leaveType: string[ANN, COMP, CARRY],
 // }
 export class CalendarEvent {
-  constructor(title, start, end, half, requestor, approver, status, id) {
+  constructor(title, start, end, half, requestor, approver, status, id, lt) {
     this.title = title;
     this.startDate = start;
     this.endDate = end;
@@ -19,6 +19,7 @@ export class CalendarEvent {
     this.approver = approver;
     this.status = status;
     this.docId = id;
+    this.leaveType = lt;
   }
 
   toJSON() {
@@ -30,6 +31,7 @@ export class CalendarEvent {
       requestor: this.requestor,
       approver: this.approver,
       status: this.status,
+      leaveType: this.leaveType,
     };
   }
 

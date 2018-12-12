@@ -7,19 +7,10 @@
       </v-alert>
     </v-flex>
     <v-layout row wrap>
-      <v-flex xs12 v-if="loaded">
+      <v-flex xs12 v-if="loaded" ml-5 mr-5>
         <v-form>
           <v-layout row wrap>
-            <v-flex xs6>
-              <v-text-field
-                v-model='request.user' 
-                label='Requestor' 
-                autocomplete="name" 
-                :readonly="true" 
-                box>
-              </v-text-field>
-            </v-flex>
-            <v-flex xs6>
+            <v-flex xs12>
               <v-text-field
                 v-model='request.title' 
                 label='Title' 
@@ -55,6 +46,13 @@
               </v-text-field>
             </v-flex>
             <v-flex xs6>
+              <v-text-field
+                v-model='request.user' 
+                label='Requestor' 
+                autocomplete="name" 
+                :readonly="true" 
+                box>
+              </v-text-field>
             </v-flex>
             <v-flex v-if="this.$store.state.loggedInUser.isApprover" class="text-xs-center" mt-5>
               <v-btn 

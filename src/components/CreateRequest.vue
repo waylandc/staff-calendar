@@ -1,6 +1,6 @@
 <template>
   <v-container grid-list-md text-xs-center>
-    <h1>Apply New Leave</h1>
+    <h1>Apply New Leave</h1><br/>
     <v-flex>
       <v-alert type="error" dismissible v-model="alert">
         {{ error }}
@@ -18,18 +18,22 @@
             </v-text-field>
           </v-flex>
           <v-flex xs6>
-            <v-checkbox
-              v-model='am' 
-              label='AM' 
-              box>
-            </v-checkbox>
+            <v-select
+              box
+              v-model = 'halfDay'
+              :items = 'duration'
+              label = 'Full Day'>
+            </v-select>
           </v-flex>
           <v-flex xs6>
-            <v-checkbox
-              v-model='pm' 
-              label='PM' 
-              box>
-            </v-checkbox>
+            <v-select
+            box
+              v-model = 'leaveType'
+              :items = 'leaveTypes'
+              item-value = 'val'
+              item-text = 'key'
+              label = 'Leave Type'>
+            </v-select>
           </v-flex>
           <v-flex xs6>
             <v-menu
@@ -105,17 +109,21 @@
         drawer: false,
         title: '',
         loaded: false,
-        //propId: '',
         startDate: new Date().toISOString().substr(0, 10),
         endDate: new Date().toISOString().substr(0, 10),
-        am: false,
-        pm: false,
         numDays: 0, // TODO useless, remove??
         menu1: false,
         menu2: false,
         sDate: new Date(),
         eDate: new Date(),
         alert: false,
+        leaveTypes: [
+          {key: 'Annual', val: 'ANN'},
+          {key:'Compensation', val: 'COMP'},
+          {key: 'Carry Over', val: 'CO'}],
+        leaveType: 'Annual',
+        duration: ['Full', 'AM', 'PM'],
+        halfDay: 'Full'
       };
     },
     watch: {
@@ -174,26 +182,17 @@
         // var aa = this.daysBetween(new Date(this.sDate), new Date(this.eDate));
         // console.log('num days, ' + aa);
 
-        // Let's figure out if user is applying for half day leave or not
-        // both checked, so just ignore
-        var halfDay = '';
-        if (this.am && this.pm) {
-          halfDay = '';
-        } else if (this.am) {
-          halfDay = 'AM';
-        } else if (this.pm) {
-          halfDay = 'PM';
-        }
         const niceTitle = this.$store.state.loggedInUser.firstName + '- ' + this.title;
         const req = new CalendarEvent(
           niceTitle,
           this.sDate,
           this.eDate,
-          halfDay,
+          this.halfDay,
           this.$store.state.loggedInUser.email,
           '', // approver is set when someone approves
           Constants.PENDING,
           null, // docId is populated on a fetch
+          this.leaveType,
         );
 console.log(req);
         this.$store.dispatch(action.ADD_EVENT, req.toJSON())
@@ -209,3 +208,10 @@ console.log(req);
 
   }
 </script>
+
+<style>
+  .mytext {
+    display: inline-block;
+    vertical-align: middle;
+  }
+</style>
