@@ -8,6 +8,16 @@
     </v-flex>
     <v-layout row wrap>
       <v-flex xs12 v-if="loaded">
+        <v-form>
+          <v-flex xs3>
+            <v-select
+              @input='changeStatusFilter'
+              v-model='statusSelected'
+              :items='statuses'
+              label='Status'>
+            </v-select>
+          </v-flex>
+        </v-form>
         <div>
           <v-data-table :headers='headers' :items='pendingRequests'
             hide-actions dark class='elevation-1'>
@@ -91,29 +101,12 @@
         loaded: false,
         pendingRequests: [],
         alert: false,
+        statuses: ['All', 'Approved', 'Pending', 'Rejected'],
+        statusSelected: 'Pending',
       }
     },
     created() {
-      NProgress.start();
-
-      this.loaded = false;
-
-      this.$store.dispatch('GET_EVENTS',
-        {
-          start: moment().subtract(6, 'M'), end: moment().add(1, 'y'),
-          status: Constants.PENDING,
-          user: '' //this.$store.state.loggedInUser.email
-        })
-        .then(events => {
-          this.pendingRequests = events;
-          console.log(this.pendingRequests);
-          this.loaded = true;
-        })
-        .catch((error) => {
-          this.$store.commit('SET_ERROR', error);
-        });
-
-      NProgress.done();
+      this.getEvents(Constants.PENDING);
     },
     computed: {
       error() {
@@ -136,6 +129,25 @@
       },
     },
     methods: {
+      getEvents(stat) {
+        NProgress.start();
+        this.loaded = false;
+        this.$store.dispatch('GET_EVENTS',
+          {
+            start: moment().subtract(6, 'M'), end: moment().add(1, 'y'),
+            status: stat,
+            user: (this.$store.state.loggedInUser.isApprover ? '' : this.$store.state.loggedInUser.email) //this.$store.state.loggedInUser.email
+          })
+          .then(events => {
+            this.pendingRequests = events;
+            // console.log(this.pendingRequests);
+            this.loaded = true;
+          })
+          .catch((error) => {
+            this.$store.commit('SET_ERROR', error);
+          });
+        NProgress.done();
+      },
       showDetails(id) {
         // console.log('showDetails ' + id);
         this.$router.push(`/leaveRequests/${id}`);
@@ -155,6 +167,22 @@
           default:
             return "Invalid status";
         };
+      },
+      changeStatusFilter() {
+        console.log('status changed, ', this.statusSelected);
+        switch(this.statusSelected) {
+          case 'Pending':
+            this.getEvents(Constants.PENDING);
+            break;
+          case 'Approved':
+            this.getEvents(Constants.APPROVED);
+            break;
+          case 'Rejected':
+            this.getEvents(Constants.REJECTED);
+            break;
+          default:
+            this.getEvents(Constants.PENDING);
+        }
       }
     }
   }
