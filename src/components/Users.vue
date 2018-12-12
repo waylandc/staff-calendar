@@ -1,6 +1,6 @@
 <template>
   <v-container grid-list-md text-xs-center>
-    <h2>Users</h2>
+    <h2>Users</h2><br/>
     <v-flex>
       <v-alert type="error" dismissible v-model="alert">
         {{ error }}
@@ -11,12 +11,15 @@
         <div>
           <v-data-table :headers='headers' :items='users' hide-actions dark class='elevation-1'>
             <template slot='items' slot-scope='props'>
-              <tr @click='showDetails(props.item.docId)'>
+              <tr @click='showDetails(p.item.docId)'>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.email }}</td>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysAnnualLeave }}</td>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysCompLeave }}</td>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysBooked }}</td>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysCarryOver }}</td>
+                <td class='mdl-data-table__cell--non-numeric'>
+                  {{ props.item.daysAnnualLeave + props.item.daysCarryOver + props.item.daysCompLeave - props.item.daysBooked }}
+                </td>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.isApprover }}</td>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.isAdmin }}</td>
               </tr>
@@ -72,6 +75,12 @@ export default {
           value: 'booked',
         },
         {
+          text: 'Remaining',
+          align: 'left',
+          sortable: false,
+          value: 'remaining',
+        },
+        {
           text: 'Approver',
           align: 'left',
           sortable: false,
@@ -108,6 +117,10 @@ export default {
     loading() {
       return this.$store.state.loading;
     },
+    // TODO should we be persisting this instead of calculating?
+    calcRemaining(user) {
+      return (user.daysAnnualLeave + user.daysCarryOver + user.daysCompLeave) - user.daysBooked;
+    }
   },
   methods: {
     addProperty() {

@@ -8,7 +8,7 @@
     </v-flex>
     <v-layout row wrap>
       <v-flex xs12 v-if="loaded" ml-5 mr-5>
-        <v-form>
+        <v-form @submit.prevent>
           <v-layout row wrap>
             <v-flex xs12>
               <v-text-field
@@ -30,31 +30,39 @@
             </v-flex>
             <v-flex xs6>
               <v-text-field
-                v-model='endString' 
-                label='End Date' 
-                autocomplete="off" 
-                :readonly="true"
+                v-model = 'endString' 
+                label = 'End Date' 
+                autocomplete = "off" 
+                :readonly = "true"
                 box>
               </v-text-field>
             </v-flex>
             <v-flex xs6>
               <v-text-field
-                v-model='request.halfDay' 
-                label='Half Day' 
-                :readonly="true" 
+                v-model = 'request.halfDay' 
+                label = 'Half Day' 
+                :readonly = "true" 
                 box>
               </v-text-field>
             </v-flex>
             <v-flex xs6>
               <v-text-field
-                v-model='request.user' 
+                v-model='request.requestor' 
                 label='Requestor' 
-                autocomplete="name" 
-                :readonly="true" 
+                autocomplete = "name" 
+                :readonly = "true" 
                 box>
               </v-text-field>
             </v-flex>
-            <v-flex v-if="this.$store.state.loggedInUser.isApprover" class="text-xs-center" mt-5>
+            <v-flex xs12>
+              <v-text-field
+                v-model = 'request.approverComment'
+                label = 'Approver Comments'
+                :readonly = '!canApproveReject'
+                box>
+              </v-text-field>
+            </v-flex>
+            <v-flex v-if="canApproveReject" class="text-xs-center" mt-5>
               <v-btn 
                 color="approve"
                 @click.stop="approve"
@@ -77,6 +85,7 @@
 
 <script>
   import db from '../config/firebaseInit';
+  import Constants from '../models/common.js';
 
   export default {
     name: 'RequestDetail',
@@ -91,6 +100,7 @@
         user: null,
         documentRef: null,
         alert: false,
+//        approverComment: '',
       };
     },
     created() {
@@ -121,6 +131,9 @@
       loading() {
         return this.$store.state.loading;
       },
+      canApproveReject() {
+        return (this.$store.state.loggedInUser.isApprover && this.request.status === Constants.PENDING)
+      }
     },
     methods: {
       // TODO don't support edit request yet
@@ -130,9 +143,11 @@
       //   this.$router.push(`/leaveRequest/edit/${this.propId}`);
       // },
       approve() {
+        // TODO approve/reject should be moved to api.js and invoked by dispatching an action
         console.log('approve clicked, ', this.propId);
         var o = {};
         o.status = 1;
+        o.approverComment = this.approverComment;
         o.approver = this.$store.state.loggedInUser.email;
         this.documentRef.update(o);
         this.$router.push('/leaveRequests');
@@ -141,6 +156,7 @@
         console.log('reject clicked');
         var o = {};
         o.status = 2;
+        o.approverComment = this.approverComment;
         o.approver = this.$store.state.loggedInUser.email;
         this.documentRef.update(o);
         this.$router.push('/leaveRequests');
