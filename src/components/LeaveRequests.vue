@@ -54,7 +54,7 @@
 <script>
   import NProgress from 'nprogress';
   import Constants from '../models/common.js';
-  import moment from 'moment';
+  import moment from 'moment-business-days';
 
   export default {
     name: 'EventRequests',

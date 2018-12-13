@@ -13,29 +13,13 @@ const routerOptions = [
   { path: '/changePassword', component: 'ChangePassword', meta: { requiresAuth: true } },
   { path: '/home', component: 'Home', meta: { requiresAuth: true } },
   { path: '/users', component: 'Users', meta: { requiresAdmin: true } },
-  {
-    path: '/users/:id',
-    component: 'UserDetails',
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/myDetails',
-    component: 'MyDetails',
-    meta: { requiresAuth: true },
-  },
+  { path: '/users/:id', component: 'UserDetails', meta: { requiresAuth: true } },
+  { path: '/myDetails', component: 'MyDetails', meta: { requiresAuth: true } },
   { path: '/leaveRequests', component: 'LeaveRequests', meta: { requiresAuth: true } },
   { path: '/createRequest', component: 'CreateRequest', meta: { requiresAuth: true } },
-  {
-    path: '/leaveRequests/:id',
-    component: 'RequestDetail',
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/leaveRequests/edit/:id',
-    component: 'EditRequest',
-    meta: { requiresAuth: true },
-  },
-
+  { path: '/leaveRequests/:id', component: 'RequestDetail', meta: { requiresAuth: true } },
+  { path: '/leaveRequests/edit/:id', component: 'EditRequest', meta: { requiresAuth: true } },
+  { path: '/holidays', component: 'HolidayTable', meta: { requiresAuth: true } },
 ];
 
 // This performs a lazy load of our routes, to avoid loading

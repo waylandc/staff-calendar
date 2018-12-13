@@ -11,7 +11,7 @@
         <div>
           <v-data-table :headers='headers' :items='users' hide-actions dark class='elevation-1'>
             <template slot='items' slot-scope='props'>
-              <tr @click='showDetails(p.item.docId)'>
+              <tr @click='showDetails(props.item.docId)'>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.email }}</td>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysAnnualLeave }}</td>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysCompLeave }}</td>
@@ -33,7 +33,7 @@
 
 <script>
 import NProgress from 'nprogress';
-import db from '../config/firebaseInit';
+// import db from '../config/firebaseInit';
 
 // This page should only be viewable by admin/approvers for privacy issues
 // protected by router beforeEach guard

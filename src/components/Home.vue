@@ -18,7 +18,7 @@
 <script>
 import NProgress from 'nprogress';
 import FullCalendar from 'vue-full-calendar';
-import moment from 'moment';
+import moment from 'moment-business-days';
 import Constants from '../models/common.js';
 
 export default {

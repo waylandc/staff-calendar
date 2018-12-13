@@ -59,7 +59,7 @@
 </template>
 
 <script>
-  import db from '../config/firebaseInit';
+  // import db from '../config/firebaseInit';
   import { createUserModel } from '../models/User';
 
   export default {

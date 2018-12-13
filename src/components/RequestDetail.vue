@@ -84,7 +84,7 @@
 </template>
 
 <script>
-  import db from '../config/firebaseInit';
+  // import db from '../config/firebaseInit';
   import Constants from '../models/common.js';
 
   export default {

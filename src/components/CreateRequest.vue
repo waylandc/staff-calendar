@@ -96,7 +96,7 @@
 </template>
 
 <script>
-  import db from '../config/firebaseInit';
+//  import db from '../config/firebaseInit';
   import Constants from '../models/common.js';
   import { CalendarEvent } from '../models/CalendarEvent';
   import * as mutant from '../store/mutation-types';

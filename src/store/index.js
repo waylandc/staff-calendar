@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 import router from '@/router';
+import moment from 'moment-business-days';
 import { User } from '../models/User';
 import * as api from '../utils/api';
 import * as mutant from './mutation-types';
@@ -154,11 +155,12 @@ const store = new Vuex.Store({
     [action.ADD_EVENT]({ commit }, payload) {
       commit(mutant.SET_LOADING, true);
       // payload should be CalendarEvent.toJSON()
+      console.log('ADD_EVENT, ', payload);
       api.createEvent(payload)
         .then((doc) => {
           console.log('ADD_EVENT, ', doc);
           commit(mutant.SET_LOADING, false);
-          router.push('/leaveRequests');
+          //router.push('/leaveRequests');
         })
         .catch((error) => {
           console.log('ADD_EVENT, ', error);
@@ -182,6 +184,40 @@ const store = new Vuex.Store({
           });
       });
     },
+
+    // GET_HOLIDAYS payload {startDate: moment, endDate: moment }
+    [action.GET_HOLIDAYS]({ commit }, payload) {
+      commit(mutant.SET_LOADING, true);
+
+      return new Promise((resolve, reject) => {
+        api.getHolidays(payload.startDate, payload.endDate)
+        .then((holidays) => {
+          resolve(holidays);
+        })
+        .catch((error) => {
+          console.log(error);
+          reject(error);
+        });
+      });
+    },
+
+    [action.ADD_HOLIDAY]({ commit }, payload) {
+      commit(mutant.SET_LOADING, true);
+      // payload should be { title: string, startDate: moment, endDate: moment, country: string }
+      console.log('ADD_HOLIDAY, ', payload);
+      api.createHoliday(payload)
+        .then((doc) => {
+          console.log('ADD_HOLIDAY, ', doc);
+          commit(mutant.SET_LOADING, false);
+          router.push('/holidays');
+        })
+        .catch((error) => {
+          console.log('ADD_HOLIDAY, ', error);
+          commit(mutant.SET_ERROR, error);
+          commit(mutant.SET_LOADING, false);
+        });
+    },
+
   },
 
   getters: {

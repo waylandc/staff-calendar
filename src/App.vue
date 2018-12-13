@@ -54,12 +54,14 @@
           return [
             // first line of drawer is covered by banner so HACK here
             // not found isn't really a link, but we put it in so Calendar link is visible
+            // the icons come from https://material.io/tools/icons/?style=baseline
             { title: 'Not Found', link: '/', icon: 'settings' },
-            { title: 'Calendar', link: '/home', icon: 'home' },
+            { title: 'Calendar', link: '/home', icon: 'today' },
             { title: 'Apply Leave', link: '/createRequest', icon: 'settings' },
             { title: 'Leave Requests', link: '/leaveRequests', icon: 'home' },
-            { title: 'User Details', link: '/myDetails', icon: 'settings' },
-            { title: 'Users', link: '/users', icon: 'settings' },
+            { title: 'User Details', link: '/myDetails', icon: 'face' },
+            { title: 'Users', link: '/users', icon: 'group' },
+            { title: 'Holidays', link: '/holidays', icon: 'language' },
             { title: 'Change Password', link: '/changePassword', icon: 'settings' },
           ];
         }
@@ -72,7 +74,7 @@
             { title: 'Calendar', link: '/home', icon: 'home' },
             { title: 'Apply Leave', link: '/createRequest', icon: 'settings' },
             { title: 'Leave Requests', link: '/leaveRequests', icon: 'home' },
-            { title: 'User Details', link: '/myDetails', icon: 'settings' },
+            { title: 'User Details', link: '/myDetails', icon: 'face' },
             { title: 'Change Password', link: '/changePassword', icon: 'settings' },
           ];
         }

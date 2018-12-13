@@ -1,5 +1,5 @@
 import firebase from 'firebase';
-import moment from 'moment';
+import moment from 'moment-business-days';
 
 import db from '../config/firebaseInit';
 import { User } from '../models/User';
@@ -126,14 +126,14 @@ function validateDateParams(d) {
  * @param {{ start:moment, end: moment, user: email, status:Constants }} data
  */
 export function getEvents(data) {
-  console.log('api.getSomeEvents...');
+  console.log('api.getSomeEvents...', data);
 
   return new Promise((resolve, reject) => {
     // validate filter params. i.e. if they pass in a start/end date, they must pass in both
     if (!validateDateParams(data)) {
       const errorDateMsg = 'Error, you must provide both start/end dates for this query';
-      console.log('warning, ', errorDateMsg);
-      console.log(data);
+      // console.log('warning, ', errorDateMsg);
+      // console.log(data);
       reject(errorDateMsg);
     }
 
@@ -161,25 +161,22 @@ export function getEvents(data) {
           if ((data.user !== '' && data.user !== undefined) && data.user !== ce.requestor) {
             isFiltered = true;
           }
-          console.log('done user check, ', isFiltered);
+
+          // console.log('done user check, ', isFiltered);
           // check end date filters
           if (!isFiltered) {
             // is end date of db event AFTER the end date parameter?
             if ((data.end !== '' && data.end !== undefined) && ce.endDate.isAfter(data.end)) {
               isFiltered = true;
             }
-
-            // if ((data.start !== '' && data.start !== undefined) && ce.startDate.isBefore(data.start)) {
-            //   isFiltered = true;
-            // }
           }
-          console.log('done date check, ', isFiltered);
+
           // filter on status
           if (!isFiltered) {
             if ((data.status !== '' && data.status !== undefined) && data.status !== ce.status) {
               isFiltered = true;
             }
-            console.log(ce.title, ' status is, ', ce.status, ', want ', data.status, '. filtered ', data.status === ce.status);
+            // console.log(ce.title, ' status is, ', ce.status, ', want ', data.status, '. filtered ', data.status === ce.status);
           }
           // console.log('done ', data.status, ' status check, ', isFiltered);
           if (!isFiltered) {
@@ -295,3 +292,58 @@ export function createEvent(data) {
       });
   });
 }
+
+/**
+ * Return a list of all the holidays
+ * @param {moment} start
+ * @param {moment} end
+ * @return {[ {title, startDate: Timestamp, endDate: Timestamp, country, docId }]}
+ */
+export function getHolidays(start, end) {
+  console.log('api.getHolidays between ', start.toString(), ' and ', end.toString());
+  return new Promise((resolve, reject) => {
+    db
+      .collection('holidays')
+      .orderBy('startDate')
+      .get()
+      .then((querySnapshot) => {
+        const holidays = [];
+        let u;
+        querySnapshot.forEach((doc) => {
+          u = {
+            title: doc.data().title,
+            startDate: doc.data().startDate,
+            endDate: doc.data().endDate,
+            country: doc.data().country,
+            docId: doc.id,
+          };
+          holidays.push(u);
+        });
+        // console.log(holidays);
+        resolve(holidays);
+      })
+      .catch((error) => {
+        console.log(error);
+        reject(error);
+      });
+  });
+}
+
+/**
+ * Add a holiday to our holiday table
+ * TODO - this and createEvent are very similar, could generalize the method to accept a
+ * table parameter but then we wouldn't be able to do any data validation.
+ * @param {{ title, startDate, endDate, country }} data
+ */
+export function createHoliday(data) {
+  console.log('api.createHoliday...', data);
+  return new Promise((resolve, reject) => {
+    db.collection('holidays').add(data)
+      .then(docRef => resolve(docRef))
+      .catch((error) => {
+        console.log(error);
+        reject(error);
+      });
+  });
+}
+
