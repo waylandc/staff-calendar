@@ -150,7 +150,7 @@
       },
       showDetails(id) {
         // console.log('showDetails ' + id);
-        this.$router.push(`/leaveRequests/${id}`);
+        this.$router.push({ path: `/leaveRequests/${id}` });
       },
       //TODO getStatus should be refactored to be in common.js for reuse
       getStatus(s) {
