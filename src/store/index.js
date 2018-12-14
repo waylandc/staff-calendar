@@ -148,7 +148,7 @@ const store = new Vuex.Store({
         })
         .catch((error) => {
           commit(mutant.SET_LOADING, false);
-          commit(mutant.SET_ERROR, error.message);
+          comit(mutant.SET_ERROR, error.message);
         });
     },
 

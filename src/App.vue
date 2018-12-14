@@ -55,7 +55,7 @@
             // first line of drawer is covered by banner so HACK here
             // not found isn't really a link, but we put it in so Calendar link is visible
             // the icons come from https://material.io/tools/icons/?style=baseline
-            { title: 'Not Found', link: '/', icon: 'settings' },
+//            { title: 'Not Found', link: '/', icon: 'settings' },
             { title: 'Calendar', link: '/home', icon: 'today' },
             { title: 'Apply Leave', link: '/createRequest', icon: 'settings' },
             { title: 'Leave Requests', link: '/leaveRequests', icon: 'home' },

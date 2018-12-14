@@ -33,7 +33,7 @@
 
 <script>
 import NProgress from 'nprogress';
-// import db from '../config/firebaseInit';
+import db from '../config/firebaseInit';
 
 // This page should only be viewable by admin/approvers for privacy issues
 // protected by router beforeEach guard

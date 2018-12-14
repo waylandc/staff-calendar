@@ -121,7 +121,7 @@
           {key: 'Annual', val: 'ANN'},
           {key:'Compensation', val: 'COMP'},
           {key: 'Carry Over', val: 'CO'}],
-        leaveType: 'Annual',
+        leaveType: 'ANN',
         duration: ['Full', 'AM', 'PM'],
         halfDay: 'Full'
       };
@@ -198,7 +198,7 @@ console.log(req);
         this.$store.dispatch(action.ADD_EVENT, req.toJSON())
           .then((docRef) => {
             // console.log('doc written with id, ', docRef.id);
-            this.$router.push('/leaveRequests');
+            this.$router.push({ path: '/leaveRequests' });
           }).catch((error) => {
             this.$store.commit(mutant.SET_ERROR, error.message);
             console.error('error adding doc: ', error);
