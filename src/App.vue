@@ -70,7 +70,7 @@
           return [
             // first line of drawer is covered by banner so HACK here
             // not found isn't really a link, but we put it in so Calendar link is visible
-            { title: 'Not Found', link: '/', icon: 'settings' },
+//            { title: 'Not Found', link: '/', icon: 'settings' },
             { title: 'Calendar', link: '/home', icon: 'home' },
             { title: 'Apply Leave', link: '/createRequest', icon: 'settings' },
             { title: 'Leave Requests', link: '/leaveRequests', icon: 'home' },

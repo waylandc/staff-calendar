@@ -5,20 +5,27 @@
       <v-alert type="error" dismissible v-model="alert">
         {{ error }}
       </v-alert>
+      <v-alert v-if="saved" type="success" dismissible v-model="successMessage" @input= "v => v || dismissClicked()">
+        {{ successMessage }}
+      </v-alert>
     </v-flex>
     <v-flex xs12 sm6 offset-sm3 mt-3>
       <v-form v-if="loaded">
         <v-layout row wrap>
           <v-flex xs6>
-            <v-text-field v-model='user.firstName' label='firstName' disabled box>
+            <v-text-field v-model='user.firstName' label='First  Name' disabled box>
             </v-text-field>
           </v-flex>
           <v-flex xs6>
-            <v-text-field v-model='user.lastName' label='lastName' disabled box>
+            <v-text-field v-model='user.lastName' label='Last Name' disabled box>
             </v-text-field>
           </v-flex>
-          <v-flex xs12>
+          <v-flex xs6>
             <v-text-field v-model='user.email' label='Email' disabled box>
+            </v-text-field>
+          </v-flex>
+          <v-flex xs6>
+            <v-text-field v-model.number='user.daysBooked' label='Booked' disabled box>
             </v-text-field>
           </v-flex>
           <v-flex xs6>
@@ -34,7 +41,7 @@
             </v-text-field>
           </v-flex>
           <v-flex xs6>
-            <v-text-field v-model.number='user.daysBooked' label='Booked' disabled box>
+            <v-text-field v-model.number='user.daysSick' label='Sick' :readonly="!this.isAdmin" box>
             </v-text-field>
           </v-flex>
           <v-flex xs6>
@@ -69,6 +76,8 @@
         userId: '',
         alert: false,
         loaded: false,
+        saved: false,
+        successMessage: '',
       }
     },
     created() {
@@ -93,6 +102,12 @@
     methods: {
       save() {
         this.$store.dispatch('SAVE_USER', { userId: this.userId, user: this.user});
+        this.successMessage = 'Successfully saved';
+        this.saved = true;
+      },
+      dismissClicked() {
+        this.successMessage = '';
+        this.saved = false;
       },
     },
     computed: {

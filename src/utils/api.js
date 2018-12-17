@@ -34,16 +34,12 @@ export function createUser(newUser, passwd) {
   return new Promise((resolve, reject) => {
     firebase.auth().createUserWithEmailAndPassword(newUser.email, passwd)
       .then((firebaseUser) => {
-        // TODO need to get doc.id to put in User object
         console.log(firebaseUser);
-        /* eslint-disable no-param-reassign */
-        // newUser.docId = firebaseUser.id;
-        // const u = new User(firebaseUser.user.email, false, false,
-        //   newUser.daysAnnualLeave, newUser.daysCarryOver, newUser.daysCompLeave,
-        //   newUser.daysBooked, null);
         // TODO if this add() fails, we need to delete the user from firebase
         db.collection('users').add(newUser.toJSON())
           .then((u) => {
+            // TODO need to get doc.id to put in User object
+            // we put in id but when does it get saved??
             newUser.docId = u.id;
             resolve(newUser);
           })
@@ -81,6 +77,7 @@ export function getUsers() {
             doc.data().daysCarryOver,
             doc.data().daysCompLeave,
             doc.data().daysBooked,
+            doc.data().daysSick,
             doc.id,
           );
           users.push(u);
@@ -210,8 +207,8 @@ export function autoLogin(email) {
             const u = new User(
               user.data().email, user.data().isAdmin,
               user.data().isApprover, user.data().daysAnnualLeave,
-              user.data().daysCompLeave, user.data().daysCarryOver,
-              user.data().daysBooked, user.id, user.data().firstName, user.data().lastName);
+	            user.data().daysCompLeave, user.data().daysCarryOver, user.data().daysBooked,
+              user.data().daysSick, user.id, user.data().firstName, user.data().lastName);
             console.log('auto logged in, ', u);
             resolve(u);
           });
@@ -243,8 +240,8 @@ export function login(email, password) {
                 const u = new User(
                   user.data().email, user.data().isAdmin,
                   user.data().isApprover, user.data().daysAnnualLeave,
-                  user.data().daysCompLeave, user.data().daysCarryOver,
-                  user.data().daysBooked, user.id, user.data().firstName, user.data().lastName);
+                  user.data().daysCompLeave, user.data().daysCarryOver, user.data().daysBooked,
+                  user.data().daysSick, user.id, user.data().firstName, user.data().lastName);
                 console.log('logged in, ', u);
                 resolve(u);
               });

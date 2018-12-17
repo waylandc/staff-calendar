@@ -120,7 +120,8 @@
         leaveTypes: [
           {key: 'Annual', val: 'ANN'},
           {key:'Compensation', val: 'COMP'},
-          {key: 'Carry Over', val: 'CO'}],
+          {key: 'Carry Over', val: 'CO'},
+	  {key: 'Sick', val: 'SICK'}],
         leaveType: 'ANN',
         duration: ['Full', 'AM', 'PM'],
         halfDay: 'Full'

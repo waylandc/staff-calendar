@@ -21,7 +21,7 @@
                   {{ props.item.daysAnnualLeave + props.item.daysCarryOver + props.item.daysCompLeave - props.item.daysBooked }}
                 </td>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.isApprover }}</td>
-                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.isAdmin }}</td>
+                <!-- td class='mdl-data-table__cell--non-numeric'>{{ props.item.isAdmin }}</td -->
               </tr>
             </template>
           </v-data-table>

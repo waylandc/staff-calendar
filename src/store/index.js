@@ -49,7 +49,7 @@ const store = new Vuex.Store({
     },
   },
   actions: {
-    // saveUser payload {user: u, userId: id}
+    // saveUser payload {user: User.js, userId: id}
     [action.SAVE_USER]({ commit }, payload) {
       commit(mutant.SET_LOADING, true);
       api.saveUser(payload)
@@ -64,10 +64,15 @@ const store = new Vuex.Store({
     },
     // USER_SIGNUP payload {email: e, password: p, firstName: fn, lastName: ln}
     [action.USER_SIGNUP]({ commit }, p) {
-      commit(mutant.SET_LOADING, true);
-      const u = new User(p.email, false, false, 0, 0, 0, 0, null, p.firstName, p.lastName);
+	commit(mutant.SET_LOADING, true);
+	// docId param is null because it's the document ref ID in
+	// Firestore which hasn't been created yet.
+	// TODO - check if api.createUser returns a user object that contains the id
+	// I think it's populated in the subsequent call to autoLogin
+      const u = new User(p.email, false, false, 0, 0, 0, 0, 0, null, p.firstName, p.lastName);
       api.createUser(u, p.password)
-        .then(() => {
+            .then((newUser) => {
+		console.log(newUser);
           // commit(mutant.SET_LOGGED_IN_USER, { email: user.email });
         // })
         // .then(() => {
@@ -104,7 +109,7 @@ const store = new Vuex.Store({
         .then((user) => {
           commit(mutant.SET_LOGGED_IN_USER, user);
           commit(mutant.SET_LOADING, false);
-          router.push('/home');
+          router.push({ path: '/home' });
         })
         .catch((error) => {
           console.log('error signin, ', error);
@@ -144,11 +149,11 @@ const store = new Vuex.Store({
         .then(() => {
           commit(mutant.SET_ERROR, 'testing errors');
           commit(mutant.SET_LOADING, false);
-          router.push('/home');
+          router.push({ path: '/home' });
         })
         .catch((error) => {
           commit(mutant.SET_LOADING, false);
-          comit(mutant.SET_ERROR, error.message);
+          commit(mutant.SET_ERROR, error.message);
         });
     },
 
@@ -160,7 +165,7 @@ const store = new Vuex.Store({
         .then((doc) => {
           console.log('ADD_EVENT, ', doc);
           commit(mutant.SET_LOADING, false);
-          //router.push('/leaveRequests');
+          // router.push('/leaveRequests');
         })
         .catch((error) => {
           console.log('ADD_EVENT, ', error);
@@ -209,7 +214,7 @@ const store = new Vuex.Store({
         .then((doc) => {
           console.log('ADD_HOLIDAY, ', doc);
           commit(mutant.SET_LOADING, false);
-          router.push('/holidays');
+          router.push({ path: '/holidays' });
         })
         .catch((error) => {
           console.log('ADD_HOLIDAY, ', error);
