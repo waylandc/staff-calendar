@@ -21,7 +21,7 @@
                   {{ props.item.daysAnnualLeave + props.item.daysCarryOver + props.item.daysCompLeave - props.item.daysBooked }}
                 </td>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.isApprover }}</td>
-                <!-- td class='mdl-data-table__cell--non-numeric'>{{ props.item.isAdmin }}</td -->
+                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.isAdmin }}</td>
               </tr>
             </template>
           </v-data-table>
@@ -53,19 +53,19 @@ export default {
           value: 'name',
         },
         {
-          text: 'Annual Leave',
+          text: 'Annual',
           align: 'left',
           sortable: false,
           value: 'alDays',
         },
         {
-          text: 'Compensation',
+          text: 'Comp',
           align: 'left',
           sortable: false,
           value: 'compDays',
         },
         {
-          text: 'Carry Over',
+          text: 'Carry',
           align: 'left',
           sortable: false,
           value: 'carryOver',
@@ -122,7 +122,7 @@ export default {
     // TODO should we be persisting this instead of calculating?
     calcRemaining(user) {
       return (user.daysAnnualLeave + user.daysCarryOver + user.daysCompLeave) - user.daysBooked;
-    }
+    },
   },
   methods: {
     addProperty() {
