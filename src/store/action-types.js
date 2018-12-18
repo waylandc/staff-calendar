@@ -11,3 +11,4 @@ export const ADD_EVENT = 'ADD_EVENT';
 export const GET_EVENTS = 'GET_EVENTS';
 export const GET_HOLIDAYS = 'GET_HOLIDAYS';
 export const ADD_HOLIDAY = 'ADD_HOLIDAY';
+export const RESET_PASSWORD = 'RESET_PASSWORD';

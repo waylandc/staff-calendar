@@ -222,6 +222,19 @@ const store = new Vuex.Store({
         });
     },
 
+    [action.RESET_PASSWORD]({ commit }, payload) {
+      // payload is {email: string}
+      commit(mutant.SET_LOADING, true);
+      console.log(action.RESET_PASSWORD);
+      api.resetPassword(payload.email)
+        .then(() => {
+          commit(mutant.SET_LOADING, false);
+        })
+        .catch((error) => {
+          commit(mutant.SET_ERROR, error);
+          commit(mutant.SET_LOADING, false);
+        });
+    },
   },
 
   getters: {

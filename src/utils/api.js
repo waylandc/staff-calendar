@@ -349,3 +349,18 @@ export function createHoliday(data) {
   });
 }
 
+export function resetPassword(email) {
+  console.log('api.resetPassword...');
+  const auth = firebase.auth();
+  return new Promise((resolve, reject) => {
+    auth.sendPasswordResetEmail(email)
+    .then(() => {
+      resolve();
+    })
+    .catch((error) => {
+      console.log('error resetting password for, ', email);
+      console.log(error);
+      reject(error);
+    });
+  });
+}

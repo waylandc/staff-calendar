@@ -56,8 +56,11 @@
               v-model="user.isApprover"
             ></v-switch>
           </v-flex>
-          <v-flex class="text-xs-center" mt-5 v-if="this.isAdmin">
+          <v-flex xs6 v-if="this.isAdmin">
             <v-btn color="primary" @click.stop="save">Save</v-btn>
+          </v-flex>
+          <v-flex xs6 v-if="this.isAdmin">
+            <v-btn color="reject" @click.stop="resetPassword">Reset Password</v-btn>
           </v-flex>
         </v-layout>
       </v-form>
@@ -68,6 +71,8 @@
 <script>
   import db from '../config/firebaseInit';
   import { createUserModel } from '../models/User';
+  import * as mutant from '../store/mutation-types';
+  import * as action from '../store/action-types';
 
   export default {
     data() {
@@ -84,7 +89,7 @@
     created() {
       this.loaded = false;
       this.userId = this.$route.params.id;
-
+      // TODO refactor this to use api.js
       const docRef = db.collection('users').doc(this.userId);
       docRef.get().then((doc) => {
         if (doc.exists) {
@@ -94,18 +99,18 @@
           this.documentRef = docRef;
           this.loaded = true;
         } else {
-          this.$store.commit('SET_ERROR', 'Error, user does not exist');
+          this.$store.commit(mutant.SET_ERROR, 'Error, user does not exist');
           console.log(this.error);
         }
       }).catch((error) => {
-        this.$store.commit('SET_ERROR', error.message);
+        this.$store.commit(mutant.SET_ERROR, error.message);
         console.log('error getting document: ', error);
       });
 
     },
     methods: {
       save() {
-        this.$store.dispatch('SAVE_USER', { userId: this.userId, user: this.user});
+        this.$store.dispatch(action.SAVE_USER, { userId: this.userId, user: this.user});
         this.successMessage = 'Successfully saved';
         this.saved = true;
       },
@@ -114,6 +119,11 @@
         this.saved = false;
         this.$router.push({ path: '/users' });
       },
+      resetPassword() {
+        this.$store.dispatch(action.RESET_PASSWORD, { email: this.user.email });
+        this.successMessage = 'Reset Password email sent to ', this.user.email;
+        this.saved = true;
+      }
     },
     computed: {
       error() {
@@ -135,7 +145,7 @@
       },
       alert(value) {
         if (!value) {
-          this.$store.commit('SET_ERROR', null);
+          this.$store.commit(mutant.SET_ERROR, null);
         }
       },
     },

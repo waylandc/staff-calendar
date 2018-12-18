@@ -101,8 +101,10 @@
 </template>
 
 <script>
- import db from '../config/firebaseInit';
- import Constants from '../models/common.js';
+	import db from '../config/firebaseInit';
+	import Constants from '../models/common.js';
+	import * as mutant from '../store/mutation-types';
+	import * as action from '../store/action-types';
 
  export default {
      name: 'RequestDetail',
@@ -137,11 +139,11 @@
 		 this.documentRef = docRef;
 		 this.loaded = true;
              } else {
-		 this.$store.commit('SET_ERROR', 'Error, No such document');
+		 this.$store.commit(mutant.SET_ERROR, 'Error, No such document');
 		 console.log(this.error);
              }
 	 }).catch((error) => {
-             this.$store.commit('SET_ERROR', 'Error loading document');
+             this.$store.commit(mutant.SET_ERROR, 'Error loading document');
              console.log('error getting document: ', error);
 	 });
      },
@@ -212,7 +214,7 @@
 	 },
 	 alert(value) {
              if (!value) {
-		 this.$store.commit('SET_ERROR', null);
+		 this.$store.commit(mutant.SET_ERROR, null);
              }
 	 },
      }
