@@ -5,6 +5,9 @@
       <v-alert type="error" dismissible v-model="alert">
         {{ error }}
       </v-alert>
+      <v-alert v-if="saved" type="success" dismissible v-model="successMessage" @input= "v => v || dismissClicked()">
+        {{ successMessage }}
+      </v-alert>
     </v-flex>
     <div id='adminPanel'>
         <v-form>
@@ -88,7 +91,7 @@
           <v-data-table :headers='headers' :items='holidays' hide-actions dark class='elevation-1'>
             <template slot='items' slot-scope='props'>
               <tr>
-                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.startDate.toDate().toString() }}</td>
+                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.startDate.toDate().toDateString() }}</td>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.title }}</td>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.country }}</td>
               </tr>
@@ -112,7 +115,8 @@ export default {
       holidays: [],
       loaded: false,
       alert: false,
-      startDate: new Date().toISOString().substr(0, 10),  // this is a string
+      // this is a string, default date for datepicker
+      startDate: new Date().toISOString().substr(0, 10),
       endDate: new Date().toISOString().substr(0, 10),    // this is a string
       menu1: false,
       menu2: false,
@@ -120,6 +124,8 @@ export default {
       newCountry: 'Hong Kong',
       sDate: new Date(),  // this is a Date
       eDate: new Date(),  // this is a Date
+      saved: false,
+      successMessage: '',
     }
   },
   mounted() {
@@ -136,7 +142,12 @@ export default {
   },
   created() {
     this.loaded = false;
-    
+    this.fetchData();
+    NProgress.done();
+
+  },
+  methods: {
+    fetchData() {
     this.$store.dispatch(action.GET_HOLIDAYS, 
       { startDate: moment().subtract(1, 'y'), endDate: moment().add(1, 'y') })
       .then(holidays => {
@@ -146,10 +157,8 @@ export default {
       .catch((err) => {
         this.$store.commit('SET_ERROR', err.message);
       });
-    NProgress.done();
 
-  },
-  methods: {
+    },
     createHoliday() {
       const newHoliday = {
         title: this.newTitle,
@@ -159,16 +168,27 @@ export default {
       };
       this.$store.dispatch(action.ADD_HOLIDAY, newHoliday)
         .then((docRef) => {
-          // console.log('doc written with id, ', docRef.id);
-          this.$router.push('/holidays');
-          // newHoliday.startDate = newHoliday.startDate.getTime();
-          // newHoliday.endDate = newHoliday.endDate.getTime();
-          // this.holidays.push(newHoliday);
+          this.successMessage = 'Successfully created';
+          this.saved = true;
         }).catch((error) => {
           this.$store.commit(mutant.SET_ERROR, error.message);
           console.error('error adding doc: ', error);
         });
 
+    },
+    dismissClicked() {
+      this.successMessage = '';
+      this.saved = false;
+      // refetch data to refresh
+      this.fetchData();
+      // empty out the form
+      this.startDate = new Date().toISOString().substr(0, 10);  // this is a string
+      this.endDate = new Date().toISOString().substr(0, 10);    // this is a string
+      this.newTitle= '';
+      this.newCountry = 'Hong Kong';
+      this.sDate = new Date();  // this is a Date
+      this.eDate = new Date();  // this is a Date
+      
     },
   },
   computed: {

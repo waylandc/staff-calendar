@@ -180,8 +180,11 @@
           case 'Rejected':
             this.getEvents(Constants.REJECTED);
             break;
+          case 'All':
+            this.getEvents(Constants.ALL);
+            break;
           default:
-            this.getEvents(Constants.PENDING);
+            this.getEvents(Constants.ALL);
         }
       }
     }

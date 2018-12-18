@@ -4,6 +4,7 @@ import moment from 'moment-business-days';
 import db from '../config/firebaseInit';
 import { User } from '../models/User';
 import { CalendarEvent } from '../models/CalendarEvent';
+import Constants from '../models/common';
 
 export function saveUser(data) {
   console.log('api.saveUser...', data);
@@ -123,7 +124,7 @@ function validateDateParams(d) {
  * @param {{ start:moment, end: moment, user: email, status:Constants }} data
  */
 export function getEvents(data) {
-  console.log('api.getSomeEvents...', data);
+  console.log('api.getEvents...', data);
 
   return new Promise((resolve, reject) => {
     // validate filter params. i.e. if they pass in a start/end date, they must pass in both
@@ -150,6 +151,7 @@ export function getEvents(data) {
             doc.data().status,
             doc.id);
 
+          console.log('getEvents filter, user= ', data.email, ' status= ', data.status);
           //  NOTE - firestore queries don't support multiple fields
           //    so we need to filter on the server. YES THIS IS A BLOODY MESS but we need
           //    to provide query capability.
@@ -168,14 +170,17 @@ export function getEvents(data) {
             }
           }
 
-          // filter on status
-          if (!isFiltered) {
-            if ((data.status !== '' && data.status !== undefined) && data.status !== ce.status) {
-              isFiltered = true;
+          // filter on status. this field is always present so don't need to check undefined.
+          if (data.status !== Constants.ALL) {
+            if (!isFiltered) {
+              if (data.status !== ce.status) {
+                isFiltered = true;
+              }
+              console.log(ce.title, ' status is, ', ce.status, ', want ', data.status, '. filtered ', data.status === ce.status);
             }
-            // console.log(ce.title, ' status is, ', ce.status, ', want ', data.status, '. filtered ', data.status === ce.status);
+            // console.log('done ', data.status, ' status check, ', isFiltered);
           }
-          // console.log('done ', data.status, ' status check, ', isFiltered);
+
           if (!isFiltered) {
             results.push(ce);
           }

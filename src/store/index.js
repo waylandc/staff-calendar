@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 import router from '@/router';
-import moment from 'moment-business-days';
+// import moment from 'moment-business-days';
 import { User } from '../models/User';
 import * as api from '../utils/api';
 import * as mutant from './mutation-types';
@@ -64,18 +64,18 @@ const store = new Vuex.Store({
     },
     // USER_SIGNUP payload {email: e, password: p, firstName: fn, lastName: ln}
     [action.USER_SIGNUP]({ commit }, p) {
-	commit(mutant.SET_LOADING, true);
-	// docId param is null because it's the document ref ID in
-	// Firestore which hasn't been created yet.
-	// TODO - check if api.createUser returns a user object that contains the id
-	// I think it's populated in the subsequent call to autoLogin
+      commit(mutant.SET_LOADING, true);
+      // docId param is null because it's the document ref ID in
+      // Firestore which hasn't been created yet.
+      // TODO - check if api.createUser returns a user object that contains the id
+      // I think it's populated in the subsequent call to autoLogin
       const u = new User(p.email, false, false, 0, 0, 0, 0, 0, null, p.firstName, p.lastName);
       api.createUser(u, p.password)
-            .then((newUser) => {
-		console.log(newUser);
+        .then((newUser) => {
+          console.log(newUser);
           // commit(mutant.SET_LOGGED_IN_USER, { email: user.email });
-        // })
-        // .then(() => {
+          // })
+          // .then(() => {
           commit(mutant.SET_LOADING, true);
           api.autoLogin(u.email);
         })
@@ -214,7 +214,6 @@ const store = new Vuex.Store({
         .then((doc) => {
           console.log('ADD_HOLIDAY, ', doc);
           commit(mutant.SET_LOADING, false);
-          router.push({ path: '/holidays' });
         })
         .catch((error) => {
           console.log('ADD_HOLIDAY, ', error);

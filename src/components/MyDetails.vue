@@ -102,6 +102,8 @@
     methods: {
       save() {
         this.$store.dispatch('SAVE_USER', { userId: this.userId, user: this.user});
+        // TODO on 2nd though, the dispatch is async. We shouldn't be displaying
+        // success msg below
         this.successMessage = 'Successfully saved';
         this.saved = true;
       },
