@@ -41,6 +41,9 @@
 </template>
 
 <script>
+	import * as mutant from '../store/mutation-types';
+	import * as action from '../store/action-types';
+
 export default {
   data() {
     return {
@@ -51,7 +54,7 @@ export default {
   },
   methods: {
     userSignIn() {
-      this.$store.dispatch('USER_LOGIN',
+      this.$store.dispatch(action.USER_LOGIN,
         { email: this.email, password: this.password });
     },
   },
@@ -71,7 +74,7 @@ export default {
     },
     alert(value) {
       if (!value) {
-        this.$store.commit('SET_ERROR', null);
+        this.$store.commit(mutant.SET_ERROR, null);
       }
     },
   },

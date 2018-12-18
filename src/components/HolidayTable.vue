@@ -107,6 +107,7 @@
 import NProgress from 'nprogress';
 import moment from 'moment-business-days';
 import * as action from '../store/action-types';
+	import * as mutant from '../store/mutation-types';
 
 export default {
   data() {
@@ -155,7 +156,7 @@ export default {
         this.loaded = true;
       })
       .catch((err) => {
-        this.$store.commit('SET_ERROR', err.message);
+        this.$store.commit(mutant.SET_ERROR, err.message);
       });
 
     },
@@ -219,7 +220,7 @@ export default {
     },
     alert(value) {
       if (!value) {
-        this.$store.commit('SET_ERROR', null);
+        this.$store.commit(mutant.SET_ERROR, null);
       }
     },
   },

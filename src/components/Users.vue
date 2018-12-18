@@ -34,6 +34,8 @@
 <script>
 import NProgress from 'nprogress';
 import db from '../config/firebaseInit';
+	import * as mutant from '../store/mutation-types';
+	import * as action from '../store/action-types';
 
 // This page should only be viewable by admin/approvers for privacy issues
 // protected by router beforeEach guard
@@ -100,13 +102,13 @@ export default {
   created() {
     NProgress.start();
     this.loaded = false;
-    this.$store.dispatch('GET_USERS')
+    this.$store.dispatch(action.GET_USERS)
       .then(users => {
         this.users = users;
         this.loaded = true;
       })
       .catch((err) => {
-        this.$store.commit('SET_ERROR', err.message);
+        this.$store.commit(mutant.SET_ERROR, err.message);
       });
     NProgress.done();
   },
@@ -124,10 +126,10 @@ export default {
   },
   methods: {
     addProperty() {
-      this.$router.push('/addUser')
+      this.$router.push({ path: '/addUser' })
     },
     showDetails(id) {
-      this.$router.push(`/users/${id}`);
+      this.$router.push({ path: `/users/${id}` });
     },
   },
   watch: {
@@ -138,7 +140,7 @@ export default {
     },
     alert(value) {
       if (!value) {
-        this.$store.commit('SET_ERROR', null);
+        this.$store.commit(mutant.SET_ERROR, null);
       }
     },
   },

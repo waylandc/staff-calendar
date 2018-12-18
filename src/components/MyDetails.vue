@@ -68,6 +68,8 @@
 <script>
   import db from '../config/firebaseInit';
   import { createUserModel } from '../models/User';
+	import * as mutant from '../store/mutation-types';
+	import * as action from '../store/action-types';
 
   export default {
     data() {
@@ -91,17 +93,17 @@
           this.user.docId = this.userId;
           this.loaded = true;
         } else {
-          this.$store.commit('SET_ERROR', 'Error, user does not exist');
+          this.$store.commit(mutant.SET_ERROR, 'Error, user does not exist');
           console.log('error loading user, ', this.userId);
         }
       }).catch((error) => {
-        this.$store.commit('SET_ERROR', error.message);
+        this.$store.commit(mutant.SET_ERROR, error.message);
         console.log('Error getting document: ', error);
       });
     },
     methods: {
       save() {
-        this.$store.dispatch('SAVE_USER', { userId: this.userId, user: this.user});
+        this.$store.dispatch(action.SAVE_USER, { userId: this.userId, user: this.user});
         // TODO on 2nd though, the dispatch is async. We shouldn't be displaying
         // success msg below
         this.successMessage = 'Successfully saved';
@@ -132,7 +134,7 @@
       },
       alert(value) {
         if (!value) {
-          this.$store.commit('SET_ERROR', null);
+          this.$store.commit(mutant.SET_ERROR, null);
         }
       },
     },

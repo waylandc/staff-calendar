@@ -34,6 +34,9 @@
 </template>
 
 <script>
+	import * as mutant from '../store/mutation-types';
+	import * as action from '../store/action-types';
+
 export default {
   data() {
     // firstName and lastName not used for firebase auth.
@@ -61,10 +64,10 @@ export default {
   methods: {
     userSignUp() {
       if (this.comparePasswords !== true) {
-        this.$store.commit('SET_ERROR', 'Passwords don\'t match');
+        this.$store.commit(mutant.SET_ERROR, 'Passwords don\'t match');
         return;
       }
-      this.$store.dispatch('USER_SIGNUP', 
+      this.$store.dispatch(action.USER_SIGNUP, 
         { email: this.email, password: this.password, firstName: this.firstName, lastName: this.lastName });
     },
   },
@@ -76,7 +79,7 @@ export default {
     },
     alert(value) {
       if (!value) {
-        this.$store.commit('SET_ERROR', null);
+        this.$store.commit(mutant.SET_ERROR, null);
       }
     },
   },

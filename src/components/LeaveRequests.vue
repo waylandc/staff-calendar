@@ -53,8 +53,10 @@
 
 <script>
   import NProgress from 'nprogress';
-  import Constants from '../models/common.js';
   import moment from 'moment-business-days';
+  import Constants from '../models/common.js';
+	import * as mutant from '../store/mutation-types';
+	import * as action from '../store/action-types';
 
   export default {
     name: 'EventRequests',
@@ -124,7 +126,7 @@
       },
       alert(value) {
         if (!value) {
-          this.$store.commit('SET_ERROR', null);
+          this.$store.commit(mutant.SET_ERROR, null);
         }
       },
     },
@@ -132,7 +134,7 @@
       getEvents(stat) {
         NProgress.start();
         this.loaded = false;
-        this.$store.dispatch('GET_EVENTS',
+        this.$store.dispatch(action.GET_EVENTS,
           {
             start: moment().subtract(6, 'M'), end: moment().add(1, 'y'),
             status: stat,
@@ -144,7 +146,7 @@
             this.loaded = true;
           })
           .catch((error) => {
-            this.$store.commit('SET_ERROR', error);
+            this.$store.commit(mutant.SET_ERROR, error);
           });
         NProgress.done();
       },

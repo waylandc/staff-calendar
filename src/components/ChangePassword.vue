@@ -31,6 +31,8 @@
 <script>
   import firebase from 'firebase';
   import store from '../store';
+	import * as mutant from '../store/mutation-types';
+	import * as action from '../store/action-types';
 
   export default {
     data() {
@@ -47,7 +49,7 @@
     },
     methods: {
       changePassword () {
-        this.$store.dispatch('CHANGE_PASSWORD', {newPassword: this.newPassword});
+        this.$store.dispatch(action.CHANGE_PASSWORD, {newPassword: this.newPassword});
       },
     },
     computed: {
@@ -66,7 +68,7 @@
       },
       alert(value) {
         if (!value) {
-          this.$store.commit('setError', null);
+          this.$store.commit(mutant.SET_ERROR, null);
         }
       },
     },
