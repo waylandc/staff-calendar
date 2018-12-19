@@ -50,7 +50,7 @@ router.beforeEach((to, from, next) => {
     // ensure user is authenticated first
     firebase.auth().onAuthStateChanged((firebaseUser) => {
       // apologies, this is messy due to having 2 user objects
-      if (firebaseUser != null && store.state.loggedInUser == null) {
+      if (firebaseUser !== null && store.state.loggedInUser === null) {
         store.dispatch(action.GET_USER, firebaseUser).then(() => {
           if (store.state.loggedInUser.isAdmin) {
             next();
@@ -60,7 +60,7 @@ router.beforeEach((to, from, next) => {
         }, () => {
           next('/signin');
         });
-      } else if (firebaseUser == null) {
+      } else if (firebaseUser === null) {
         next('/signin');
       } else if (store.state.loggedInUser.isAdmin) {
         // s/b fb not null, loggedInUserr not null
@@ -71,9 +71,10 @@ router.beforeEach((to, from, next) => {
     });
   }
 
-  if (requiresAuth && store.state.loggedInUser == null) {
+  if (requiresAuth && store.state.loggedInUser === null) {
+    console.log('requiresAuth and loggedInUser is null');
     firebase.auth().onAuthStateChanged((firebaseUser) => {
-      if (firebaseUser != null) {
+      if (firebaseUser !== null) {
         store.dispatch(action.GET_USER, firebaseUser).then(() => {
           next();
         }, () => {
