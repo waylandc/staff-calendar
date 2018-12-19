@@ -15,7 +15,7 @@ export function saveUser(data) {
   console.log('api.saveUser...', data.user.toJSON());
   return new Promise((resolve, reject) => {
     const dr = db.collection('users');
-    // TODO I think I can remove userId from here, replace with data.user.id
+
     dr.doc(data.user.docId).update(data.user.toJSON())
     .then(() => {
       console.log('OK saved user, ', data.user.toJSON());
@@ -57,7 +57,7 @@ export function createUser(newUser, passwd) {
         db.collection('users').add(newUser.toJSON())
           .then((u) => {
             // TODO need to get doc.id to put in User object
-            // we put in id but when does it get saved??
+            // we put in id but when does it get saved?? we could just not set and use getUser instead
             newUser.docId = u.id;
             resolve(newUser);
           })
@@ -264,9 +264,8 @@ export function getUser(email) {
             u.comments.push({
               comment: c.data().comment, date: c.data().date, email: c.data().email, changedBy: c.data().changedBy });
           });
-          console.log('logged in, fetched comments, ', u.comments);
+          // sort our comments as firestore query can't query on email and orderBy different field
           u.comments = u.comments.sort((a, b) => b.date.toDate() - a.date.toDate());
-          console.log('sorted comments, ', u.comments);
         });
       resolve(u);
     })
@@ -359,8 +358,6 @@ export function getHolidays(start, end) {
 
 /**
  * Add a holiday to our holiday table
- * TODO - this and createEvent are very similar, could generalize the method to accept a
- * table parameter but then we wouldn't be able to do any data validation.
  * @param {{ title, startDate, endDate, country }} data
  */
 export function createHoliday(data) {

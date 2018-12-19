@@ -56,14 +56,7 @@ const store = new Vuex.Store({
     // saveUser payload {user: User.js, userId: id, comment: string, changedBy: email}
     [action.SAVE_USER]({ commit }, payload) {
       commit(mutant.SET_LOADING, true);
-      // put the new comments into user object before we persist it
       return new Promise((resolve, reject) => {
-        // payload.user.comments.push(
-        //   {
-        //     comment: payload.comment,
-        //     changedBy: payload.changedBy,
-        //     date: new Date(),
-        //   });
         api.saveUser(payload)
           .then(() => {
             commit(mutant.SET_LOADING, false);
@@ -94,9 +87,9 @@ const store = new Vuex.Store({
         })
         .then((user) => {
           commit(mutant.SET_LOGGED_IN_USER, user);
-
           commit(mutant.SET_LOADING, false);
-          router.push('/home');
+          console.log('created user, forwarding to home');
+          router.push({ path: '/home' });
         })
         .catch((err) => {
           commit(mutant.SET_ERROR, err.message);

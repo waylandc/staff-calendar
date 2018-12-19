@@ -66,12 +66,13 @@
             <v-btn color="reject" @click.stop="resetPassword">Reset Password</v-btn>
           </v-flex>
           <v-flex xs12>
+            <br/><h3>Change Comments</h3>
             <v-list two line>
               <template v-for = '(c, idx) in user.comments'>
                 <v-list-tile :key = 'idx'>
                 <v-list-tile-content>
                   <v-list-tile-title v-html='c.comment'></v-list-tile-title>
-                  <v-list-tile-sub-title v-html = "c.changedBy + ', ' + c.date.toDate().toDateString()"></v-list-tile-sub-title>
+                  <v-list-tile-sub-title v-html = "c.date.toDate().toDateString() + ' - ' + c.changedBy"></v-list-tile-sub-title>
                 </v-list-tile-content>
                 </v-list-tile>
               </template>
@@ -128,9 +129,7 @@
           })
       },
       save() {
-        // TODO I think I can remove userId from here as the getUser retrieves doc.id 
         this.$store.dispatch(action.SAVE_USER, { 
-          userId: this.userId,
           user: this.user,
           comment: this.comment,
           changedBy: this.$store.state.loggedInUser.email })
