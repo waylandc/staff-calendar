@@ -5,7 +5,7 @@
       <v-alert type="error" dismissible v-model="alert">
         {{ error }}
       </v-alert>
-      <v-alert v-if="saved" type="success" dismissible v-model="successMessage" @input= "v => v || dismissClicked()">
+      <v-alert v-if="wasSuccessful" type="success" dismissible v-model="successMessage" @input= "v => v || dismissClicked()">
         {{ successMessage }}
       </v-alert>
     </v-flex>
@@ -98,7 +98,6 @@
         alert: false,
         documentRef: null,
         loaded: false,
-        saved: false,
         successMessage: '',
         comment: '',
       }
@@ -135,7 +134,6 @@
           changedBy: this.$store.state.loggedInUser.email })
           .then(() => {
             this.successMessage = 'Successfully saved';
-            this.saved = true;
             this.comment = '';
             this.fetchUser();
           })
@@ -146,13 +144,11 @@
       },
       dismissClicked() {
         this.successMessage = '';
-        this.saved = false;
         this.$router.push({ path: '/users' });
       },
       resetPassword() {
         this.$store.dispatch(action.RESET_PASSWORD, { email: this.user.email });
         this.successMessage = 'Reset Password email sent to ', this.user.email;
-        this.saved = true;
       }
     },
     computed: {
@@ -165,7 +161,9 @@
       isAdmin() {
         return this.$store.getters.isAdmin;
       },
-
+      wasSuccessful() {
+        return this.successMessage !== '';
+      }
     },
     watch: {
       error(value) {
