@@ -29,35 +29,20 @@
             </v-text-field>
           </v-flex>
           <v-flex xs6>
-            <v-text-field v-model.number='user.daysAnnualLeave' label='Annual Leave' :readonly="!this.isAdmin" box>
+            <v-text-field v-model.number='user.daysAnnualLeave' label='Annual Leave' disabled box>
             </v-text-field>
           </v-flex>
           <v-flex xs6>
-            <v-text-field v-model.number='user.daysCompLeave' label='Comp Leave' :readonly="!this.isAdmin" box>
+            <v-text-field v-model.number='user.daysCompLeave' label='Comp Leave' disabled box>
             </v-text-field>
           </v-flex>
           <v-flex xs6>
-            <v-text-field v-model.number='user.daysCarryOver' label='Carry Over' :readonly="!this.isAdmin" box>
+            <v-text-field v-model.number='user.daysCarryOver' label='Carry Over' disabled box>
             </v-text-field>
           </v-flex>
           <v-flex xs6>
-            <v-text-field v-model.number='user.daysSick' label='Sick' :readonly="!this.isAdmin" box>
+            <v-text-field v-model.number='user.daysSick' label='Sick' disabled box>
             </v-text-field>
-          </v-flex>
-          <v-flex xs6>
-            <v-switch
-              :label="`Administrator: ${user.isAdmin.toString()}`"
-              v-model="user.isAdmin"
-            ></v-switch>
-          </v-flex>
-          <v-flex xs6>
-            <v-switch
-              :label="`Approver: ${user.isApprover.toString()}`"
-              v-model="user.isApprover"
-            ></v-switch>
-          </v-flex>
-          <v-flex class="text-xs-center" mt-5 v-if="this.isAdmin">
-            <v-btn color="primary" @click.stop="save">Save</v-btn>
           </v-flex>
         </v-layout>
       </v-form>
@@ -66,6 +51,8 @@
 </template>
 
 <script>
+  // This screen should probably be READ ONLY. Allows user to display their entitled
+
   import db from '../config/firebaseInit';
   import { createUserModel } from '../models/User';
 	import * as mutant from '../store/mutation-types';
@@ -102,13 +89,6 @@
       });
     },
     methods: {
-      save() {
-        this.$store.dispatch(action.SAVE_USER, { userId: this.userId, user: this.user});
-        // TODO on 2nd though, the dispatch is async. We shouldn't be displaying
-        // success msg below
-        this.successMessage = 'Successfully saved';
-        this.saved = true;
-      },
       dismissClicked() {
         this.successMessage = '';
         this.saved = false;
