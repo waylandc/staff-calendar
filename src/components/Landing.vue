@@ -19,6 +19,13 @@
 </template>
 
 <script>
-// TODO add check, if logged in, forward to /home
-export default {};
+import { isNullOrUndefined } from 'util';
+
+export default {
+  created() {
+    if (this.$store.state.loggedInUser !== isNullOrUndefined) {
+      this.$router.push({ path: '/home' });
+    }
+  }
+};
 </script>
