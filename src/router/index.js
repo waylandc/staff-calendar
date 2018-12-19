@@ -72,7 +72,7 @@ router.beforeEach((to, from, next) => {
   }
 
   if (requiresAuth && store.state.loggedInUser === null) {
-    console.log('requiresAuth and loggedInUser is null');
+    // console.log('requiresAuth and loggedInUser is null');
     firebase.auth().onAuthStateChanged((firebaseUser) => {
       if (firebaseUser !== null) {
         store.dispatch(action.GET_USER, firebaseUser).then(() => {
