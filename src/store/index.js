@@ -158,16 +158,18 @@ const store = new Vuex.Store({
 
     [action.CHANGE_PASSWORD]({ commit }, payload) {
       commit(mutant.SET_LOADING, true);
-      api.changePassword(payload.newPassword)
+      return new Promise((resolve, reject) => {
+        api.changePassword(payload.newPassword)
         .then(() => {
-          commit(mutant.SET_ERROR, 'testing errors');
           commit(mutant.SET_LOADING, false);
-          router.push({ path: '/home' });
+          resolve();
         })
         .catch((error) => {
           commit(mutant.SET_LOADING, false);
           commit(mutant.SET_ERROR, error.message);
+          reject(error);
         });
+      });
     },
 
     [action.ADD_EVENT]({ commit }, payload) {

@@ -77,7 +77,7 @@ export function createUser(newUser, passwd) {
  * @return {[User]} users
  */
 export function getUsers() {
-  console.log('api.getUsers...');
+  // console.log('api.getUsers...');
   const users = [];
   return new Promise((resolve, reject) => {
     db
@@ -87,7 +87,6 @@ export function getUsers() {
       .then((querySnapshot) => {
         let u;
         querySnapshot.forEach((doc) => {
-          console.log(doc.data());
           u = new User(
             doc.data().email,
             doc.data().isAdmin,
@@ -120,7 +119,7 @@ export function getUsers() {
             });
           });
         });
-        console.log('logged in, fetched comments, ', users);
+        console.log('api.getUsers retrieved, ', users);
         resolve(users);
       })
       .catch((error) => {
@@ -189,7 +188,7 @@ export function getEvents(data) {
             doc.data().status,
             doc.id);
 
-          console.log('getEvents filter, user= ', data.email, ' status= ', data.status);
+          // console.log('getEvents filter, user= ', data.email, ' status= ', data.status);
           //  NOTE - firestore queries don't support multiple fields
           //    so we need to filter on the server. YES THIS IS A BLOODY MESS but we need
           //    to provide query capability.
@@ -221,7 +220,7 @@ export function getEvents(data) {
             results.push(ce);
           }
         });
-        console.log('api.getSomeEvents returning ', results.length);
+        // console.log('api.getSomeEvents returning ', results.length);
         resolve(results);
       })
       .catch((error) => {

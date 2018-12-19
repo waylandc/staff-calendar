@@ -1,30 +1,31 @@
 <template>
   <v-container grid-list-md text-xs-center>
-    <v-layout row wrap>
-      <v-flex xs12 text-xs-center>
-        <h1>Change Password</h1>
-      </v-flex>
-      <v-flex xs12 sm6 offset-sm3 mt-3>
-        <v-alert type="error" dismissible v-model="alert">
-          {{ error }}
-        </v-alert>
-        <v-form v-if="loaded" @submit.prevent="changePassword">
-          <v-layout column>
-            <v-flex>
-              <v-text-field v-model='user.email' label='User' autocomplete="email" :readonly="true" box>
-              </v-text-field>
-            </v-flex>
-            <v-flex>
-              <v-text-field v-model='newPassword' label='New Password' type="password" autocomplete="new-password" :readonly="false" box>
-              </v-text-field>
-            </v-flex>
-            <v-flex class="text-xs-center" mt-5>
-              <v-btn color="primary" type="submit">Change Password</v-btn>
-            </v-flex>
-          </v-layout>
-        </v-form>
-      </v-flex>
-    </v-layout>
+    <h1>Change Password</h1>
+    <v-flex>
+      <v-alert type="error" dismissible v-model="alert">
+        {{ error }}
+      </v-alert>
+      <v-alert v-if="wasSuccessful" type="success" dismissible v-model="successMessage" @input= "v => v || dismissClicked()">
+        {{ successMessage }}
+      </v-alert>
+    </v-flex>
+    <v-flex xs12 sm6 offset-sm3 mt-3>
+      <v-form v-if="loaded" @submit.prevent="changePassword">
+        <v-layout column>
+          <v-flex>
+            <v-text-field v-model='user.email' label='User' autocomplete="email" :readonly="true" box>
+            </v-text-field>
+          </v-flex>
+          <v-flex>
+            <v-text-field v-model='newPassword' label='New Password' type="password" autocomplete="new-password" :readonly="false" box>
+            </v-text-field>
+          </v-flex>
+          <v-flex class="text-xs-center" mt-5>
+            <v-btn color="primary" type="submit">Change Password</v-btn>
+          </v-flex>
+        </v-layout>
+      </v-form>
+    </v-flex>
   </v-container>
 </template>
 
@@ -40,6 +41,7 @@
         user: '',
         newPassword: '',
         alert: false,
+        successMessage: '',
       }
     },
     created() {
@@ -49,7 +51,17 @@
     },
     methods: {
       changePassword () {
-        this.$store.dispatch(action.CHANGE_PASSWORD, {newPassword: this.newPassword});
+        this.$store.dispatch(action.CHANGE_PASSWORD, {newPassword: this.newPassword})
+          .then(() => {
+            this.successMessage = 'Password successfully changed';
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      },
+      dismissClicked() {
+        this.successMessage = '';
+        this.$router.push({ path: '/home' });
       },
     },
     computed: {
@@ -59,6 +71,9 @@
       loading() {
         return this.$store.state.loading;
       },
+      wasSuccessful() {
+        return this.successMessage !== '';
+      }
     },
     watch: {
       error(value) {

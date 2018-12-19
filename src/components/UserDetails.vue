@@ -139,7 +139,8 @@
           })
           .catch((error) => {
             console.log(error);
-            this.$store.commit(mutant.SET_ERROR, error);
+            //TODO is this SET_ERROR necessary? we already did it in store action
+            //this.$store.commit(mutant.SET_ERROR, error);
           })
       },
       dismissClicked() {
