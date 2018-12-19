@@ -3,6 +3,7 @@ import Router from 'vue-router';
 import firebase from 'firebase';
 import NProgress from 'nprogress';
 import store from '../store';
+import * as action from '../store/action-types';
 
 const routerOptions = [
   { path: '*', component: 'NotFound' },
@@ -50,7 +51,7 @@ router.beforeEach((to, from, next) => {
     firebase.auth().onAuthStateChanged((firebaseUser) => {
       // apologies, this is messy due to having 2 user objects
       if (firebaseUser != null && store.state.loggedInUser == null) {
-        store.dispatch('AUTO_LOGIN', firebaseUser).then(() => {
+        store.dispatch(action.GET_USER, firebaseUser).then(() => {
           if (store.state.loggedInUser.isAdmin) {
             next();
           } else {
@@ -73,7 +74,7 @@ router.beforeEach((to, from, next) => {
   if (requiresAuth && store.state.loggedInUser == null) {
     firebase.auth().onAuthStateChanged((firebaseUser) => {
       if (firebaseUser != null) {
-        store.dispatch('AUTO_LOGIN', firebaseUser).then(() => {
+        store.dispatch(action.GET_USER, firebaseUser).then(() => {
           next();
         }, () => {
           next('/signin');

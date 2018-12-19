@@ -6,13 +6,30 @@ import { User } from '../models/User';
 import { CalendarEvent } from '../models/CalendarEvent';
 import Constants from '../models/common';
 
+/**
+ * saveUser saves changes to a User and also creates a comment record for the save
+ * Requirement for a comment should be enforced by UI (no checking done here)
+ * @param { {user: User.js, userId: id, comment: string, changedBy: email} } data
+ */
 export function saveUser(data) {
-  console.log('api.saveUser...', data);
+  console.log('api.saveUser...', data.user.toJSON());
   return new Promise((resolve, reject) => {
     const dr = db.collection('users');
-    dr.doc(data.userId).update(data.user.toJSON())
+    // TODO I think I can remove userId from here, replace with data.user.id
+    dr.doc(data.user.docId).update(data.user.toJSON())
     .then(() => {
       console.log('OK saved user, ', data.user.toJSON());
+    })
+    .then(() => {
+      // now save the comment
+      const newComment = {
+        email: data.user.email,
+        changedBy: data.changedBy,
+        comment: data.comment,
+        date: new Date(),
+      };
+      console.log('about to save, ', newComment);
+      db.collection('userComments').add(newComment);
       resolve(data.user);
     })
     .catch((error) => {
@@ -61,15 +78,16 @@ export function createUser(newUser, passwd) {
  */
 export function getUsers() {
   console.log('api.getUsers...');
+  const users = [];
   return new Promise((resolve, reject) => {
     db
       .collection('users')
       .orderBy('email')
       .get()
       .then((querySnapshot) => {
-        const users = [];
         let u;
         querySnapshot.forEach((doc) => {
+          console.log(doc.data());
           u = new User(
             doc.data().email,
             doc.data().isAdmin,
@@ -80,9 +98,29 @@ export function getUsers() {
             doc.data().daysBooked,
             doc.data().daysSick,
             doc.id,
+            doc.data().firstName,
+            doc.data().lastName,
           );
+          u.comments = [];
           users.push(u);
         });
+      })
+      .then(() => {
+        users.forEach((u) => {
+          db.collection('userComments').where('email', '==', u.email).get()
+          .then((commentSnapshots) => {
+            commentSnapshots.forEach((c) => {
+              u.comments.push(
+                {
+                  comment: c.data().comment,
+                  date: c.data().date,
+                  email: c.data().email,
+                  changedBy: c.data().changedBy,
+                });
+            });
+          });
+        });
+        console.log('logged in, fetched comments, ', users);
         resolve(users);
       })
       .catch((error) => {
@@ -176,9 +214,7 @@ export function getEvents(data) {
               if (data.status !== ce.status) {
                 isFiltered = true;
               }
-              console.log(ce.title, ' status is, ', ce.status, ', want ', data.status, '. filtered ', data.status === ce.status);
             }
-            // console.log('done ', data.status, ' status check, ', isFiltered);
           }
 
           if (!isFiltered) {
@@ -196,64 +232,54 @@ export function getEvents(data) {
 }
 
 /**
- * autoLogin checks for an existing firebase session and then performs
- * the app specific login
- * NOTE - it's important to wrap this in a Promise or else this function
- * executes asynchronously and isn't ready by time the UI renders
+ * getUser fetches info from both users and userComments tables
  * @param {string} email
+ * @returns (User.js) user
  */
-export function autoLogin(email) {
-  console.log('api.autoLogin...');
+export function getUser(email) {
+  console.log('getUser...', email);
   return new Promise((resolve, reject) => {
+    let u;
     db.collection('users').where('email', '==', email).get()
-      .then(
-        (snaps) => {
-          snaps.forEach((user) => {
-            const u = new User(
-              user.data().email, user.data().isAdmin,
-              user.data().isApprover, user.data().daysAnnualLeave,
-	            user.data().daysCompLeave, user.data().daysCarryOver, user.data().daysBooked,
-              user.data().daysSick, user.id, user.data().firstName, user.data().lastName);
-            console.log('auto logged in, ', u);
-            resolve(u);
+    .then(
+      (snaps) => {
+        if (snaps.size === 0) {
+          reject(new Error('Firebase login successful but User record missing from system'));
+        }
+
+        snaps.forEach((user) => {
+          u = new User(
+            user.data().email, user.data().isAdmin,
+            user.data().isApprover, user.data().daysAnnualLeave,
+            user.data().daysCompLeave, user.data().daysCarryOver, user.data().daysBooked,
+            user.data().daysSick, user.id, user.data().firstName, user.data().lastName, [],
+          );
+        });
+      },
+    )
+    .then(() => {
+      db.collection('userComments').where('email', '==', email).get()
+        .then((commentSnapshots) => {
+          commentSnapshots.forEach((c) => {
+            u.comments.push({
+              comment: c.data().comment, date: c.data().date, email: c.data().email, changedBy: c.data().changedBy });
           });
-        },
-      )
-      .catch(error => reject(error));
+          console.log('logged in, fetched comments, ', u.comments);
+          u.comments = u.comments.sort((a, b) => b.date.toDate() - a.date.toDate());
+          console.log('sorted comments, ', u.comments);
+        });
+      resolve(u);
+    })
+    .catch(error => reject(error));
   });
 }
 
-/**
- * Login a user with their Firebase credentials and then retrieve
- * user profile from our own users table.
- * @param {string} email
- * @param {string} password
- * @return User
- */
 export function login(email, password) {
-  console.log('api.login...');
   return new Promise((resolve, reject) => {
-    // change Auth state persistence
-    // https://firebase.google.com/docs/auth/web/auth-state-persistence
     firebase.auth().setPersistence(firebase.auth.Auth.Persistence.SESSION)
       .then(() => firebase.auth().signInWithEmailAndPassword(email, password))
-      .then(() => {
-        db.collection('users').where('email', '==', email).get()
-          .then(
-            (snaps) => {
-              snaps.forEach((user) => {
-                const u = new User(
-                  user.data().email, user.data().isAdmin,
-                  user.data().isApprover, user.data().daysAnnualLeave,
-                  user.data().daysCompLeave, user.data().daysCarryOver, user.data().daysBooked,
-                  user.data().daysSick, user.id, user.data().firstName, user.data().lastName);
-                console.log('logged in, ', u);
-                resolve(u);
-              });
-            },
-          )
-          .catch(error => reject(error));
-      })
+      .then(() => getUser(email))
+      .then(user => resolve(user))
       .catch(error => reject(error));
   });
 }

@@ -36,6 +36,7 @@ const store = new Vuex.Store({
     loggedInUser: null, // instance of User.js
     error: null,
     loading: false,
+    selectedUser: null, // email of user that's been selected from Users table
   },
   mutations: {
     [mutant.SET_LOGGED_IN_USER](state, payload) {
@@ -47,37 +48,49 @@ const store = new Vuex.Store({
     [mutant.SET_LOADING](state, payload) {
       state.loading = payload;
     },
+    [mutant.SET_SELECTED_USER](state, payload) {
+      state.selectedUser = payload;
+    },
   },
   actions: {
-    // saveUser payload {user: User.js, userId: id}
+    // saveUser payload {user: User.js, userId: id, comment: string, changedBy: email}
     [action.SAVE_USER]({ commit }, payload) {
       commit(mutant.SET_LOADING, true);
-      api.saveUser(payload)
-        .then(() => {
-          commit(mutant.SET_LOADING, false);
-        })
-        .catch((error) => {
-          console.log('store error, ', error);
-          commit(mutant.SET_ERROR, error);
-          commit(mutant.SET_LOADING, false);
-        });
+      // put the new comments into user object before we persist it
+      return new Promise((resolve, reject) => {
+        // payload.user.comments.push(
+        //   {
+        //     comment: payload.comment,
+        //     changedBy: payload.changedBy,
+        //     date: new Date(),
+        //   });
+        api.saveUser(payload)
+          .then(() => {
+            commit(mutant.SET_LOADING, false);
+            resolve();
+          })
+          .catch((error) => {
+            console.log('store error, ', error);
+            commit(mutant.SET_ERROR, error);
+            commit(mutant.SET_LOADING, false);
+            reject(error);
+          });
+      });
     },
+
     // USER_SIGNUP payload {email: e, password: p, firstName: fn, lastName: ln}
     [action.USER_SIGNUP]({ commit }, p) {
       commit(mutant.SET_LOADING, true);
       // docId param is null because it's the document ref ID in
       // Firestore which hasn't been created yet.
       // TODO - check if api.createUser returns a user object that contains the id
-      // I think it's populated in the subsequent call to autoLogin
-      const u = new User(p.email, false, false, 0, 0, 0, 0, 0, null, p.firstName, p.lastName);
+      // I think it's populated in the subsequent call to getUser
+      const u = new User(p.email, false, false, 0, 0, 0, 0, 0, null, p.firstName, p.lastName, []);
       api.createUser(u, p.password)
         .then((newUser) => {
           console.log(newUser);
-          // commit(mutant.SET_LOGGED_IN_USER, { email: user.email });
-          // })
-          // .then(() => {
           commit(mutant.SET_LOADING, true);
-          api.autoLogin(u.email);
+          api.getUser(u.email);
         })
         .then((user) => {
           commit(mutant.SET_LOGGED_IN_USER, user);
@@ -118,12 +131,19 @@ const store = new Vuex.Store({
         });
     },
 
-    [action.AUTO_LOGIN]({ commit }, payload) {
+    [action.SHOW_USER_DETAILS]({ commit }, payload) {
+      commit(mutant.SET_LOADING, true);
+      commit(mutant.SET_SELECTED_USER, payload.email);
+      router.push({ path: `/users/${payload.id}` });
+    },
+
+    // GET_USER payload { email: string }
+    [action.GET_USER]({ commit }, payload) {
       commit(mutant.SET_LOADING, true);
       // important to wrap this in a Promise or else the UI tries to render
       // before we load the user into store
       return new Promise((resolve, reject) => {
-        api.autoLogin(payload.email)
+        api.getUser(payload.email)
         .then((user) => {
           commit(mutant.SET_LOGGED_IN_USER, user);
           commit(mutant.SET_LOADING, false);

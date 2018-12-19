@@ -3,7 +3,7 @@
 // notice we don't store password b/c firebase takes care of auth
 export class User {
   // new User(...)
-  constructor(email, admin, approver, al, cl, co, db, s, id, fn, ln) {
+  constructor(email, admin, approver, al, cl, co, db, s, id, fn, ln, c) {
     this.email = email;
     this.isAdmin = admin;
     this.isApprover = approver;
@@ -15,8 +15,14 @@ export class User {
     this.docId = id; // docId is the document id in firebase
     this.firstName = fn;
     this.lastName = ln;
+    this.comments = c;  // {date: d, changedBy: email, comment: string}
   }
 
+  // this is used for createing the JSOn object we store in firestore
+  // note I don't put comments in here because firestore has crummy support
+  // for nested collections (i.e. array within the custom object)
+  // so I had to create a new FS collection called userComments and store it
+  // separately in the API layer
   toJSON() {
     return {
       email: this.email,
@@ -48,5 +54,6 @@ export function createUserModel(d) {
     d.docId,
     d.firstName,
     d.lastName,
+    d.comments,
   );
 }

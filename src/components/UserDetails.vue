@@ -56,11 +56,26 @@
               v-model="user.isApprover"
             ></v-switch>
           </v-flex>
+          <v-flex xs12 v-if="this.isAdmin">
+            <v-text-field v-model = 'comment' label = '*Please describe your changes'></v-text-field>
+          </v-flex>
           <v-flex xs6 v-if="this.isAdmin">
             <v-btn color="primary" @click.stop="save">Save</v-btn>
           </v-flex>
           <v-flex xs6 v-if="this.isAdmin">
             <v-btn color="reject" @click.stop="resetPassword">Reset Password</v-btn>
+          </v-flex>
+          <v-flex xs12>
+            <v-list two line>
+              <template v-for = '(c, idx) in user.comments'>
+                <v-list-tile :key = 'idx'>
+                <v-list-tile-content>
+                  <v-list-tile-title v-html='c.comment'></v-list-tile-title>
+                  <v-list-tile-sub-title v-html = "c.changedBy + ', ' + c.date.toDate().toDateString()"></v-list-tile-sub-title>
+                </v-list-tile-content>
+                </v-list-tile>
+              </template>
+            </v-list>
           </v-flex>
         </v-layout>
       </v-form>
@@ -84,35 +99,51 @@
         loaded: false,
         saved: false,
         successMessage: '',
+        comment: '',
       }
     },
     created() {
-      this.loaded = false;
       this.userId = this.$route.params.id;
-      // TODO refactor this to use api.js
-      const docRef = db.collection('users').doc(this.userId);
-      docRef.get().then((doc) => {
-        if (doc.exists) {
-          this.user = createUserModel(doc.data());
-          this.user.docId = this.userId;
-          // console.log('retrieved user, ', doc.data());
-          this.documentRef = docRef;
-          this.loaded = true;
-        } else {
-          this.$store.commit(mutant.SET_ERROR, 'Error, user does not exist');
-          console.log(this.error);
-        }
-      }).catch((error) => {
-        this.$store.commit(mutant.SET_ERROR, error.message);
-        console.log('error getting document: ', error);
-      });
-
+      console.log('loading, ', this.$store.state.selectedUser);
+      if (this.$store.state.selectedUser !== null && this.$store.state.selectedUser !== '') {
+        this.fetchUser();
+      } else {
+        console.log('no selectedUser');
+        this.$store.commit(mutant.SET_ERROR, 'Cannot load, no selectedUser found');
+        this.$router.push('/404');
+      }
     },
     methods: {
+      fetchUser() {
+        this.loaded = false;
+        this.$store.dispatch(action.GET_USER, { email: this.$store.state.selectedUser })
+          .then((user) => {
+            console.log('UserDetails loaded, ', user);
+            this.user = user;
+            this.loaded = true;
+          })
+          .catch((error) => {
+            console.log(error);
+            this.$store.commit(mutant.SET_ERROR, error);
+          })
+      },
       save() {
-        this.$store.dispatch(action.SAVE_USER, { userId: this.userId, user: this.user});
-        this.successMessage = 'Successfully saved';
-        this.saved = true;
+        // TODO I think I can remove userId from here as the getUser retrieves doc.id 
+        this.$store.dispatch(action.SAVE_USER, { 
+          userId: this.userId,
+          user: this.user,
+          comment: this.comment,
+          changedBy: this.$store.state.loggedInUser.email })
+          .then(() => {
+            this.successMessage = 'Successfully saved';
+            this.saved = true;
+            this.comment = '';
+            this.fetchUser();
+          })
+          .catch((error) => {
+            console.log(error);
+            this.$store.commit(mutant.SET_ERROR, error);
+          })
       },
       dismissClicked() {
         this.successMessage = '';

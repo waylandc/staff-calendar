@@ -11,8 +11,8 @@
         <div>
           <v-data-table :headers='headers' :items='users' hide-actions dark class='elevation-1'>
             <template slot='items' slot-scope='props'>
-              <tr @click='showDetails(props.item.docId)'>
-                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.email }}</td>
+              <tr @click='showDetails(props.item.docId, props.item.email)'>
+                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.lastName.toUpperCase() }}, {{ props.item.firstName }}</td>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysAnnualLeave }}</td>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysCompLeave }}</td>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysBooked }}</td>
@@ -47,7 +47,7 @@ export default {
       // setup the column headers for the data table
       headers: [
         {
-          text: 'Email',
+          text: 'Name',
           align: 'left',
           sortable: false, // TODO sortable true doesn't work
           value: 'name',
@@ -103,7 +103,7 @@ export default {
     NProgress.start();
     this.loaded = false;
     this.$store.dispatch(action.GET_USERS)
-      .then(users => {
+      .then((users) => {
         this.users = users;
         this.loaded = true;
       })
@@ -128,8 +128,8 @@ export default {
     addProperty() {
       this.$router.push({ path: '/addUser' })
     },
-    showDetails(id) {
-      this.$router.push({ path: `/users/${id}` });
+    showDetails(id, email) {
+      this.$store.dispatch(action.SHOW_USER_DETAILS, { email: email, id: id });
     },
   },
   watch: {
