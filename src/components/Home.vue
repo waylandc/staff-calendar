@@ -48,7 +48,7 @@ export default {
         events.forEach((e) => {
           this.events.push(e.toCalendarEvent());
         });
-        console.log(this.events);
+        // console.log(this.events);
       })
       .catch((error) => {
         console.log(error);
