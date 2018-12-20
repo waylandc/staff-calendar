@@ -5,7 +5,7 @@
       <v-alert type="error" dismissible v-model="alert">
         {{ error }}
       </v-alert>
-      <v-alert v-if="saved" type="success" dismissible v-model="successMessage" @input= "v => v || dismissClicked()">
+      <v-alert v-if="wasSuccessful" type="success" dismissible v-model="successMessage" @input= "v => v || dismissClicked()">
         {{ successMessage }}
       </v-alert>
     </v-flex>
@@ -107,7 +107,7 @@
 import NProgress from 'nprogress';
 import moment from 'moment-business-days';
 import * as action from '../store/action-types';
-	import * as mutant from '../store/mutation-types';
+import * as mutant from '../store/mutation-types';
 
 export default {
   data() {
@@ -125,7 +125,6 @@ export default {
       newCountry: 'Hong Kong',
       sDate: new Date(),  // this is a Date
       eDate: new Date(),  // this is a Date
-      saved: false,
       successMessage: '',
     }
   },
@@ -142,22 +141,27 @@ export default {
     }
   },
   created() {
-    this.loaded = false;
+    // holidays loaded at app startup
+    NProgress.start();
     this.fetchData();
     NProgress.done();
 
   },
   methods: {
+    // only use this to reload holidays if we added something
     fetchData() {
-    this.$store.dispatch(action.GET_HOLIDAYS, 
-      { startDate: moment().subtract(1, 'y'), endDate: moment().add(1, 'y') })
-      .then(holidays => {
-        this.holidays = holidays;
-        this.loaded = true;
-      })
-      .catch((err) => {
-        this.$store.commit(mutant.SET_ERROR, err.message);
-      });
+      this.loaded = false;
+
+      this.$store.dispatch(action.GET_HOLIDAYS, 
+        { startDate: moment().subtract(1, 'y'), endDate: moment().add(1, 'y') })
+        .then(holidays => {
+          this.holidays = holidays;
+          this.loaded = true;
+        })
+        .then(this.$forceUpdate())
+        .catch((err) => {
+          this.$store.commit(mutant.SET_ERROR, err.message);
+        });
 
     },
     createHoliday() {
@@ -169,9 +173,13 @@ export default {
       };
       this.$store.dispatch(action.ADD_HOLIDAY, newHoliday)
         .then((docRef) => {
+          // refetch data to refresh
+          this.fetchData();
+        })
+        .then(() => {
           this.successMessage = 'Successfully created';
-          this.saved = true;
-        }).catch((error) => {
+        })
+        .catch((error) => {
           this.$store.commit(mutant.SET_ERROR, error.message);
           console.error('error adding doc: ', error);
         });
@@ -179,9 +187,6 @@ export default {
     },
     dismissClicked() {
       this.successMessage = '';
-      this.saved = false;
-      // refetch data to refresh
-      this.fetchData();
       // empty out the form
       this.startDate = new Date().toISOString().substr(0, 10);  // this is a string
       this.endDate = new Date().toISOString().substr(0, 10);    // this is a string
@@ -199,6 +204,9 @@ export default {
     loading() {
       return this.$store.state.loading;
     },
+    wasSuccessful() {
+      return this.successMessage !== '';
+    }
   },
   watch: {
     // The calendar uses strings so we use this method to parse the string

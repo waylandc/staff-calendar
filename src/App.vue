@@ -36,7 +36,10 @@
 </template>
 
 <script>
-  export default {
+import * as action from './store/action-types';
+import moment from 'moment-business-days';
+
+export default {
     data: () => ({
       miniVariant: false, // condenses nav drawer width
       drawer: false,
@@ -90,7 +93,7 @@
     },
     methods: {
       userSignOut() {
-        this.$store.dispatch('USER_LOGOUT');
+        this.$store.dispatch(action.USER_LOGOUT);
       },
     },
   };

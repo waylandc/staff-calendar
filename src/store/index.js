@@ -24,8 +24,7 @@ Vue.use(Vuex);
  *    -use dispatch from within routes/components
  * -commit triggers mutation
  *    -NEVER commit from route/component. commit should only be done from within
- * an action. commits are sync whic
- *     might freeze the UI
+ *    an action. commits are sync which might freeze the UI
  * -getters are computed properties for our store. results are cached and only
  * recomputed when it's dependencies change
  * -getters always receive state as their first param
@@ -37,6 +36,7 @@ const store = new Vuex.Store({
     error: null,
     loading: false,
     selectedUser: null, // email of user that's been selected from Users table
+    holidays: null, // cache holidays
   },
   mutations: {
     [mutant.SET_LOGGED_IN_USER](state, payload) {
@@ -222,19 +222,23 @@ const store = new Vuex.Store({
     },
 
     [action.ADD_HOLIDAY]({ commit }, payload) {
-      commit(mutant.SET_LOADING, true);
       // payload should be { title: string, startDate: moment, endDate: moment, country: string }
-      console.log('ADD_HOLIDAY, ', payload);
-      api.createHoliday(payload)
-        .then((doc) => {
-          console.log('ADD_HOLIDAY, ', doc);
-          commit(mutant.SET_LOADING, false);
-        })
-        .catch((error) => {
-          console.log('ADD_HOLIDAY, ', error);
-          commit(mutant.SET_ERROR, error);
-          commit(mutant.SET_LOADING, false);
-        });
+      commit(mutant.SET_LOADING, true);
+      return new Promise((resolve, reject) => {
+        console.log('ADD_HOLIDAY, ', payload);
+        api.createHoliday(payload)
+          .then((doc) => {
+            console.log('ADD_HOLIDAY, ', doc);
+            commit(mutant.SET_LOADING, false);
+            resolve(doc);
+          })
+          .catch((error) => {
+            console.log('ADD_HOLIDAY, ', error);
+            commit(mutant.SET_ERROR, error);
+            commit(mutant.SET_LOADING, false);
+            reject(error);
+          });
+      });
     },
 
     [action.RESET_PASSWORD]({ commit }, payload) {
