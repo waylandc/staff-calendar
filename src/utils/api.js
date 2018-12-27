@@ -129,6 +129,27 @@ export function getUsers() {
   });
 }
 
+/**
+ * Returns an array of email addresses of approvers in system
+ * @returns [string]
+ */
+export function getApprovers() {
+  console.log('api.getApprovers...');
+  const approvers = [];
+  return new Promise((resolve, reject) => {
+    db.collection('users').where('isApprover', '==', true).get()
+    .then((users) => {
+      users.forEach((u) => {
+        approvers.push(u.data().email);
+      });
+      resolve(approvers);
+    })
+    .catch((error) => {
+      reject(error);
+    });
+  });
+}
+
 function validateDateParams(d) {
   // both start/end were not passed in
   if ((d.start === '' && d.end === '') || (d.start === undefined && d.end === undefined)) {
@@ -184,8 +205,12 @@ export function getEvents(data) {
             moment(doc.data().endDate.toDate()),
             doc.data().halfDay,
             doc.data().requestor,
-            doc.data().approver,
-            doc.data().status,
+            doc.data().firstApprover,
+            doc.data().secondApprover,
+            doc.data().firstStatus,
+            doc.data().secondStatus,
+            doc.data().firstComment,
+            doc.data().secondComment,
             doc.id);
 
           // console.log('getEvents filter, user= ', data.email, ' status= ', data.status);
@@ -210,8 +235,16 @@ export function getEvents(data) {
           // filter on status. this field is always present so don't need to check undefined.
           if (data.status !== Constants.ALL) {
             if (!isFiltered) {
-              if (data.status !== ce.status) {
-                isFiltered = true;
+              // if there is a 2nd approver set, we need to check both statuses
+              if (ce.secondApprover !== '' && ce.secondApprover !== undefined) {
+                if (data.status !== ce.firstStatus && data.status !== ce.secondStatus) {
+                  isFiltered = true;
+                }
+              } else {
+                /* eslint-disable no-lonely-if */
+                if (data.status !== ce.firstStatus) {
+                  isFiltered = true;
+                }
               }
             }
           }
@@ -338,8 +371,8 @@ export function getHolidays(start, end) {
         querySnapshot.forEach((doc) => {
           u = {
             title: doc.data().title,
-            startDate: doc.data().startDate,
-            endDate: doc.data().endDate,
+            startDate: moment(doc.data().startDate.toDate()),
+            endDate: moment(doc.data().endDate.toDate()),
             country: doc.data().country,
             docId: doc.id,
           };

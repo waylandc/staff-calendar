@@ -104,7 +104,7 @@
     },
     created() {
       this.userId = this.$route.params.id;
-      console.log('loading, ', this.$store.state.selectedUser);
+      console.log('UserDetails, ', this.$store.state.selectedUser);
       if (this.$store.state.selectedUser !== null && this.$store.state.selectedUser !== '') {
         this.fetchUser();
       } else {
@@ -140,6 +140,7 @@
           .catch((error) => {
             console.log(error);
             //TODO is this SET_ERROR necessary? we already did it in store action
+            //TODO on 2nd thought, we should probably do it here or why bother creating a promise that returns the error?
             //this.$store.commit(mutant.SET_ERROR, error);
           })
       },

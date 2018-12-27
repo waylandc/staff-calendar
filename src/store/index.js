@@ -80,15 +80,14 @@ const store = new Vuex.Store({
       // I think it's populated in the subsequent call to getUser
       const u = new User(p.email, false, false, 0, 0, 0, 0, 0, null, p.firstName, p.lastName, []);
       api.createUser(u, p.password)
-        .then((newUser) => {
-          console.log(newUser);
+        .then(() => {
           commit(mutant.SET_LOADING, true);
-          api.getUser(u.email);
+          return api.getUser(u.email);
         })
         .then((user) => {
           commit(mutant.SET_LOGGED_IN_USER, user);
           commit(mutant.SET_LOADING, false);
-          console.log('created user, forwarding to home');
+          console.log('created user, forwarding to home, ', user);
           router.push({ path: '/home' });
         })
         .catch((err) => {
@@ -138,7 +137,6 @@ const store = new Vuex.Store({
       return new Promise((resolve, reject) => {
         api.getUser(payload.email)
         .then((user) => {
-          commit(mutant.SET_LOGGED_IN_USER, user);
           commit(mutant.SET_LOADING, false);
           resolve(user);
         })
@@ -180,7 +178,6 @@ const store = new Vuex.Store({
         .then((doc) => {
           console.log('ADD_EVENT, ', doc);
           commit(mutant.SET_LOADING, false);
-          // router.push('/leaveRequests');
         })
         .catch((error) => {
           console.log('ADD_EVENT, ', error);
@@ -253,6 +250,21 @@ const store = new Vuex.Store({
           commit(mutant.SET_ERROR, error);
           commit(mutant.SET_LOADING, false);
         });
+    },
+
+    [action.GET_APPROVERS]({ commit }) {
+      commit(mutant.SET_LOADING, true);
+      return new Promise((resolve, reject) => {
+        api.getApprovers()
+        .then((approvers) => {
+          commit(mutant.SET_LOADING, false);
+          resolve(approvers);
+        })
+        .catch((error) => {
+          commit(mutant.SET_LOADING, false);
+          reject(error);
+        });
+      });
     },
   },
 

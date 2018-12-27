@@ -81,6 +81,26 @@
               </v-date-picker>
             </v-menu>
           </v-flex>
+          <v-flex xs6>
+            <v-select
+            box
+              v-model = 'firstApprover'
+              :items = 'approvers'
+              item-value = 'val'
+              item-text = 'key'
+              label = 'First Approver'>
+            </v-select>
+          </v-flex>
+          <v-flex xs6>
+            <v-select
+            box
+              v-model = 'secondApprover'
+              :items = 'approvers'
+              item-value = 'val'
+              item-text = 'key'
+              label = 'Second Approver'>
+            </v-select>
+          </v-flex>
           <v-flex class="text-xs-center" mt-5>
             <v-btn 
               color="approve"
@@ -96,6 +116,7 @@
 </template>
 
 <script>
+  import moment from 'moment';
   import Constants from '../models/common.js';
   import { CalendarEvent } from '../models/CalendarEvent';
   import * as mutant from '../store/mutation-types';
@@ -120,11 +141,25 @@
           {key: 'Annual', val: 'ANN'},
           {key:'Compensation', val: 'COMP'},
           {key: 'Carry Over', val: 'CO'},
-	  {key: 'Sick', val: 'SICK'}],
+	        {key: 'Sick', val: 'SICK'}],
         leaveType: 'ANN',
         duration: ['Full', 'AM', 'PM'],
-        halfDay: 'Full'
+        halfDay: 'Full',
+        firstApprover: '',
+        secondApprover: '',
+        approvers: [],
       };
+    },
+    created() {
+      this.loaded = false;
+      this.$store.dispatch(action.GET_APPROVERS)
+        .then((approvers) => {
+          this.approvers = approvers;
+          this.loaded = true;
+        })
+        .catch((error) => {
+          this.$store.commit(mutant.SET_ERROR, error);
+        })
     },
     watch: {
       // The calendar uses strings so we use this method to parse the string
@@ -178,7 +213,25 @@
         var result = Math.round(difference_ms/one_day);
         return result
       },
+      validateRequest() {
+        // console.log(this.leaveType, ', day of year, ', moment(this.eDate).dayOfYear());
+        // dayOfYear 90 is March 31, deadline for which carry over leave must be used by
+        if (this.leaveType === 'CO' && moment(this.eDate).dayOfYear() > 90) {
+          this.$store.commit(mutant.SET_ERROR, 'Carry Over leave must be taken before March 31');
+          return false;
+        }
+
+        if (this.firstApprover === '') {
+          this.$store.commit(mutant.SET_ERROR, 'You must specify at least one approver');
+          return false;
+        }
+
+        return true;
+      },
       createRequest() {
+        if (!this.validateRequest()) {
+          return;
+        }
         // var aa = this.daysBetween(new Date(this.sDate), new Date(this.eDate));
         // console.log('num days, ' + aa);
 
@@ -189,8 +242,12 @@
           this.eDate,
           this.halfDay,
           this.$store.state.loggedInUser.email,
-          '', // approver is set when someone approves
+          this.firstApprover,
+          this.secondApprover,
           Constants.PENDING,
+          Constants.PENDING,
+          '',
+          '',
           null, // docId is populated on a fetch
           this.leaveType,
         );

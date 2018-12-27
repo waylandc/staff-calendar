@@ -15,8 +15,8 @@
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.lastName.toUpperCase() }}, {{ props.item.firstName }}</td>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysAnnualLeave }}</td>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysCompLeave }}</td>
-                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysBooked }}</td>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysCarryOver }}</td>
+                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysBooked }}</td>
                 <td class='mdl-data-table__cell--non-numeric'>
                   {{ props.item.daysAnnualLeave + props.item.daysCarryOver + props.item.daysCompLeave - props.item.daysBooked }}
                 </td>

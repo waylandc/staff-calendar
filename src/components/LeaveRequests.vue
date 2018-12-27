@@ -24,7 +24,7 @@
             <template slot='items' slot-scope='props'>
               <tr @click='showDetails(props.item.docId)'>
                 <td class='mdl-data-table__cell--non-numeric'>
-                  {{ getStatus(props.item.status) }}
+                  {{ getStatus(props.item.aggregateStatus()) }}
                 </td>
                 <td class='mdl-data-table__cell--non-numeric'>
                   {{ props.item.requestor }}
@@ -171,7 +171,7 @@
         };
       },
       changeStatusFilter() {
-        console.log('status changed, ', this.statusSelected);
+        // console.log('status changed, ', this.statusSelected);
         switch(this.statusSelected) {
           case 'Pending':
             this.getEvents(Constants.PENDING);

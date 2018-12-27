@@ -13,4 +13,4 @@ export const GET_HOLIDAYS = 'GET_HOLIDAYS';
 export const ADD_HOLIDAY = 'ADD_HOLIDAY';
 export const RESET_PASSWORD = 'RESET_PASSWORD';
 export const SHOW_USER_DETAILS = 'SHOW_USER_DETAILS';
-
+export const GET_APPROVERS = 'GET_APPROVERS';

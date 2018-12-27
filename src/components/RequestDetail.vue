@@ -55,6 +55,14 @@
 			</v-flex>
 			<v-flex xs6>
 			    <v-text-field
+					v-model = 'aggrStatus'
+						label = 'Status'
+						:readonly = "true"
+					box>
+			    </v-text-field>
+			</v-flex>
+			<v-flex xs6>
+			    <v-text-field
 				v-model='request.requestor' 
 					 label='Requestor' 
 					 autocomplete = "name" 
@@ -64,16 +72,33 @@
 			</v-flex>
 			<v-flex xs6>
 			    <v-text-field
-				v-model='request.approver' 
-					 label='Approver' 
+				v-model='request.firstApprover' 
+					 label='First Approver' 
 					 autocomplete = "name" 
 					 :readonly = "true" 
 					 box>
 			    </v-text-field>
 			</v-flex>
-			<v-flex xs12>
+			<v-flex xs6>
 			    <v-text-field
-				v-model = 'request.approverComment'
+				v-model = 'request.firstComment'
+					   label = 'Approver Comments'
+					   :readonly = '!canApproveReject'
+					   box>
+			    </v-text-field>
+			</v-flex>
+			<v-flex xs6>
+			    <v-text-field
+				v-model='request.secondApprover' 
+					 label='Second Approver' 
+					 autocomplete = "name" 
+					 :readonly = "true" 
+					 box>
+			    </v-text-field>
+			</v-flex>
+			<v-flex xs6>
+			    <v-text-field
+				v-model = 'request.secondComment'
 					   label = 'Approver Comments'
 					   :readonly = '!canApproveReject'
 					   box>
@@ -101,122 +126,175 @@
 </template>
 
 <script>
-	import db from '../config/firebaseInit';
-	import Constants from '../models/common.js';
-	import * as mutant from '../store/mutation-types';
-	import * as action from '../store/action-types';
+import { isNullOrUndefined } from 'util';
+import db from '../config/firebaseInit';
+import { CalendarEvent } from '../models/CalendarEvent';
+import Constants from '../models/common.js';
+import * as mutant from '../store/mutation-types';
+import * as action from '../store/action-types';
 
- export default {
-     name: 'RequestDetail',
-     data() {
-	 return {
-             leaveTypes: [
-		 {key: 'Annual', val: 'ANN'},
-		 {key:'Compensation', val: 'COMP'},
-		 {key: 'Carry Over', val: 'CO'}],
-             drawer: false,
-             request: '',
-             loaded: false,
-             propId: '',
-             startString: '',
-             endString: '',
-             user: null,
-             documentRef: null,
-             alert: false,
-	     //        approverComment: '',
-	 };
-     },
-     created() {
-	 this.user = this.$store.state.loggedInUser;
-	 this.loaded = false;
-	 this.propId = this.$route.params.id;
-	 const docRef = db.collection('leaveRequests').doc(this.propId);
-	 console.log(this.user.email + ' is admin, ' + this.user.isAdmin);
-	 console.log(this.user.email + ' is approver, ' + this.user.isApprover);
-	 docRef.get().then((doc) => {
-             if (doc.exists) {
-		 this.request = doc.data();
-		 this.documentRef = docRef;
-		 this.loaded = true;
-             } else {
-		 this.$store.commit(mutant.SET_ERROR, 'Error, No such document');
-		 console.log(this.error);
-             }
-	 }).catch((error) => {
-             this.$store.commit(mutant.SET_ERROR, 'Error loading document');
-             console.log('error getting document: ', error);
-	 });
-     },
-     computed: {
-	 error() {
-             return this.$store.state.error;
-	 },
-	 loading() {
-             return this.$store.state.loading;
-	 },
-	 canApproveReject() {
-             return (this.$store.state.loggedInUser.isApprover && this.request.status === Constants.PENDING);
-	 },
-	 convertLeaveType() {
-	     // Perform a reverse lookup of the leave type description based on the code
-	     // stored in database
-	     const a = this.leaveTypes.filter((lt) => lt.val === this.request.leaveType);
-	     console.log(a[0]);
-	     if (a[0] !== undefined) {
-		 return a[0].key;
-	     } else {
-		 return '';
-	     }
-	 }
-     },
-     methods: {
-	 // TODO don't support edit request yet
-	 // https://gitlab.com/waylandc/oax-staff-calendar/issues/5
-	 // editProperty() {
-	 //   console.log('calling editRequest')
-	 //   this.$router.push(`/leaveRequest/edit/${this.propId}`);
-	 // },
-	 approve() {
-             // TODO approve/reject should be moved to api.js and invoked by dispatching an action
-             // console.log('approve clicked, ', this.propId);
-             var o = {};
-             o.status = 1;
-             o.approverComment = this.request.approverComment;
-             o.approver = this.$store.state.loggedInUser.email;
-	     console.log(o);
-             this.documentRef.update(o);
-             this.$router.push({ path: '/leaveRequests' });
-	 },
-	 reject() {
-             // console.log('reject clicked');
-             var o = {};
-             o.status = 2;
-             o.approverComment = this.request.approverComment;
-             o.approver = this.$store.state.loggedInUser.email;
-             this.documentRef.update(o);
-             this.$router.push({ path: '/leaveRequests' });
-	 }
-     },
-     watch: {
-	 // these watch methods are to generate a formatted date value because v-text-field
-	 // doesn't support formatting of the v-model object. so create a formatted string
-	 // here and display it on form instead of the v-model 
-	 'request.startDate': function(val, oldVal) {
-             this.startString = val.toDate().toDateString();
-	 },
-	 'request.endDate': function(val, oldVal) {
-             this.endString = val.toDate().toDateString();
-	 },
-	 error(value) {
-             if (value) {
-		 this.alert = true;
-             }
-	 },
-	 alert(value) {
-             if (!value) {
-		 this.$store.commit(mutant.SET_ERROR, null);
-             }
-	 },
-     }
- };
+export default {
+	name: 'RequestDetail',
+	data() {
+		return {
+			// TODO can/should we move leaveTypes to Constants?
+			leaveTypes: [
+				{key: 'Annual', val: 'ANN'},
+				{key:'Compensation', val: 'COMP'},
+				{key: 'Carry Over', val: 'CO'},
+				{key: 'Sick', val: 'SICK'}],
+			drawer: false,
+			request: '',	// CalendarEvent object
+			loaded: false,
+			propId: '',
+			startString: '',
+			endString: '',
+			user: null,
+			documentRef: null,
+			alert: false,
+		};
+	},
+	created() {
+		this.user = this.$store.state.loggedInUser;
+		this.loaded = false;
+		this.propId = this.$route.params.id;
+		const docRef = db.collection('leaveRequests').doc(this.propId);
+		// fetch leaveRequest document which is a JSON object and convert to CalendarEvent
+		docRef.get().then((doc) => {
+			if (doc.exists) {
+				this.request = CalendarEvent.fromJSON(doc.data());
+				this.documentRef = docRef;
+				this.loaded = true;
+			} else {
+				this.$store.commit(mutant.SET_ERROR, 'Error, No such document');
+				console.log(this.error);
+			}
+		}).catch((error) => {
+			this.$store.commit(mutant.SET_ERROR, 'Error loading document');
+			console.log('error getting document: ', error);
+		});
+	},
+	computed: {
+		aggrStatus() {
+			return this.getStatus(this.request.aggregateStatus());
+		},
+		error() {
+			return this.$store.state.error;
+		},
+		loading() {
+			return this.$store.state.loading;
+		},
+		canApproveReject() {
+			// check loggedInUser is approver first, then check state of this request
+			return (this.$store.state.loggedInUser.isApprover &&
+				this.request.canApproveOrReject(this.$store.state.loggedInUser.email));
+		},
+		convertLeaveType() {
+			// Perform a reverse lookup of the leave type description based on the code
+			// stored in database
+			const a = this.leaveTypes.filter((lt) => lt.val === this.request.leaveType);
+			// console.log(a[0]);
+			if (a[0] !== undefined) {
+				return a[0].key;
+			} else {
+				return '';
+			}
+		},
+	},
+	methods: {
+		// 1. rejections must include a comment
+		validateRejection() {
+			if (this.$store.state.loggedInUser.email === this.request.firstApprover) {
+				return (this.request.firstComment !== '');
+			}
+			if (this.$store.state.loggedInUser.email === this.request.secondApprover) {
+				return (this.request.secondComment !== '');
+			}
+		},
+		// TODO don't support edit request yet
+		// https://gitlab.com/waylandc/oax-staff-calendar/issues/5
+		// editProperty() {
+		//   console.log('calling editRequest')
+		//   this.$router.push(`/leaveRequest/edit/${this.propId}`);
+		// },
+		approve() {
+			// 'o' is placeholder JSON object we'll write to DB
+			var o = {};
+			// check if we're the first or second approver
+			if (this.$store.state.loggedInUser.email === this.request.firstApprover) {
+				o.firstApprover = this.$store.state.loggedInUser.email;
+				o.firstComment = this.request.firstComment;
+				o.firstStatus = Constants.APPROVED;
+			}
+
+			if (this.$store.state.loggedInUser.email === this.request.secondApprover) {
+				o.secondApprover = this.$store.state.loggedInUser.email;
+				o.secondComment = this.request.secondComment;
+				o.secondStatus = Constants.APPROVED;
+			}
+			// console.log(o);
+			this.documentRef.update(o);
+			this.$router.push({ path: '/leaveRequests' });
+		},
+		reject() {
+			if (!this.validateRejection()) {
+				this.$store.commit(mutant.SET_ERROR, 'You must include a comment when rejecting');
+				return;
+			}
+			// console.log('reject clicked');
+			var o = {};
+			// check if we're the first or second approver
+			if (this.$store.state.loggedInUser.email === this.request.firstApprover) {
+				o.firstApprover = this.$store.state.loggedInUser.email;
+				o.firstComment = this.request.firstComment;
+				o.firstStatus = Constants.REJECTED;
+			}
+
+			if (this.$store.state.loggedInUser.email === this.request.secondApprover) {
+				o.secondApprover = this.$store.state.loggedInUser.email;
+				o.secondComment = this.request.secondComment;
+				o.secondStatus = Constants.REJECTED;
+			}
+
+			this.documentRef.update(o);
+			this.$router.push({ path: '/leaveRequests' });
+		},
+		getStatus(s) {
+			switch (s) {
+			case Constants.PENDING:
+				return "Pending";
+				break;
+			case Constants.APPROVED: 
+				return "Approved";
+				break;
+			case Constants.REJECTED:
+				return "Rejected";
+				break;
+			default:
+				return "Invalid status";
+			};
+		},
+	},
+	watch: {
+		// these watch methods are to generate a formatted date value because v-text-field
+		// doesn't support formatting of the v-model object. so create a formatted string
+		// here and display it on form instead of the v-model 
+		'request.startDate': function(val, oldVal) {
+			this.startString = val.toDate().toDateString();
+		},
+		'request.endDate': function(val, oldVal) {
+			this.endString = val.toDate().toDateString();
+		},
+		error(value) {
+			if (value) {
+				this.alert = true;
+			}
+		},
+		alert(value) {
+			if (!value) {
+				this.$store.commit(mutant.SET_ERROR, null);
+			}
+		},
+	}
+};
 </script>

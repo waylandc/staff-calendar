@@ -20,8 +20,9 @@ import NProgress from 'nprogress';
 import FullCalendar from 'vue-full-calendar';
 import moment from 'moment-business-days';
 import Constants from '../models/common.js';
-	import * as mutant from '../store/mutation-types';
-	import * as action from '../store/action-types';
+import { CalendarEvent } from '../models/CalendarEvent';
+import * as mutant from '../store/mutation-types';
+import * as action from '../store/action-types';
 
 export default {
   name: 'HomeCalendar',
@@ -42,6 +43,24 @@ export default {
   created() {
     NProgress.start();
     this.loaded = false;
+    // fetch all holidays
+    this.$store.dispatch(action.GET_HOLIDAYS, { startDate: moment().subtract(3, 'M'), endDate: moment().add(1, 'y') })
+        .then(holidays => {
+          let ce;
+
+          holidays.forEach((h) => {
+            // some fields aren't populated b/c they're not relevant for a Holiday
+            // we just want to construct a CalendarEvent in order to use the toCalendarEvent()
+            ce = new CalendarEvent(h.title, h.startDate, h.endDate, '', '', '', '', Constants.PENDING, null, '');
+            ce = ce.toCalendarEvent();
+            ce.cssClass = 'holiday';
+            this.events.push(ce);
+          });
+        })
+        .catch((err) => {
+          this.$store.commit(mutant.SET_ERROR, err.message);
+        });
+    // fetch all approved leave requests
     this.$store.dispatch(action.GET_EVENTS,
       { start: moment().subtract(6, 'M'), end: moment().add(1, 'y'), user: '', status: Constants.APPROVED })
       .then((events) => {

@@ -4,6 +4,7 @@ import firebase from 'firebase';
 import NProgress from 'nprogress';
 import store from '../store';
 import * as action from '../store/action-types';
+import * as mutant from '../store/mutation-types';
 
 const routerOptions = [
   { path: '*', component: 'NotFound' },
@@ -72,10 +73,11 @@ router.beforeEach((to, from, next) => {
   }
 
   if (requiresAuth && store.state.loggedInUser === null) {
-    // console.log('requiresAuth and loggedInUser is null');
+    console.log('requiresAuth and loggedInUser is null');
     firebase.auth().onAuthStateChanged((firebaseUser) => {
       if (firebaseUser !== null) {
-        store.dispatch(action.GET_USER, firebaseUser).then(() => {
+        store.dispatch(action.GET_USER, firebaseUser).then((user) => {
+          store.commit(mutant.SET_LOGGED_IN_USER, user);
           next();
         }, () => {
           next('/signin');
