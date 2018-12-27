@@ -44,6 +44,20 @@
             <v-text-field v-model.number='user.daysSick' label='Sick' disabled box>
             </v-text-field>
           </v-flex>
+          <v-flex xs6>
+            <v-switch
+              :label="`Administrator: ${user.isAdmin.toString()}`"
+              v-model="user.isAdmin"
+              disabled
+            ></v-switch>
+          </v-flex>
+          <v-flex xs6>
+            <v-switch
+              :label="`Approver: ${user.isApprover.toString()}`"
+              v-model="user.isApprover"
+              disabled
+            ></v-switch>
+          </v-flex>
         </v-layout>
       </v-form>
     </v-flex>
