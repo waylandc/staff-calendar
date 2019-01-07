@@ -223,13 +223,21 @@ export default {
 			// check if we're the first or second approver
 			if (this.$store.state.loggedInUser.email === this.request.firstApprover) {
 				o.firstApprover = this.$store.state.loggedInUser.email;
-				o.firstComment = this.request.firstComment;
+				if (this.request.firstComment === '') {
+					o.firstComment = '** Approved **';
+				} else {
+					o.firstComment = this.request.firstComment;
+				}
 				o.firstStatus = Constants.APPROVED;
 			}
 
 			if (this.$store.state.loggedInUser.email === this.request.secondApprover) {
 				o.secondApprover = this.$store.state.loggedInUser.email;
-				o.secondComment = this.request.secondComment;
+				if (this.request.secondComment === '') {
+					o.secondComment = '** Approved **';
+				} else {
+					o.secondComment = this.request.secondComment;
+				}
 				o.secondStatus = Constants.APPROVED;
 			}
 			// console.log(o);
