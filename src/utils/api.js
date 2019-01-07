@@ -253,7 +253,7 @@ export function getEvents(data) {
             results.push(ce);
           }
         });
-        // console.log('api.getSomeEvents returning ', results.length);
+        // console.log('api.getEvents returning ', results);
         resolve(results);
       })
       .catch((error) => {

@@ -78,7 +78,7 @@ export class CalendarEvent {
    * @returns {Constants.PENDING|APPROVED|REJECTED}
    */
   aggregateStatus() {
-    console.log('aggrStatus, ', this.toJSON());
+    // console.log('aggrStatus, ', this.toJSON());
     // if there is a 2nd approver, we need to figure overall status
     if (this.secondApprover !== '' && this.secondApprover !== undefined) {
       if (this.firstStatus === Constants.PENDING || this.secondStatus === Constants.PENDING) {
@@ -109,7 +109,7 @@ export class CalendarEvent {
    * @returns {boolean}
    */
   canApproveOrReject(email) {
-    console.log('canapproveorreject, ', this.aggregateStatus());
+    // console.log('canapproveorreject, ', this.aggregateStatus());
     if (this.aggregateStatus() !== Constants.PENDING) return false;
 
     if (email === this.firstApprover) {

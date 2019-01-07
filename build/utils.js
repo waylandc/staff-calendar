@@ -2,7 +2,7 @@
 
 const path = require('path')
 const config = require('../config')
-const ExtractTextPlugin = require('extract-text-webpack-plugin')
+//const ExtractTextPlugin = require('extract-text-webpack-plugin')
 
 exports.assetsPath = function (_path) {
   const assetsSubDirectory = process.env.NODE_ENV === 'production'
@@ -36,14 +36,14 @@ exports.cssLoaders = function (options) {
 
     // Extract CSS when that option is specified
     // (which is the case during production build)
-    if (options.extract) {
-      return ExtractTextPlugin.extract({
-        use: loaders,
-        fallback: 'vue-style-loader'
-      })
-    } else {
+    // if (options.extract) {
+    //   return ExtractTextPlugin.extract({
+    //     use: loaders,
+    //     fallback: 'vue-style-loader'
+    //   })
+    // } else {
       return ['vue-style-loader'].concat(loaders)
-    }
+    //}
   }
 
   // https://vue-loader.vuejs.org/en/configurations/extract-css.html

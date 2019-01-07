@@ -170,6 +170,8 @@
       },
       'endDate': function(val, oldVal) {
         this.eDate = new Date(Date.parse(val));
+        // default is 8am which doesn't work because it doesn't really show up as day off on the end day
+        this.eDate.setHours(23);
         // console.log('start date, ' + this.sDate);
         // console.log('end date, ' + this.eDate);
         // console.log('watched end date');

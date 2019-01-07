@@ -20,6 +20,18 @@ module.exports = {
       ? config.build.assetsPublicPath
       : config.dev.assetsPublicPath
   },
+  optimization: {
+    splitChunks: {
+      cacheGroups: {
+          commons: {
+              test: /[\\/]node_modules[\\/]/,
+              name: 'vendor',
+              chunks: 'all',
+          },
+      },
+    },
+  },  
+
   resolve: {
     extensions: ['.js', '.vue', '.json'],
     alias: {
