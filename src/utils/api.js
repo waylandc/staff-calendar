@@ -418,6 +418,20 @@ export function deleteHoliday(docId) {
   });
 }
 
+export function deleteRequest(docId) {
+  console.log('api.deleteRequest...', docId);
+  return new Promise((resolve, reject) => {
+    db.collection('leaveRequests').doc(docId).delete()
+      .then(() => {
+        resolve();
+      })
+      .catch((error) => {
+        console.log(error);
+        reject(error);
+      });
+  });
+}
+
 export function resetPassword(email) {
   console.log('api.resetPassword...');
   const auth = firebase.auth();

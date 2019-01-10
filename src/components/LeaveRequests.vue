@@ -5,6 +5,9 @@
       <v-alert type="error" dismissible v-model="alert">
         {{ error }}
       </v-alert>
+      <v-alert v-if="wasSuccessful" type="success" dismissible v-model="successMessage" @input= "v => v || dismissClicked()">
+        {{ successMessage }}
+      </v-alert>
     </v-flex>
     <v-layout row wrap>
       <v-flex xs12 v-if="loaded">
@@ -22,14 +25,14 @@
           <v-data-table :headers='headers' :items='pendingRequests'
             hide-actions dark class='elevation-1'>
             <template slot='items' slot-scope='props'>
-              <tr @click='showDetails(props.item.docId)'>
+              <tr >
                 <td class='mdl-data-table__cell--non-numeric'>
                   {{ getStatus(props.item.aggregateStatus()) }}
                 </td>
                 <td class='mdl-data-table__cell--non-numeric'>
                   {{ props.item.requestor }}
                 </td>
-                <td class='mdl-data-table__cell--non-numeric'>
+                <td @click='showDetails(props.item.docId)' class='mdl-data-table__cell--non-numeric'>
                   {{ props.item.title }}
                 </td>
                 <td class='mdl-data-table__cell--non-numeric'>
@@ -40,6 +43,18 @@
                 </td>
                 <td class='mdl-data-table__cell--non-numeric'>
                   {{ props.item.halfDay }}
+                </td>
+                <td class='mdl-data-table__cell--non-numeric'>
+                  <v-icon v-if="getStatus(props.item.aggregateStatus()) == 'Pending'
+                  && props.item.requestor == userEmail
+                  " @click='editRequest(props.item)'>
+                    edit
+                  </v-icon>
+                  <v-icon v-if="getStatus(props.item.aggregateStatus()) == 'Pending'
+                  && props.item.requestor == userEmail
+                  " @click='editRequest(props.item)'>
+                    delete
+                  </v-icon>
                 </td>
               </tr>
             </template>
@@ -99,16 +114,23 @@
             sortable: false,
             value: 'halfDay',
           },
+          {
+            text: 'Edit/Delete',
+            align: 'left',
+            sortable: false,
+          },
         ],
         loaded: false,
         pendingRequests: [],
         alert: false,
         statuses: ['All', 'Approved', 'Pending', 'Rejected'],
         statusSelected: 'Pending',
+        successMessage: '',
       }
     },
     created() {
       this.getEvents(Constants.PENDING);
+      this.userEmail = this.$store.state.loggedInUser.email;
     },
     computed: {
       error() {
@@ -117,6 +139,9 @@
       loading() {
         return this.$store.state.loading;
       },
+      wasSuccessful() {
+        return this.successMessage !== '';
+      }
     },
     watch: {
       error(value) {
@@ -142,7 +167,7 @@
           })
           .then(events => {
             this.pendingRequests = events;
-            // console.log(this.pendingRequests);
+             console.log(this.pendingRequests);
             this.loaded = true;
           })
           .catch((error) => {
@@ -160,7 +185,7 @@
           case Constants.PENDING:
             return "Pending";
             break;
-          case Constants.APPROVED: 
+          case Constants.APPROVED:
             return "Approved";
             break;
           case Constants.REJECTED:
@@ -188,7 +213,20 @@
           default:
             this.getEvents(Constants.ALL);
         }
-      }
+      },
+      deleteRequest (item) {
+        this.$store.dispatch(action.DELETE_REQUEST, item.docId)
+          .then(() => {
+            this.getEvents(Constants.PENDING);
+          })
+          .then(() => {
+            this.successMessage = 'Request successfully deleted';
+          })
+          .catch((error) => {
+            this.$store.commit(mutant.SET_ERROR, error.message);
+            console.error('error deleting request: ', error);
+          });
+      },
     }
   }
 

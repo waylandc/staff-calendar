@@ -94,7 +94,8 @@
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.startDate.toDate().toDateString() }}</td>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.title }}</td>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.country }}</td>
-                  <v-icon @click='deleteItem(props.item)'>
+                <td class='mdl-data-table__cell--non-numeric'>
+                  <v-icon @click='deleteHoliday(props.item)'>
                     delete
                   </v-icon>
                 </td>
@@ -195,7 +196,7 @@ export default {
           console.error('error adding doc: ', error);
         });
     },
-    deleteItem (item) {
+    deleteHoliday (item) {
       this.$store.dispatch(action.DELETE_HOLIDAY, item.docId)
         .then((docRef) => {
           // refetch data to refresh

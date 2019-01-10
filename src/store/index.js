@@ -286,7 +286,31 @@ const store = new Vuex.Store({
         });
       });
     },
+
+    [action.DELETE_REQUEST]({ commit }, payload) {
+      // payload should be { docID }
+      console.log("now in index.js");
+      commit(mutant.SET_LOADING, true);
+      return new Promise((resolve, reject) => {
+        console.log('DELETE_REQUEST, ', payload);
+        api.deleteRequest(payload)
+          .then((doc) => {
+            console.log('DELETE_REQUEST, ', doc);
+            commit(mutant.SET_LOADING, false);
+            resolve(doc);
+          })
+          .catch((error) => {
+            console.log('DELETE_REQUEST, ', error);
+            commit(mutant.SET_ERROR, error);
+            commit(mutant.SET_LOADING, false);
+            reject(error);
+          });
+      });
+    },
+
   },
+
+
 
   getters: {
     isAuthenticated(state) {
