@@ -238,6 +238,26 @@ const store = new Vuex.Store({
       });
     },
 
+    [action.DELETE_HOLIDAY]({ commit }, payload) {
+      // payload should be { docID }
+      commit(mutant.SET_LOADING, true);
+      return new Promise((resolve, reject) => {
+        console.log('DELETE_HOLIDAY, ', payload);
+        api.deleteHoliday(payload)
+          .then((doc) => {
+            console.log('DELETE_HOLIDAY, ', doc);
+            commit(mutant.SET_LOADING, false);
+            resolve(doc);
+          })
+          .catch((error) => {
+            console.log('DELETE_HOLIDAY, ', error);
+            commit(mutant.SET_ERROR, error);
+            commit(mutant.SET_LOADING, false);
+            reject(error);
+          });
+      });
+    },
+
     [action.RESET_PASSWORD]({ commit }, payload) {
       // payload is {email: string}
       commit(mutant.SET_LOADING, true);
