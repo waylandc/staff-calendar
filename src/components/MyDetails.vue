@@ -45,6 +45,10 @@
             </v-text-field>
           </v-flex>
           <v-flex xs6>
+            <v-text-field v-model.number='user.daysBirthdayLeave' label='Birthday Leave' disabled box>
+            </v-text-field>
+          </v-flex>
+          <v-flex xs6>
             <v-switch
               :label="`Administrator: ${user.isAdmin.toString()}`"
               v-model="user.isAdmin"

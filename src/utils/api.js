@@ -96,6 +96,7 @@ export function getUsers() {
             doc.data().daysCompLeave,
             doc.data().daysBooked,
             doc.data().daysSick,
+            doc.data().daysBirthdayLeave,
             doc.id,
             doc.data().firstName,
             doc.data().lastName,
@@ -284,7 +285,7 @@ export function getUser(email) {
             user.data().email, user.data().isAdmin,
             user.data().isApprover, user.data().daysAnnualLeave,
             user.data().daysCompLeave, user.data().daysCarryOver, user.data().daysBooked,
-            user.data().daysSick, user.id, user.data().firstName, user.data().lastName, [],
+            user.data().daysSick, user.data().daysBirthdayLeave, user.id, user.data().firstName, user.data().lastName, [],
           );
         });
       },
@@ -345,6 +346,18 @@ export function createEvent(data) {
   return new Promise((resolve, reject) => {
     db.collection('leaveRequests').add(data)
       .then(docRef => resolve(docRef))
+      .catch((error) => {
+        console.log(error);
+        reject(error);
+      });
+  });
+}
+
+export function editEvent(data) {
+  console.log('api.editEvent...', data[0]);
+  return new Promise((resolve, reject) => {
+    db.collection('leaveRequests').doc(data[0]).set(data[1])
+      .then( () => resolve())
       .catch((error) => {
         console.log(error);
         reject(error);

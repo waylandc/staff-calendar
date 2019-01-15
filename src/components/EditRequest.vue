@@ -1,6 +1,6 @@
 <template>
   <v-container grid-list-md text-xs-center>
-    <h1>Apply New Leave</h1><br/>
+    <h1>Edit Request</h1><br/>
     <v-flex>
       <v-alert type="error" dismissible v-model="alert">
         {{ error }}
@@ -13,7 +13,6 @@
             <v-text-field
               v-model='title'
               label='Title'
-              autocomplete="off"
               box>
             </v-text-field>
           </v-flex>
@@ -104,9 +103,9 @@
           <v-flex class="text-xs-center" mt-5>
             <v-btn
               color="approve"
-              @click.stop="createRequest"
+              @click.stop="updateRequest"
               >
-              Apply
+              Save Changes
             </v-btn>
           </v-flex>
         </v-layout>
@@ -117,13 +116,14 @@
 
 <script>
   import moment from 'moment';
+  import db from '../config/firebaseInit';
   import Constants from '../models/common.js';
   import { CalendarEvent } from '../models/CalendarEvent';
   import * as mutant from '../store/mutation-types';
   import * as action from '../store/action-types';
 
   export default {
-    name: 'CreateEvent',
+    name: 'EditRequest',
     data() {
       return {
         drawer: false,
@@ -131,6 +131,8 @@
         loaded: false,
         startDate: new Date().toISOString().substr(0, 10),
         endDate: new Date().toISOString().substr(0, 10),
+        startString: '',
+        endString: '',
         numDays: 0, // TODO useless, remove??
         menu1: false,
         menu2: false,
@@ -149,19 +151,44 @@
         firstApprover: '',
         secondApprover: '',
         approvers: [],
+        request: '',
       };
     },
     created() {
       this.loaded = false;
+      this.propId = this.$route.params.id;
+      //fetch approvers
       this.$store.dispatch(action.GET_APPROVERS)
         .then((approvers) => {
           this.approvers = approvers;
           //console.log(this.approvers);
+        })
+        .catch((error) => {
+          this.$store.commit(mutant.SET_ERROR, error);
+        })
+      const docRef = db.collection('leaveRequests').doc(this.propId);
+      // fetch leaveRequest document which is a JSON object and convert to CalendarEvent
+      docRef.get().then((doc) => {
+        if (doc.exists) {
+          this.request = CalendarEvent.fromJSON(doc.data());
+          this.documentRef = docRef;
+        } else {
+          this.$store.commit(mutant.SET_ERROR, 'Error, No such document');
+          console.log(this.error);
+        }}).then(() => {
+          this.title = this.request.title;
+          this.halfDay = this.request.halfDay;
+          this.leaveType = this.request.leaveType;
+          this.startDate = moment(this.request.startDate.toDate()).format().substr(0,10);
+          this.endDate = moment(this.request.endDate.toDate()).format().substr(0,10);
+          this.firstApprover = this.request.firstApprover;
+          this.secondApprover = this.request.secondApprover;
           this.loaded = true;
         })
         .catch((error) => {
           this.$store.commit(mutant.SET_ERROR, error);
         })
+
     },
     watch: {
       // The calendar uses strings so we use this method to parse the string
@@ -178,6 +205,12 @@
         // console.log('end date, ' + this.eDate);
         // console.log('watched end date');
       },
+      /*'request.startDate': function(val, oldVal) {
+        this.sDate = val.toDate().toDateString();
+      },
+      'request.endDate': function(val, oldVal) {
+        this.eDate = val.toDate().toDateString();
+      },*/
       error(value) {
         if (value) {
           this.alert = true;
@@ -232,16 +265,15 @@
 
         return true;
       },
-      createRequest() {
+      updateRequest() {
         if (!this.validateRequest()) {
           return;
         }
         // var aa = this.daysBetween(new Date(this.sDate), new Date(this.eDate));
         // console.log('num days, ' + aa);
 
-        const niceTitle = this.$store.state.loggedInUser.firstName + '- ' + this.title;
         const req = new CalendarEvent(
-          niceTitle,
+          this.title,
           this.sDate,
           this.eDate,
           this.halfDay,
@@ -252,13 +284,12 @@
           Constants.PENDING,
           '',
           '',
-          null, // docId is populated on a fetch
+          this.propId,
           this.leaveType,
         );
-console.log(req);
-        this.$store.dispatch(action.ADD_EVENT, req.toJSON())
+        this.$store.dispatch(action.EDIT_EVENT, [this.propId, req.toJSON()])
           .then((docRef) => {
-            // console.log('doc written with id, ', docRef.id);
+            console.log('id overwritten with changes');
             this.$router.push({ path: '/leaveRequests' });
           }).catch((error) => {
             this.$store.commit(mutant.SET_ERROR, error.message);

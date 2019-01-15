@@ -32,7 +32,7 @@
                 <td class='mdl-data-table__cell--non-numeric'>
                   {{ props.item.requestor }}
                 </td>
-                <td @click='showDetails(props.item.docId)' class='mdl-data-table__cell--non-numeric'>
+                <td  class='mdl-data-table__cell--non-numeric'>
                   {{ props.item.title }}
                 </td>
                 <td class='mdl-data-table__cell--non-numeric'>
@@ -45,14 +45,16 @@
                   {{ props.item.halfDay }}
                 </td>
                 <td class='mdl-data-table__cell--non-numeric'>
-                  <v-icon v-if="getStatus(props.item.aggregateStatus()) == 'Pending'
-                  && props.item.requestor == userEmail
-                  " @click='editRequest(props.item)'>
-                    edit
+                  <v-icon
+                    @click='showDetails(props.item.docId)'>
+                    info
                   </v-icon>
-                  <v-icon v-if="getStatus(props.item.aggregateStatus()) == 'Pending'
+                </td>
+                <td class='mdl-data-table__cell--non-numeric'>
+                  <v-icon v-if="props.item.firstStatus == 0
+                  && props.item.secondStatus == 0
                   && props.item.requestor == userEmail
-                  " @click='editRequest(props.item)'>
+                  " @click='deleteRequest(props.item)'>
                     delete
                   </v-icon>
                 </td>
@@ -115,7 +117,12 @@
             value: 'halfDay',
           },
           {
-            text: 'Edit/Delete',
+            text: 'Details/Edit/Approve',
+            align: 'left',
+            sortable: false,
+          },
+          {
+            text: 'Delete',
             align: 'left',
             sortable: false,
           },
@@ -167,7 +174,7 @@
           })
           .then(events => {
             this.pendingRequests = events;
-             console.log(this.pendingRequests);
+             //console.log(this.pendingRequests);
             this.loaded = true;
           })
           .catch((error) => {

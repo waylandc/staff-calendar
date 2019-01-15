@@ -186,6 +186,22 @@ const store = new Vuex.Store({
         });
     },
 
+    [action.EDIT_EVENT]({ commit }, payload) {
+      commit(mutant.SET_LOADING, true);
+      // payload should be CalendarEvent.toJSON()
+      console.log('EDIT_EVENT, 1', payload);
+      api.editEvent(payload)
+        .then((doc) => {
+          console.log('EDIT_EVENT, ', doc);
+          commit(mutant.SET_LOADING, false);
+        })
+        .catch((error) => {
+          console.log('EDIT_EVENT, ', error);
+          commit(mutant.SET_ERROR, error);
+          commit(mutant.SET_LOADING, false);
+        });
+    },
+
     [action.GET_EVENTS]({ commit }, payload) {
       commit(mutant.SET_LOADING, true);
       return new Promise((resolve, reject) => {

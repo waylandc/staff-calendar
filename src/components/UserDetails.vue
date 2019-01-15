@@ -45,6 +45,10 @@
             </v-text-field>
           </v-flex>
           <v-flex xs6>
+            <v-text-field v-model.number='user.daysBirthdayLeave' label='Birthday Leave' :readonly="!this.isAdmin" box>
+            </v-text-field>
+          </v-flex>
+          <v-flex xs6>
             <v-switch
               :label="`Administrator: ${user.isAdmin.toString()}`"
               v-model="user.isAdmin"
@@ -128,7 +132,7 @@
           })
       },
       save() {
-        this.$store.dispatch(action.SAVE_USER, { 
+        this.$store.dispatch(action.SAVE_USER, {
           user: this.user,
           comment: this.comment,
           changedBy: this.$store.state.loggedInUser.email })

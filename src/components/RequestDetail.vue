@@ -12,9 +12,9 @@
 		    <v-layout row wrap>
 			<v-flex xs12>
 			    <v-text-field
-				v-model='request.title' 
-					 label='Title' 
-					 autocomplete="off" 
+				v-model='request.title'
+					 label='Title'
+					 autocomplete="off"
 					 :readonly="true"
 					 box>
 			    </v-text-field>
@@ -22,26 +22,26 @@
 			<v-flex xs6>
 			    <v-text-field
 				v-model='startString'
-					 label='Start Date' 
-					 autocomplete="off" 
+					 label='Start Date'
+					 autocomplete="off"
 					 :readonly="true"
 					 box>
 			    </v-text-field>
 			</v-flex>
 			<v-flex xs6>
 			    <v-text-field
-				v-model = 'endString' 
-					   label = 'End Date' 
-					   autocomplete = "off" 
+				v-model = 'endString'
+					   label = 'End Date'
+					   autocomplete = "off"
 					   :readonly = "true"
 					   box>
 			    </v-text-field>
 			</v-flex>
 			<v-flex xs6>
 			    <v-text-field
-				v-model = 'request.halfDay' 
-					   label = 'Half Day' 
-					   :readonly = "true" 
+				v-model = 'request.halfDay'
+					   label = 'Half Day'
+					   :readonly = "true"
 					   box>
 			    </v-text-field>
 			</v-flex>
@@ -63,19 +63,19 @@
 			</v-flex>
 			<v-flex xs6>
 			    <v-text-field
-				v-model='request.requestor' 
-					 label='Requestor' 
-					 autocomplete = "name" 
-					 :readonly = "true" 
+				v-model='request.requestor'
+					 label='Requestor'
+					 autocomplete = "name"
+					 :readonly = "true"
 					 box>
 			    </v-text-field>
 			</v-flex>
 			<v-flex xs6>
 			    <v-text-field
-				v-model='request.firstApprover' 
-					 label='First Approver' 
-					 autocomplete = "name" 
-					 :readonly = "true" 
+				v-model='request.firstApprover'
+					 label='First Approver'
+					 autocomplete = "name"
+					 :readonly = "true"
 					 box>
 			    </v-text-field>
 			</v-flex>
@@ -89,10 +89,10 @@
 			</v-flex>
 			<v-flex xs6>
 			    <v-text-field
-				v-model='request.secondApprover' 
-					 label='Second Approver' 
-					 autocomplete = "name" 
-					 :readonly = "true" 
+				v-model='request.secondApprover'
+					 label='Second Approver'
+					 autocomplete = "name"
+					 :readonly = "true"
 					 box>
 			    </v-text-field>
 			</v-flex>
@@ -104,14 +104,22 @@
 					   box>
 			    </v-text-field>
 			</v-flex>
-			<v-flex v-if="canApproveReject" class="text-xs-center" mt-5>
-			    <v-btn 
+      <v-flex v-if="canEdit" class="text-xs-center" mt-5>
+          <v-btn
+        color="brown"
+              @click.stop="editProperty"
+          >
+        Edit
+          </v-btn>
+      </v-flex>
+      <v-flex v-if="canApproveReject" class="text-xs-center" mt-5>
+			    <v-btn
 				color="approve"
 				       @click.stop="approve"
 			    >
 				Approve
 			    </v-btn>
-			    <v-btn 
+			    <v-btn
 				color="reject"
 				       @click.stop="reject"
 			    >
@@ -142,7 +150,8 @@ export default {
 				{key: 'Annual', val: 'ANN'},
 				{key:'Compensation', val: 'COMP'},
 				{key: 'Carry Over', val: 'CO'},
-				{key: 'Sick', val: 'SICK'}],
+				{key: 'Sick', val: 'SICK'},
+        {key: 'Birthday Leave', val: 'BL'}],
 			drawer: false,
 			request: '',	// CalendarEvent object
 			loaded: false,
@@ -165,6 +174,7 @@ export default {
 				this.request = CalendarEvent.fromJSON(doc.data());
 				this.documentRef = docRef;
 				this.loaded = true;
+        console.log(this.request);
 			} else {
 				this.$store.commit(mutant.SET_ERROR, 'Error, No such document');
 				console.log(this.error);
@@ -184,6 +194,12 @@ export default {
 		loading() {
 			return this.$store.state.loading;
 		},
+    canEdit() {
+      // check is owner of the request, then check state of the request
+      return ((this.request.requestor == this.$store.state.loggedInUser.email) &&
+        this.request.firstStatus == 0 && this.request.secondStatus == 0
+      );
+    },
 		canApproveReject() {
 			// check loggedInUser is approver first, then check state of this request
 			return (this.$store.state.loggedInUser.isApprover &&
@@ -213,10 +229,10 @@ export default {
 		},
 		// TODO don't support edit request yet
 		// https://gitlab.com/waylandc/oax-staff-calendar/issues/5
-		// editProperty() {
-		//   console.log('calling editRequest')
-		//   this.$router.push(`/leaveRequest/edit/${this.propId}`);
-		// },
+		 editProperty() {
+		   console.log('calling editRequest')
+		   this.$router.push({ path: `/leaveRequests/edit/${this.propId}` });
+		 },
 		approve() {
 			// 'o' is placeholder JSON object we'll write to DB
 			var o = {};
@@ -272,7 +288,7 @@ export default {
 			case Constants.PENDING:
 				return "Pending";
 				break;
-			case Constants.APPROVED: 
+			case Constants.APPROVED:
 				return "Approved";
 				break;
 			case Constants.REJECTED:
@@ -286,7 +302,7 @@ export default {
 	watch: {
 		// these watch methods are to generate a formatted date value because v-text-field
 		// doesn't support formatting of the v-model object. so create a formatted string
-		// here and display it on form instead of the v-model 
+		// here and display it on form instead of the v-model
 		'request.startDate': function(val, oldVal) {
 			this.startString = val.toDate().toDateString();
 		},

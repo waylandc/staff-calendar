@@ -8,6 +8,7 @@ export const USER_LOGIN = 'USER_LOGIN';
 export const CHANGE_PASSWORD = 'CHANGE_PASSWORD';
 export const USER_LOGOUT = 'USER_LOGOUT';
 export const ADD_EVENT = 'ADD_EVENT';
+export const EDIT_EVENT = 'EDIT_EVENT';
 export const GET_EVENTS = 'GET_EVENTS';
 export const GET_HOLIDAYS = 'GET_HOLIDAYS';
 export const ADD_HOLIDAY = 'ADD_HOLIDAY';

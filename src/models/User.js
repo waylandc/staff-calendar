@@ -3,7 +3,7 @@
 // notice we don't store password b/c firebase takes care of auth
 export class User {
   // new User(...)
-  constructor(email, admin, approver, al, cl, co, db, s, id, fn, ln, c) {
+  constructor(email, admin, approver, al, cl, co, db, s, bl, id, fn, ln, c) {
     this.email = email;
     this.isAdmin = admin;
     this.isApprover = approver;
@@ -12,6 +12,7 @@ export class User {
     this.daysCarryOver = co;
     this.daysCompLeave = cl;
     this.daysSick = s;
+    this.daysBirthdayLeave = bl;
     this.docId = id; // docId is the document id in firebase
     this.firstName = fn;
     this.lastName = ln;
@@ -33,6 +34,7 @@ export class User {
       daysCarryOver: this.daysCarryOver,
       daysCompLeave: this.daysCompLeave,
       daysSick: this.daysSick,
+      daysBirthdayLeave: this.daysBirthdayLeave,
       docId: this.docId,
       firstName: this.firstName,
       lastName: this.lastName,
@@ -51,6 +53,7 @@ export function createUserModel(d) {
     d.daysCarryOver,
     d.daysCompLeave,
     d.daysSick,
+    d.daysBirthdayLeave,
     d.docId,
     d.firstName,
     d.lastName,
