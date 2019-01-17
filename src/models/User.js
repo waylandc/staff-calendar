@@ -3,7 +3,7 @@
 // notice we don't store password b/c firebase takes care of auth
 export class User {
   // new User(...)
-  constructor(email, admin, approver, al, cl, co, db, s, bl, id, fn, ln, c) {
+  constructor(email, admin, approver, al, db, co, cl, s, bl, id, fn, ln, c) {
     this.email = email;
     this.isAdmin = admin;
     this.isApprover = approver;
