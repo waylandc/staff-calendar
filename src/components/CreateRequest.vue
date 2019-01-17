@@ -117,8 +117,10 @@
 
 <script>
   import moment from 'moment';
+  import db from '../config/firebaseInit';
   import Constants from '../models/common.js';
   import { CalendarEvent } from '../models/CalendarEvent';
+  import { createUserModel } from '../models/User';
   import * as mutant from '../store/mutation-types';
   import * as action from '../store/action-types';
 
@@ -149,6 +151,7 @@
         firstApprover: '',
         secondApprover: '',
         approvers: [],
+        dob: '',
       };
     },
     created() {
@@ -162,6 +165,8 @@
         .catch((error) => {
           this.$store.commit(mutant.SET_ERROR, error);
         })
+      this.getDob();
+
     },
     watch: {
       // The calendar uses strings so we use this method to parse the string
@@ -217,13 +222,49 @@
         var result = Math.round(difference_ms/one_day);
         return result
       },
+      getDob() {
+        //get DOB
+
+        this.userId = this.$store.state.loggedInUser.docId;
+        const docRef = db.collection('users').doc(this.userId);
+
+        docRef.get().then((doc) => {
+          if (doc.exists) {
+            //console.log(doc.data());
+            this.dob = (doc.data().dob);
+            //console.log('found dob, ', this.dob);
+          } else {
+            this.$store.commit(mutant.SET_ERROR, 'Error, user does not exist');
+            console.log('error loading user, ', this.userId);
+          }
+        })
+        .catch((error) => {
+          this.$store.commit(mutant.SET_ERROR, error.message);
+          console.log('Error getting document: ', error);
+        });
+      },
       validateRequest() {
         // console.log(this.leaveType, ', day of year, ', moment(this.eDate).dayOfYear());
         // dayOfYear 90 is March 31, deadline for which carry over leave must be used by
         if (this.leaveType === 'CO' && moment(this.eDate).dayOfYear() > 90) {
           this.$store.commit(mutant.SET_ERROR, 'Carry Over leave must be taken before March 31');
           return false;
-        } //TODO elif this.leaveType === 'BL'
+        } else if (this.leaveType === 'BL') {
+            if ((moment(this.eDate).dayOfYear() - moment(this.sDate).dayOfYear()) !== 0) {
+              this.$store.commit(mutant.SET_ERROR, 'Birthday Leave has only one day');
+              return false;
+            }
+  //          console.log('showing raw birthday...', this.dob);
+  //          console.log('showing birthday...', moment(this.dob, 'MMDD').format());
+            var a = moment(this.dob, 'MMDD');
+            var b = moment(this.eDate);
+            var diff = b.diff(a, 'days');
+  //          console.log('difference...', diff);
+            if (diff > 7 || diff <0) {
+              this.$store.commit(mutant.SET_ERROR, 'Birthday Leave should be on that day, or within one week (under discretion)');
+              return false;
+            }
+        }
 
         if (this.firstApprover === '') {
           this.$store.commit(mutant.SET_ERROR, 'You must specify at least one approver');

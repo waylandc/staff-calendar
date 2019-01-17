@@ -78,7 +78,7 @@ const store = new Vuex.Store({
       // Firestore which hasn't been created yet.
       // TODO - check if api.createUser returns a user object that contains the id
       // I think it's populated in the subsequent call to getUser
-      const u = new User(p.email, false, false, 0, 0, 0, 0, 0, null, p.firstName, p.lastName, []);
+      const u = new User(p.email, false, false, 0, 0, 0, 0, 0, 0, null, p.firstName, p.lastName, p.dob, []);
       api.createUser(u, p.password)
         .then(() => {
           commit(mutant.SET_LOADING, true);

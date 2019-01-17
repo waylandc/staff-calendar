@@ -52,7 +52,7 @@ export function createUser(newUser, passwd) {
   return new Promise((resolve, reject) => {
     firebase.auth().createUserWithEmailAndPassword(newUser.email, passwd)
       .then((firebaseUser) => {
-        console.log(firebaseUser);
+        console.log('firebase user', firebaseUser);
         // TODO if this add() fails, we need to delete the user from firebase
         db.collection('users').add(newUser.toJSON())
           .then((u) => {
@@ -101,6 +101,7 @@ export function getUsers() {
             doc.id,
             doc.data().firstName,
             doc.data().lastName,
+            doc.data().dob,
           );
           u.comments = [];
           users.push(u);
@@ -151,6 +152,7 @@ export function getApprovers() {
     });
   });
 }
+
 
 function validateDateParams(d) {
   // both start/end were not passed in
@@ -286,7 +288,7 @@ export function getUser(email) {
             user.data().email, user.data().isAdmin,
             user.data().isApprover, user.data().daysAnnualLeave,
             user.data().daysBooked, user.data().daysCarryOver, user.data().daysCompLeave,
-            user.data().daysSick, user.data().daysBirthdayLeave, user.id, user.data().firstName, user.data().lastName, [],
+            user.data().daysSick, user.data().daysBirthdayLeave, user.id, user.data().firstName, user.data().lastName, user.data().dob, [],
           );
         });
       },

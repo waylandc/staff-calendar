@@ -3,7 +3,7 @@
 // notice we don't store password b/c firebase takes care of auth
 export class User {
   // new User(...)
-  constructor(email, admin, approver, al, db, co, cl, s, bl, id, fn, ln, c) {
+  constructor(email, admin, approver, al, db, co, cl, s, bl, id, fn, ln, dob, c) {
     this.email = email;
     this.isAdmin = admin;
     this.isApprover = approver;
@@ -16,6 +16,7 @@ export class User {
     this.docId = id; // docId is the document id in firebase
     this.firstName = fn;
     this.lastName = ln;
+    this.dob = dob;
     this.comments = c;  // {date: d, changedBy: email, comment: string}
   }
 
@@ -25,6 +26,7 @@ export class User {
   // so I had to create a new FS collection called userComments and store it
   // separately in the API layer
   toJSON() {
+    console.log('toJSON');
     return {
       email: this.email,
       isAdmin: this.isAdmin,
@@ -38,6 +40,7 @@ export class User {
       docId: this.docId,
       firstName: this.firstName,
       lastName: this.lastName,
+      dob: this.dob,
     };
   }
 }
@@ -57,6 +60,7 @@ export function createUserModel(d) {
     d.docId,
     d.firstName,
     d.lastName,
+    d.dob,
     d.comments,
   );
 }
