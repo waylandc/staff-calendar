@@ -105,6 +105,7 @@ export default {
     this.$store.dispatch(action.GET_USERS)
       .then((users) => {
         this.users = users;
+        //console.log(this.users);
         this.loaded = true;
       })
       .catch((err) => {
@@ -147,7 +148,7 @@ export default {
 };
 </script>
 
-// not sure how to change fonts. I could've created custom class but didn't want to add it everywhere so this seems to 
+// not sure how to change fonts. I could've created custom class but didn't want to add it everywhere so this seems to
 // override it within this component
 // TODO should this be put in master css?
 <style scoped>

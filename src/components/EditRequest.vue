@@ -205,12 +205,6 @@
         // console.log('end date, ' + this.eDate);
         // console.log('watched end date');
       },
-      /*'request.startDate': function(val, oldVal) {
-        this.sDate = val.toDate().toDateString();
-      },
-      'request.endDate': function(val, oldVal) {
-        this.eDate = val.toDate().toDateString();
-      },*/
       error(value) {
         if (value) {
           this.alert = true;
@@ -256,10 +250,16 @@
         if (this.leaveType === 'CO' && moment(this.eDate).dayOfYear() > 90) {
           this.$store.commit(mutant.SET_ERROR, 'Carry Over leave must be taken before March 31');
           return false;
-        }
+        } // TODO elif (this.leaveType === 'BL' && )
 
         if (this.firstApprover === '') {
           this.$store.commit(mutant.SET_ERROR, 'You must specify at least one approver');
+          return false;
+        }
+
+        if (this.firstApprover == this.$store.state.loggedInUser.email ||
+        this.secondApprover == this.$store.state.loggedInUser.email) {
+          this.$store.commit(mutant.SET_ERROR, 'Approver cannot be yourself!');
           return false;
         }
 

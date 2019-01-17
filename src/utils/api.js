@@ -77,7 +77,7 @@ export function createUser(newUser, passwd) {
  * @return {[User]} users
  */
 export function getUsers() {
-  // console.log('api.getUsers...');
+  console.log('api.getUsers...');
   const users = [];
   return new Promise((resolve, reject) => {
     db
@@ -87,14 +87,15 @@ export function getUsers() {
       .then((querySnapshot) => {
         let u;
         querySnapshot.forEach((doc) => {
+          //console.log('raw data here', doc.data());
           u = new User(
             doc.data().email,
             doc.data().isAdmin,
             doc.data().isApprover,
             doc.data().daysAnnualLeave,
+            doc.data().daysBooked,
             doc.data().daysCarryOver,
             doc.data().daysCompLeave,
-            doc.data().daysBooked,
             doc.data().daysSick,
             doc.data().daysBirthdayLeave,
             doc.id,
@@ -284,7 +285,7 @@ export function getUser(email) {
           u = new User(
             user.data().email, user.data().isAdmin,
             user.data().isApprover, user.data().daysAnnualLeave,
-            user.data().daysCompLeave, user.data().daysCarryOver, user.data().daysBooked,
+            user.data().daysBooked, user.data().daysCarryOver, user.data().daysCompLeave,
             user.data().daysSick, user.data().daysBirthdayLeave, user.id, user.data().firstName, user.data().lastName, [],
           );
         });

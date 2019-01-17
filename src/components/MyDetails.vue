@@ -94,7 +94,9 @@
 
       docRef.get().then((doc) => {
         if (doc.exists) {
+          //console.log(doc.data());
           this.user = createUserModel(doc.data());
+          //console.log(this.user);
           this.user.docId = this.userId;
           this.loaded = true;
         } else {
