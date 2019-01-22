@@ -258,9 +258,9 @@
   //          console.log('showing birthday...', moment(this.dob, 'MMDD').format());
             var a = moment(this.dob, 'MMDD');
             var b = moment(this.eDate);
-            var diff = b.diff(a, 'days');
-  //          console.log('difference...', diff);
-            if (diff > 7 || diff <0) {
+            var diff = b.diff(a, 'days', true);
+            //console.log('difference...', diff);
+            if (diff > 8 || diff <0) {
               this.$store.commit(mutant.SET_ERROR, 'Birthday Leave should be on that day, or within one week (under discretion)');
               return false;
             }

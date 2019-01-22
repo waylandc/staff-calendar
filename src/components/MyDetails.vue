@@ -21,6 +21,10 @@
             </v-text-field>
           </v-flex>
           <v-flex xs6>
+            <v-text-field v-model='user.dob' label='Birthday (MMDD)' disabled box>
+            </v-text-field>
+          </v-flex>
+          <v-flex xs6>
             <v-text-field v-model='user.email' label='Email' disabled box>
             </v-text-field>
           </v-flex>

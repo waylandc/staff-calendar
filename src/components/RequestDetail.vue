@@ -52,6 +52,13 @@
 					   :readonly = "true"
 				box>
 			    </v-text-field>
+          <v-text-field
+        v-model = 'this.requestorDob'
+             label = 'Birthday (MMDD)'
+             v-if="this.convertLeaveType === 'Birthday Leave'"
+             :readonly = "true"
+        box>
+          </v-text-field>
 			</v-flex>
 			<v-flex xs6>
 			    <v-text-field
@@ -159,6 +166,7 @@ export default {
 			startString: '',
 			endString: '',
 			user: null,
+      requestorDob: '',
 			documentRef: null,
 			alert: false,
 		};
@@ -182,7 +190,9 @@ export default {
 		}).catch((error) => {
 			this.$store.commit(mutant.SET_ERROR, 'Error loading document');
 			console.log('error getting document: ', error);
-		});
+		}).then(() => {
+      this.getRequestorDob(this.request.requestor);
+    });
 	},
 	computed: {
 		aggrStatus() {
@@ -227,12 +237,29 @@ export default {
 				return (this.request.secondComment !== '');
 			}
 		},
-		// TODO don't support edit request yet
-		// https://gitlab.com/waylandc/oax-staff-calendar/issues/5
 		 editProperty() {
 		   console.log('calling editRequest')
 		   this.$router.push({ path: `/leaveRequests/edit/${this.propId}` });
 		 },
+     getRequestorDob(person) {
+      console.log('start to find dob of ', person);
+      const docRef = db.collection('users').where('email', '==', person);
+
+      docRef.get().then((snapshot) => {
+        if(snapshot.empty) {
+          console.log('no matching documents');
+          return;
+        }
+        snapshot.forEach(doc => {
+          this.requestorDob = doc.data().dob;
+          //console.log(this.requestorDob);
+        })
+      })
+      .catch((error) => {
+        this.$store.commit(mutant.SET_ERROR, error.message);
+        console.log('Error getting document: ', error);
+      });
+     },
 		approve() {
 			// 'o' is placeholder JSON object we'll write to DB
 			var o = {};
