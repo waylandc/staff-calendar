@@ -346,30 +346,9 @@ export function logout() {
  */
 export function createEvent(data) {
   console.log('api.createEvent...', data);
-  console.log(data[0].startDate, data[0].endDate, data[0].requestor);
-  console.log('leave type, ', data[0].leaveType);
   return new Promise((resolve, reject) => {
-    db.collection('leaveRequests').add(data[0])
-      .then(docRef => resolve(docRef))
-      .catch((error) => {
-        console.log(error);
-        reject(error);
-      });
-    if (data[0].leaveType == 'SICK') {
-      var file = data[1]
-      var metadata = {
-        contentType: file.type
-      }
-      var storageRef = firebase.storage().ref();
-      storageRef.child('sick-leave-copy/'+data[2][0]+'/'+data[2][1]+'-to-'+data[2][2]+'.pdf').put(file, metadata)
-      .then( (snapshot) => {
-        console.log('successfully uploaded the file!');
-      }).catch((error) => {
-        console.log(error);
-        reject(error);
-      });
-    }
-
+    db.collection('leaveRequests').add(data)
+      .then(docRef => resolve(docRef));
   });
 }
 
@@ -382,6 +361,25 @@ export function editEvent(data) {
         console.log(error);
         reject(error);
       });
+  });
+}
+
+export function uploadSl(data) {
+  console.log('api.uploadSl...', data);
+  return new Promise((resolve, reject) => {
+    var file = data[0]
+    var metadata = {
+      contentType: file.type
+    }
+    var storageRef = firebase.storage().ref();
+    storageRef.child(data[1]).put(file, metadata)
+    .then( (snapshot) => {
+      console.log('successfully uploaded the file!');
+      resolve(snapshot);
+    }).catch((error) => {
+      console.log(error);
+      reject(error);
+    });
   });
 }
 

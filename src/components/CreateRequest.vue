@@ -34,7 +34,7 @@
               item-text = 'key'
               label = 'Leave Type'>
             </v-select>
-            <v-text-field label="Select Image" @click='pickFile' v-if="leaveType=='SICK'" v-model='imageName' prepend-icon='attach_file'>
+            <v-text-field label="Select sick leave pdf" @click='pickFile' v-if="leaveType=='SICK'" v-model='imageName' prepend-icon='attach_file'>
             </v-text-field>
               <input
                 type="file"
@@ -320,20 +320,28 @@
           null, // docId is populated on a fetch
           this.leaveType,
         );
-        var sDateSimple = moment(this.sDate).format("DDMMMYYYY");
-        var eDateSimple = moment(this.eDate).format("DDMMMYYYY");
-          console.log(req);
-          this.$store.dispatch(action.ADD_EVENT,
-          [req.toJSON(), this.imageFile, [this.$store.state.loggedInUser.email,
-          sDateSimple, eDateSimple]])
-            .then((docRef) => {
-              console.log('doc written with id, ', docRef);
+        console.log(req);
+        this.$store.dispatch(action.ADD_EVENT, req.toJSON())
+          .then((docRef) => {
+            console.log('doc written with id, ', docRef);
+            //this.$router.push({ path: '/leaveRequests' });
+          }).then(()=> {
+            var sDateSimple = moment(this.sDate).format("DDMMMYYYY");
+            var eDateSimple = moment(this.eDate).format("DDMMMYYYY");
+            var aggrString = 'sick-leave-copy/'+this.$store.state.loggedInUser.email+'/'
+                              +sDateSimple+'-to-'+eDateSimple+'.pdf';
+            console.log('aggrstring: ', aggrString);
+            this.$store.dispatch(action.UPLOAD_SL, [this.imageFile, aggrString])
+            .then((res)=>{
+              //response
+              console.log('sick leave copy uploaded', res);
               this.$router.push({ path: '/leaveRequests' });
             }).catch((error) => {
-              this.$store.commit(mutant.SET_ERROR, error.message);
-              console.error('error adding doc: ', error);
-            });
-        },
+            this.$store.commit(mutant.SET_ERROR, error.message);
+            console.error('error adding doc: ', error);
+          });
+        });
+      },
 
         pickFile () {
             this.$refs.image.click ()

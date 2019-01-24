@@ -173,11 +173,11 @@ const store = new Vuex.Store({
     [action.ADD_EVENT]({ commit }, payload) {
       commit(mutant.SET_LOADING, true);
       // payload should be CalendarEvent.toJSON()
-      console.log('ADD_EVENT(1), ', payload);
+      console.log('ADD_EVENT, ', payload);
       api.createEvent(payload)
         .then((doc) => {
-          console.log('ADD_EVENT(2), ', doc);
-          commit(mutant.SET_LOADING, false);        
+          console.log('ADD_EVENT, ', doc);
+          commit(mutant.SET_LOADING, false);
         })
         .catch((error) => {
           console.log('ADD_EVENT, ', error);
@@ -317,6 +317,25 @@ const store = new Vuex.Store({
           })
           .catch((error) => {
             console.log('DELETE_REQUEST, ', error);
+            commit(mutant.SET_ERROR, error);
+            commit(mutant.SET_LOADING, false);
+            reject(error);
+          });
+      });
+    },
+
+    [action.UPLOAD_SL]({ commit }, payload) {
+      commit(mutant.SET_LOADING, true);
+      return new Promise((resolve, reject) => {
+        console.log('UPLOAD_SL, ', payload);
+        api.uploadSl(payload)
+          .then((doc) => {
+            console.log('UPLOAD_SL, ', doc);
+            commit(mutant.SET_LOADING, false);
+            resolve(doc);
+          })
+          .catch((error) => {
+            console.log('UPLOAD_SL, ', error);
             commit(mutant.SET_ERROR, error);
             commit(mutant.SET_LOADING, false);
             reject(error);

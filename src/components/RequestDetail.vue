@@ -59,6 +59,10 @@
              :readonly = "true"
         box>
           </v-text-field>
+          <v-btn small v-if="this.convertLeaveType === 'Sick'"
+            color="green"
+            @click.stop="downloadAttachment" > Download sick leave scan copy
+          </v-btn>
 			</v-flex>
 			<v-flex xs6>
 			    <v-text-field
@@ -141,8 +145,10 @@
 </template>
 
 <script>
+import moment from 'moment';
 import { isNullOrUndefined } from 'util';
 import db from '../config/firebaseInit';
+import firebase from 'firebase';
 import { CalendarEvent } from '../models/CalendarEvent';
 import Constants from '../models/common.js';
 import * as mutant from '../store/mutation-types';
@@ -169,6 +175,7 @@ export default {
       requestorDob: '',
 			documentRef: null,
 			alert: false,
+      copyUrl: '',
 		};
 	},
 	created() {
@@ -237,6 +244,42 @@ export default {
 				return (this.request.secondComment !== '');
 			}
 		},
+    downloadAttachment() {
+
+      var startDateSimple = moment(this.request.startDate.toDate()).format("DDMMMYYYY");
+      var endDateSimple = moment(this.request.endDate.toDate()).format("DDMMMYYYY");
+      var aggrString = 'sick-leave-copy/'+this.request.requestor+'/'
+                        +startDateSimple+'-to-'+endDateSimple+'.pdf'
+      //console.log("sdate: ", startDateSimple);
+      console.log('downloading: ', aggrString);
+      firebase.storage().ref().child(aggrString)
+      .getDownloadURL().then(function(url) {
+        // `url` is the download URL for 'images/stars.jpg'
+
+        var xhr = new XMLHttpRequest();
+        xhr.responseType = 'blob';
+        xhr.onload = function(event) {
+          var blob = xhr.response;
+
+          let a = document.createElement("a");
+          a.style = "display: none";
+          document.body.appendChild(a);
+
+          let url = window.URL.createObjectURL(blob);
+          a.href = url;
+          a.download = aggrString;
+
+          a.click();
+
+          window.URL.revokeObjectURL(url);
+        };
+        xhr.open('GET', url);
+        xhr.send();
+      }).catch((error) => {
+        this.$store.commit(mutant.SET_ERROR, error.message);
+        console.log(error);
+      });
+    },
 		 editProperty() {
 		   console.log('calling editRequest')
 		   this.$router.push({ path: `/leaveRequests/edit/${this.propId}` });

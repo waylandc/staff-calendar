@@ -33,6 +33,15 @@
               item-text = 'key'
               label = 'Leave Type'>
             </v-select>
+            <v-text-field label="Select sick leave pdf" @click='pickFile' v-if="leaveType=='SICK'" v-model='imageName' prepend-icon='attach_file'>
+            </v-text-field>
+              <input
+                type="file"
+                style="display: none"
+                ref="image"
+                accept="application/pdf"
+                @change="onFilePicked"
+              >
           </v-flex>
           <v-flex xs6>
             <v-menu
@@ -153,6 +162,9 @@
         approvers: [],
         request: '',
         dob: '',
+        imageName: '',
+        imageUrl: '',
+        imageFile: '',
       };
     },
     created() {
@@ -298,6 +310,32 @@
 
         return true;
       },
+
+      pickFile () {
+        this.$refs.image.click ()
+      },
+
+      onFilePicked (e) {
+        const files = e.target.files
+        if(files[0] !== undefined) {
+          this.imageName = files[0].name
+        if(this.imageName.lastIndexOf('.') <= 0) {
+          return
+        }
+        const fr = new FileReader ()
+        fr.readAsDataURL(files[0])
+        fr.addEventListener('load', () => {
+          this.imageUrl = fr.result
+          this.imageFile = files[0] // this is an image file that can be sent to server...
+          //console.log('file becomes ', this.imageFile);
+        })
+        } else {
+          this.imageName = ''
+          this.imageFile = ''
+          this.imageUrl = ''
+        }
+      },
+
       updateRequest() {
         if (!this.validateRequest()) {
           return;
@@ -323,10 +361,22 @@
         this.$store.dispatch(action.EDIT_EVENT, [this.propId, req.toJSON()])
           .then((docRef) => {
             console.log('id overwritten with changes');
-            this.$router.push({ path: '/leaveRequests' });
-          }).catch((error) => {
-            this.$store.commit(mutant.SET_ERROR, error.message);
-            console.error('error adding doc: ', error);
+            //this.$router.push({ path: '/leaveRequests' });
+          }).then(()=> {
+            var sDateSimple = moment(this.sDate).format("DDMMMYYYY");
+            var eDateSimple = moment(this.eDate).format("DDMMMYYYY");
+            var aggrString = 'sick-leave-copy/'+this.$store.state.loggedInUser.email+'/'
+                              +sDateSimple+'-to-'+eDateSimple+'.pdf';
+            console.log('aggrstring: ', aggrString);
+            this.$store.dispatch(action.UPLOAD_SL, [this.imageFile, aggrString])
+            .then((res)=>{
+              //response
+              console.log('sick leave copy re-uploaded', res);
+              this.$router.push({ path: '/leaveRequests' });
+            }).catch((error) => {
+              this.$store.commit(mutant.SET_ERROR, error.message);
+              console.error('error adding doc: ', error);
+            });
           });
       },
     }
