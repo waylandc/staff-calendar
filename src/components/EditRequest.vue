@@ -382,7 +382,9 @@
             this.$store.commit(mutant.SET_ERROR, error.message);
             console.log(error)
           }).then(()=> { //delete old attachment
-            if (this.imageFile != '') {
+            if (this.imageFile != '' ||
+            (this.oldLeaveType == 'SICK' && this.leaveType != 'SICK')
+            ) {
               var oldSDateSimple = moment(this.oldSDate).format("DDMMMYYYY");
               var oldEDateSimple = moment(this.oldEDate).format("DDMMMYYYY");
               var oldAggrString = 'sick-leave-copy/'+this.$store.state.loggedInUser.email+'/'
