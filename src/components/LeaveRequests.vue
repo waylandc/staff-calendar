@@ -222,7 +222,9 @@
         }
       },
       deleteRequest (item) {
-        this.$store.dispatch(action.DELETE_REQUEST, item.docId)
+        this.$store.dispatch(action.DELETE_REQUEST, [item.docId,
+        "sick-leave-copy/"+ this.userEmail + "/" + moment(item.startDate).format("DDMMMYYYY")
+        + "-to-" + moment(item.endDate).format("DDMMMYYYY") +".pdf"])
           .then(() => {
             this.getEvents(Constants.PENDING);
           })

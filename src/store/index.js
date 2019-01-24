@@ -173,11 +173,11 @@ const store = new Vuex.Store({
     [action.ADD_EVENT]({ commit }, payload) {
       commit(mutant.SET_LOADING, true);
       // payload should be CalendarEvent.toJSON()
-      console.log('ADD_EVENT, ', payload);
+      console.log('ADD_EVENT(1), ', payload);
       api.createEvent(payload)
         .then((doc) => {
-          console.log('ADD_EVENT, ', doc);
-          commit(mutant.SET_LOADING, false);
+          console.log('ADD_EVENT(2), ', doc);
+          commit(mutant.SET_LOADING, false);        
         })
         .catch((error) => {
           console.log('ADD_EVENT, ', error);

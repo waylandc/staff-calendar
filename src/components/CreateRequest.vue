@@ -34,6 +34,15 @@
               item-text = 'key'
               label = 'Leave Type'>
             </v-select>
+            <v-text-field label="Select Image" @click='pickFile' v-if="leaveType=='SICK'" v-model='imageName' prepend-icon='attach_file'>
+            </v-text-field>
+              <input
+                type="file"
+                style="display: none"
+                ref="image"
+                accept="application/pdf"
+                @change="onFilePicked"
+              >
           </v-flex>
           <v-flex xs6>
             <v-menu
@@ -152,6 +161,9 @@
         secondApprover: '',
         approvers: [],
         dob: '',
+        imageName: '',
+        imageUrl: '',
+        imageFile: '',
       };
     },
     created() {
@@ -264,6 +276,12 @@
               this.$store.commit(mutant.SET_ERROR, 'Birthday Leave should be on that day, or within one week (under discretion)');
               return false;
             }
+        } else if (this.leaveType === 'SICK') {
+            if (this.imageFile == '') {
+              this.$store.commit(mutant.SET_ERROR, 'Please attach sick leave scan copy');
+              console.log('sensed error..');s
+              return false;
+          }
         }
 
         if (this.firstApprover === '') {
@@ -302,16 +320,45 @@
           null, // docId is populated on a fetch
           this.leaveType,
         );
-console.log(req);
-        this.$store.dispatch(action.ADD_EVENT, req.toJSON())
-          .then((docRef) => {
-            // console.log('doc written with id, ', docRef.id);
-            this.$router.push({ path: '/leaveRequests' });
-          }).catch((error) => {
-            this.$store.commit(mutant.SET_ERROR, error.message);
-            console.error('error adding doc: ', error);
-          });
-      },
+        var sDateSimple = moment(this.sDate).format("DDMMMYYYY");
+        var eDateSimple = moment(this.eDate).format("DDMMMYYYY");
+          console.log(req);
+          this.$store.dispatch(action.ADD_EVENT,
+          [req.toJSON(), this.imageFile, [this.$store.state.loggedInUser.email,
+          sDateSimple, eDateSimple]])
+            .then((docRef) => {
+              console.log('doc written with id, ', docRef);
+              this.$router.push({ path: '/leaveRequests' });
+            }).catch((error) => {
+              this.$store.commit(mutant.SET_ERROR, error.message);
+              console.error('error adding doc: ', error);
+            });
+        },
+
+        pickFile () {
+            this.$refs.image.click ()
+        },
+
+        onFilePicked (e) {
+        const files = e.target.files
+        if(files[0] !== undefined) {
+        this.imageName = files[0].name
+        if(this.imageName.lastIndexOf('.') <= 0) {
+          return
+        }
+        const fr = new FileReader ()
+        fr.readAsDataURL(files[0])
+        fr.addEventListener('load', () => {
+          this.imageUrl = fr.result
+          this.imageFile = files[0] // this is an image file that can be sent to server...
+          //console.log('file becomes ', this.imageFile);
+        })
+        } else {
+          this.imageName = ''
+          this.imageFile = ''
+          this.imageUrl = ''
+        }
+        }
     }
 
   }

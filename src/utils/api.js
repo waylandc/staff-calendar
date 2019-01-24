@@ -346,13 +346,30 @@ export function logout() {
  */
 export function createEvent(data) {
   console.log('api.createEvent...', data);
+  console.log(data[0].startDate, data[0].endDate, data[0].requestor);
+  console.log('leave type, ', data[0].leaveType);
   return new Promise((resolve, reject) => {
-    db.collection('leaveRequests').add(data)
+    db.collection('leaveRequests').add(data[0])
       .then(docRef => resolve(docRef))
       .catch((error) => {
         console.log(error);
         reject(error);
       });
+    if (data[0].leaveType == 'SICK') {
+      var file = data[1]
+      var metadata = {
+        contentType: file.type
+      }
+      var storageRef = firebase.storage().ref();
+      storageRef.child('sick-leave-copy/'+data[2][0]+'/'+data[2][1]+'-to-'+data[2][2]+'.pdf').put(file, metadata)
+      .then( (snapshot) => {
+        console.log('successfully uploaded the file!');
+      }).catch((error) => {
+        console.log(error);
+        reject(error);
+      });
+    }
+
   });
 }
 
@@ -435,10 +452,15 @@ export function deleteHoliday(docId) {
 }
 
 export function deleteRequest(docId) {
-  console.log('api.deleteRequest...', docId);
+  console.log('api.deleteRequest...', docId[0]);
   return new Promise((resolve, reject) => {
-    db.collection('leaveRequests').doc(docId).delete()
+    db.collection('leaveRequests').doc(docId[0]).delete()
       .then(() => {
+        console.log('delete certificate as well: ', docId[1]);
+        var storage = firebase.storage();
+        var storageRef = storage.ref();
+        storageRef.child(docId[1]).delete().catch((error) => console.log(error))
+      }).then(() => {
         resolve();
       })
       .catch((error) => {
