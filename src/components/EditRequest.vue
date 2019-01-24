@@ -167,6 +167,7 @@
         imageFile: '',
         oldSDate: '',
         oldEDate: '',
+        oldLeaveType: '',
       };
     },
     created() {
@@ -200,7 +201,8 @@
           this.secondApprover = this.request.secondApprover;
           this.loaded = true;
           this.oldSDate = this.startDate;
-          this.oldEDate = this.endDate
+          this.oldEDate = this.endDate;
+          this.oldLeaveType = this.leaveType;
         })
         .catch((error) => {
           this.$store.commit(mutant.SET_ERROR, error);
@@ -304,6 +306,16 @@
               this.$store.commit(mutant.SET_ERROR, 'Birthday Leave should be on that day, or within one week (under discretion)');
               return false;
             }
+        } else if (this.leaveType === 'SICK') {
+          if (this.oldLeaveType != 'SICK' && this.imageFile == '') {
+            this.$store.commit(mutant.SET_ERROR, 'If you change to sick leave you must upload the document');
+            return false;
+          }
+          if (this.imageFile == '' &&
+          (this.oldSDate != this.startDate || this.oldEDate != this.endDate)) {
+            this.$store.commit(mutant.SET_ERROR, 'If you change dates you must re-upload the document, you can go back to download the old scan copy first if needed');
+            return false;
+          }
         }
 
         if (this.firstApprover == this.$store.state.loggedInUser.email ||
@@ -402,7 +414,8 @@
                 this.$store.commit(mutant.SET_ERROR, error.message);
                 console.error('error adding doc: ', error);
               });
-
+            } else {
+              this.$router.push({ path: '/leaveRequests' });
             }
 
           });
