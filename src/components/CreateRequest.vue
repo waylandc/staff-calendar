@@ -325,6 +325,9 @@
           .then((docRef) => {
             console.log('doc written with id, ', docRef);
             //this.$router.push({ path: '/leaveRequests' });
+          }).catch((error) => {
+            this.$store.commit(mutant.SET_ERROR, error.message);
+            console.log(error)
           }).then(()=> {
             var sDateSimple = moment(this.sDate).format("DDMMMYYYY");
             var eDateSimple = moment(this.eDate).format("DDMMMYYYY");
@@ -337,8 +340,8 @@
               console.log('sick leave copy uploaded', res);
               this.$router.push({ path: '/leaveRequests' });
             }).catch((error) => {
-            this.$store.commit(mutant.SET_ERROR, error.message);
-            console.error('error adding doc: ', error);
+              this.$store.commit(mutant.SET_ERROR, error.message);
+              console.error('error adding doc: ', error);
           });
         });
       },

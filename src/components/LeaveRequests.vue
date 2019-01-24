@@ -222,11 +222,19 @@
         }
       },
       deleteRequest (item) {
-        this.$store.dispatch(action.DELETE_REQUEST, [item.docId,
-        "sick-leave-copy/"+ this.userEmail + "/" + moment(item.startDate).format("DDMMMYYYY")
-        + "-to-" + moment(item.endDate).format("DDMMMYYYY") +".pdf"])
+        this.$store.dispatch(action.DELETE_REQUEST, item.docId)
           .then(() => {
             this.getEvents(Constants.PENDING);
+          })
+          .then(() => {
+            var aggrString = "sick-leave-copy/"+ this.userEmail + "/" + moment(item.startDate).format("DDMMMYYYY")
+        + "-to-" + moment(item.endDate).format("DDMMMYYYY") +".pdf";
+            this.$store.dispatch(action.DELETE_SL, aggrString)
+            .then((res)=> {
+              console.log('the sick leave scan copy is also deleted', res)
+            }).catch((error) => {
+              console.error('error deleteing doc: ', error);
+            });
           })
           .then(() => {
             this.successMessage = 'Request successfully deleted';

@@ -165,6 +165,8 @@
         imageName: '',
         imageUrl: '',
         imageFile: '',
+        oldSDate: '',
+        oldEDate: '',
       };
     },
     created() {
@@ -197,6 +199,8 @@
           this.firstApprover = this.request.firstApprover;
           this.secondApprover = this.request.secondApprover;
           this.loaded = true;
+          this.oldSDate = this.startDate;
+          this.oldEDate = this.endDate
         })
         .catch((error) => {
           this.$store.commit(mutant.SET_ERROR, error);
@@ -362,21 +366,45 @@
           .then((docRef) => {
             console.log('id overwritten with changes');
             //this.$router.push({ path: '/leaveRequests' });
-          }).then(()=> {
-            var sDateSimple = moment(this.sDate).format("DDMMMYYYY");
-            var eDateSimple = moment(this.eDate).format("DDMMMYYYY");
-            var aggrString = 'sick-leave-copy/'+this.$store.state.loggedInUser.email+'/'
-                              +sDateSimple+'-to-'+eDateSimple+'.pdf';
-            console.log('aggrstring: ', aggrString);
-            this.$store.dispatch(action.UPLOAD_SL, [this.imageFile, aggrString])
-            .then((res)=>{
-              //response
-              console.log('sick leave copy re-uploaded', res);
-              this.$router.push({ path: '/leaveRequests' });
-            }).catch((error) => {
-              this.$store.commit(mutant.SET_ERROR, error.message);
-              console.error('error adding doc: ', error);
-            });
+          }).catch((error) => {
+            this.$store.commit(mutant.SET_ERROR, error.message);
+            console.log(error)
+          }).then(()=> { //delete old attachment
+            if (this.imageFile != '') {
+              var oldSDateSimple = moment(this.oldSDate).format("DDMMMYYYY");
+              var oldEDateSimple = moment(this.oldEDate).format("DDMMMYYYY");
+              var oldAggrString = 'sick-leave-copy/'+this.$store.state.loggedInUser.email+'/'
+                                +oldSDateSimple+'-to-'+oldEDateSimple+'.pdf';
+              console.log('aggrstring: ', oldAggrString);
+              this.$store.dispatch(action.DELETE_SL, oldAggrString)
+              .then((res)=>{
+                //response
+                console.log('old sick leave copy deleted', res);
+              }).catch((error) => {
+                console.error('error deleting doc: ', error);
+              });
+            }
+
+          }).then(()=> { //upload new attachment
+
+              if (this.imageFile != '') {
+              var sDateSimple = moment(this.sDate).format("DDMMMYYYY");
+              var eDateSimple = moment(this.eDate).format("DDMMMYYYY");
+              var aggrString = 'sick-leave-copy/'+this.$store.state.loggedInUser.email+'/'
+                                +sDateSimple+'-to-'+eDateSimple+'.pdf';
+              console.log('aggrstring: ', aggrString);
+              this.$store.dispatch(action.UPLOAD_SL, [this.imageFile, aggrString])
+              .then((res)=>{
+                //response
+                console.log('sick leave copy re-uploaded', res);
+                this.$router.push({ path: '/leaveRequests' });
+              }).catch((error) => {
+                this.$store.commit(mutant.SET_ERROR, error.message);
+                console.error('error adding doc: ', error);
+              });
+
+            }
+
           });
       },
     }

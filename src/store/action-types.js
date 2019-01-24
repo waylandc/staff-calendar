@@ -18,3 +18,4 @@ export const SHOW_USER_DETAILS = 'SHOW_USER_DETAILS';
 export const GET_APPROVERS = 'GET_APPROVERS';
 export const DELETE_REQUEST = 'DELETE_REQUEST';
 export const UPLOAD_SL = 'UPLOAD_SL';
+export const DELETE_SL = 'DELETE_SL';

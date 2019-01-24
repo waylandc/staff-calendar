@@ -343,6 +343,25 @@ const store = new Vuex.Store({
       });
     },
 
+    [action.DELETE_SL]({ commit }, payload) {
+      commit(mutant.SET_LOADING, true);
+      return new Promise((resolve, reject) => {
+        console.log('DELETE_SL, ', payload);
+        api.deleteSl(payload)
+          .then((doc) => {
+            console.log('DELETE_SL, ', doc);
+            commit(mutant.SET_LOADING, false);
+            resolve(doc);
+          })
+          .catch((error) => {
+            console.log('DELETE_SL, ', error);
+            commit(mutant.SET_ERROR, error);
+            commit(mutant.SET_LOADING, false);
+            reject(error);
+          });
+      });
+    },
+
   },
 
 

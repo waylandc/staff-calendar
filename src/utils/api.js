@@ -383,6 +383,19 @@ export function uploadSl(data) {
   });
 }
 
+export function deleteSl(data) {
+  console.log('api.deleteSl...', data);
+  return new Promise((resolve, reject) => {
+    console.log('delete attachment: ', data);
+    var storage = firebase.storage();
+    var storageRef = storage.ref();
+    storageRef.child(data).delete().catch((error) => console.log(error))
+
+  });
+}
+
+
+
 /**
  * Return a list of all the holidays
  * @param {moment} start
@@ -450,15 +463,10 @@ export function deleteHoliday(docId) {
 }
 
 export function deleteRequest(docId) {
-  console.log('api.deleteRequest...', docId[0]);
+  console.log('api.deleteRequest...', docId);
   return new Promise((resolve, reject) => {
-    db.collection('leaveRequests').doc(docId[0]).delete()
+    db.collection('leaveRequests').doc(docId).delete()
       .then(() => {
-        console.log('delete certificate as well: ', docId[1]);
-        var storage = firebase.storage();
-        var storageRef = storage.ref();
-        storageRef.child(docId[1]).delete().catch((error) => console.log(error))
-      }).then(() => {
         resolve();
       })
       .catch((error) => {
