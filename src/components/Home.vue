@@ -11,6 +11,12 @@
           <!-- :event-sources='eventSources'
           @event-selected='eventSelected'/> -->
       </v-flex>
+      <v-flex class="text-xs-center">
+        <br/>
+        <b>Annual Leave </b><v-icon color='purple'>event</v-icon>
+        <b>Public Holiday </b><v-icon color='red'>event</v-icon>
+        <b>Others </b><v-icon color='light-blue darken-4'>event</v-icon>
+      </v-flex>
     </v-layout>
   </v-container>
 </template>
@@ -54,6 +60,9 @@ export default {
             ce = new CalendarEvent(h.title, h.startDate, h.endDate, '', '', '', '', Constants.PENDING, null, '');
             ce = ce.toCalendarEvent();
             ce.cssClass = 'holiday';
+            ce.textColor = 'red';
+            ce.backgroundColor = 'white';
+            ce.borderColor = 'grey lighten-2';
             this.events.push(ce);
           });
         })
@@ -65,7 +74,15 @@ export default {
       { start: moment().subtract(6, 'M'), end: moment().add(1, 'y'), user: '', status: Constants.APPROVED })
       .then((events) => {
         events.forEach((e) => {
-          this.events.push(e.toCalendarEvent());
+          let ce2;
+          //console.log('each e:', e);
+          if (e.leaveType == 'ANN') {
+            ce2 = e.toCalendarEvent();
+            ce2.color = 'purple';
+          } else {
+            ce2 = e.toCalendarEvent();
+          }
+          this.events.push(ce2);
         });
         // console.log(this.events);
       })

@@ -215,7 +215,9 @@ export function getEvents(data) {
             doc.data().secondStatus,
             doc.data().firstComment,
             doc.data().secondComment,
-            doc.id);
+            doc.id,
+            doc.data().leaveType,
+            );
 
           // console.log('getEvents filter, user= ', data.email, ' status= ', data.status);
           //  NOTE - firestore queries don't support multiple fields
