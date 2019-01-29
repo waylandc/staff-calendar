@@ -164,6 +164,9 @@
         imageName: '',
         imageUrl: '',
         imageFile: '',
+        sBox: [],
+        eBox: [],
+        selfHolidays: [],
       };
     },
     created() {
@@ -178,7 +181,7 @@
           this.$store.commit(mutant.SET_ERROR, error);
         })
       this.getDob();
-
+      this.getSelfHolidays();
     },
     watch: {
       // The calendar uses strings so we use this method to parse the string
@@ -255,6 +258,52 @@
           console.log('Error getting document: ', error);
         });
       },
+      getSelfHolidays() {
+        //get all pending
+        this.$store.dispatch(action.GET_EVENTS,
+        {
+          start: moment().subtract(7, 'y'), end: moment().add(7, 'y'),
+          status: Constants.PENDING,
+          user: this.$store.state.loggedInUser.email
+        })
+        .then(events => {
+          this.pendingRequests = events;
+          console.log('list out the requests', this.pendingRequests);
+          events.forEach((entry)=> {
+            var s = entry.startDate.format("DDMMMYYYY"); //this entry's start date
+            var e = entry.endDate.format("DDMMMYYYY");
+            this.selfHolidays.push([s,e]);
+            })
+          //console.log(this.selfHolidays);
+        })
+        .catch((error) => {
+          this.$store.commit(mutant.SET_ERROR, error);
+          return false
+        });
+
+        //get all approved
+        this.$store.dispatch(action.GET_EVENTS,
+        {
+          start: moment().subtract(7, 'y'), end: moment().add(7, 'y'),
+          status: Constants.APPROVED,
+          user: this.$store.state.loggedInUser.email
+        })
+        .then(events => {
+          this.pendingRequests = events;
+          console.log('list out the requests', this.pendingRequests);
+          events.forEach((entry)=> {
+            var s = entry.startDate.format("DDMMMYYYY"); //this entry's start date
+            var e = entry.endDate.format("DDMMMYYYY");
+            this.selfHolidays.push([s,e]);
+            })
+          //console.log(this.selfHolidays);
+          })
+        .catch((error) => {
+          this.$store.commit(mutant.SET_ERROR, error);
+          return false
+        });
+      },
+
       validateRequest() {
         // console.log(this.leaveType, ', day of year, ', moment(this.eDate).dayOfYear());
         // dayOfYear 90 is March 31, deadline for which carry over leave must be used by
@@ -295,8 +344,23 @@
           return false;
         }
 
+        //TODO check holiday overlaps
+        var sDateSimple = moment(this.sDate).format("DDMMMYYYY");
+        var eDateSimple = moment(this.eDate).format("DDMMMYYYY");
+        //console.log('start and end of the request: ', sDateSimple, 'and', eDateSimple);
+        for (var i = 0; i < this.selfHolidays.length; i++) {
+          if ((sDateSimple <= this.selfHolidays[i][1] && sDateSimple >= this.selfHolidays[i][0]) ||
+          (eDateSimple <= this.selfHolidays[i][1] && eDateSimple >= this.selfHolidays[i][0])) {
+            this.$store.commit(mutant.SET_ERROR, 'Your leave request clashed with your previous approved/pending requests!');
+            return false;
+          }
+        }
+
+
         return true;
       },
+
+
       createRequest() {
         if (!this.validateRequest()) {
           return;
@@ -329,20 +393,24 @@
             this.$store.commit(mutant.SET_ERROR, error.message);
             console.log(error)
           }).then(()=> {
-            var sDateSimple = moment(this.sDate).format("DDMMMYYYY");
-            var eDateSimple = moment(this.eDate).format("DDMMMYYYY");
-            var aggrString = 'sick-leave-copy/'+this.$store.state.loggedInUser.email+'/'
-                              +sDateSimple+'-to-'+eDateSimple+'.pdf';
-            console.log('aggrstring: ', aggrString);
-            this.$store.dispatch(action.UPLOAD_SL, [this.imageFile, aggrString])
-            .then((res)=>{
-              //response
-              console.log('sick leave copy uploaded', res);
+            if (this.leaveType == 'SICK') {
+              var sDateSimple = moment(this.sDate).format("DDMMMYYYY");
+              var eDateSimple = moment(this.eDate).format("DDMMMYYYY");
+              var aggrString = 'sick-leave-copy/'+this.$store.state.loggedInUser.email+'/'
+                                +sDateSimple+'-to-'+eDateSimple+'.pdf';
+              console.log('aggrstring: ', aggrString);
+              this.$store.dispatch(action.UPLOAD_SL, [this.imageFile, aggrString])
+              .then((res)=>{
+                //response
+                console.log('sick leave copy uploaded', res);
+                this.$router.push({ path: '/leaveRequests' });
+              }).catch((error) => {
+                this.$store.commit(mutant.SET_ERROR, error.message);
+                console.error('error adding doc: ', error);
+              });
+            } else {
               this.$router.push({ path: '/leaveRequests' });
-            }).catch((error) => {
-              this.$store.commit(mutant.SET_ERROR, error.message);
-              console.error('error adding doc: ', error);
-          });
+            }
         });
       },
 

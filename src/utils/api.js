@@ -219,7 +219,7 @@ export function getEvents(data) {
 
           // console.log('getEvents filter, user= ', data.email, ' status= ', data.status);
           //  NOTE - firestore queries don't support multiple fields
-          //    so we need to filter on the server. YES THIS IS A BLOODY MESS but we need
+          //    so we need to filter on the server. YES THIS IS A BLOoODY MESS but we need
           //    to provide query capability.
           let isFiltered = false; // set to true if we fail filter criteria
           // if user param is present, test that this event requestor matches filter
