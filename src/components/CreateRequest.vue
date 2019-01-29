@@ -164,8 +164,6 @@
         imageName: '',
         imageUrl: '',
         imageFile: '',
-        sBox: [],
-        eBox: [],
         selfHolidays: [],
       };
     },
@@ -245,9 +243,9 @@
 
         docRef.get().then((doc) => {
           if (doc.exists) {
-            //console.log(doc.data());
+            console.log(doc.data());
             this.dob = (doc.data().dob);
-            //console.log('found dob, ', this.dob);
+            console.log('found dob, ', this.dob);
           } else {
             this.$store.commit(mutant.SET_ERROR, 'Error, user does not exist');
             console.log('error loading user, ', this.userId);
@@ -258,6 +256,7 @@
           console.log('Error getting document: ', error);
         });
       },
+
       getSelfHolidays() {
         //get all pending
         this.$store.dispatch(action.GET_EVENTS,
@@ -268,7 +267,7 @@
         })
         .then(events => {
           this.pendingRequests = events;
-          console.log('list out the requests', this.pendingRequests);
+          //console.log('list out the requests', this.pendingRequests);
           events.forEach((entry)=> {
             var s = entry.startDate.format("DDMMMYYYY"); //this entry's start date
             var e = entry.endDate.format("DDMMMYYYY");
@@ -290,7 +289,7 @@
         })
         .then(events => {
           this.pendingRequests = events;
-          console.log('list out the requests', this.pendingRequests);
+          //console.log('list out the requests', this.pendingRequests);
           events.forEach((entry)=> {
             var s = entry.startDate.format("DDMMMYYYY"); //this entry's start date
             var e = entry.endDate.format("DDMMMYYYY");
@@ -325,6 +324,10 @@
               this.$store.commit(mutant.SET_ERROR, 'Birthday Leave should be on that day, or within one week (under discretion)');
               return false;
             }
+            if (typeof this.dob === "undefined") {
+              this.$store.commit(mutant.SET_ERROR, 'date of birth cannot be read, try to refresh page and try again');
+              return false;
+            }
         } else if (this.leaveType === 'SICK') {
             if (this.imageFile == '') {
               this.$store.commit(mutant.SET_ERROR, 'Please attach sick leave scan copy');
@@ -344,7 +347,7 @@
           return false;
         }
 
-        //TODO check holiday overlaps
+        //check holiday overlaps
         var sDateSimple = moment(this.sDate).format("DDMMMYYYY");
         var eDateSimple = moment(this.eDate).format("DDMMMYYYY");
         //console.log('start and end of the request: ', sDateSimple, 'and', eDateSimple);

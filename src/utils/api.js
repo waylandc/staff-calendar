@@ -389,8 +389,8 @@ export function deleteSl(data) {
     console.log('delete attachment: ', data);
     var storage = firebase.storage();
     var storageRef = storage.ref();
-    storageRef.child(data).delete().catch((error) => console.log(error))
-
+    storageRef.child(data).delete().catch((error) =>
+    console.log('It doesnt really matter if your attachment is not deleted. Possibly you dont have an attachment',error))
   });
 }
 
