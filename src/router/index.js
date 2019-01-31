@@ -14,7 +14,7 @@ const routerOptions = [
   { path: '/register', component: 'Registration' },
   { path: '/changePassword', component: 'ChangePassword', meta: { requiresAuth: true } },
   { path: '/home', component: 'Home', meta: { requiresAuth: true } },
-  { path: '/users', component: 'Users', meta: { requiresAdmin: true } },
+  { path: '/users', component: 'Users', meta: { requiresAuth: true , requiresAdmin: true} },
   { path: '/users/:id', component: 'UserDetails', meta: { requiresAuth: true } },
   { path: '/myDetails', component: 'MyDetails', meta: { requiresAuth: true } },
   { path: '/leaveRequests', component: 'LeaveRequests', meta: { requiresAuth: true } },

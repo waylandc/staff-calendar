@@ -116,7 +116,7 @@
       this.loaded = false;
       this.userId = this.$store.state.loggedInUser.docId;
       const docRef = db.collection('users').doc(this.userId);
-
+      console.log('logged in user ',this.$store.state.loggedInUser);
       docRef.get().then((doc) => {
         if (doc.exists) {
           //console.log(doc.data());

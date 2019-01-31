@@ -201,6 +201,12 @@ export default {
 			console.log('error getting document: ', error);
 		}).then(() => {
       this.getRequestorDob(this.request.requestor);
+      if (this.request.firstApprover == this.user.email ||
+      this.request.secondApprover == this.user.email) {
+        if (this.request.leaveType == 'CO' || this.request.leaveType == 'ANN') {
+          this.getRemainingDays(this.request.leaveType);
+        }
+      }
     });
 	},
 	computed: {
@@ -306,6 +312,8 @@ export default {
       });
      },
 		approve() {
+      //TODO may recheck availability by grabbing remaining days available
+
 			// 'o' is placeholder JSON object we'll write to DB
 			var o = {};
 			// check if we're the first or second approver
@@ -355,6 +363,14 @@ export default {
 			this.documentRef.update(o);
 			this.$router.push({ path: '/leaveRequests' });
 		},
+    getRemainingDays(type) {
+      this.$store.dispatch(action.GET_EVENTS,
+      {
+        start: moment().startOf('year'), end: moment().endOf("year"),
+        status: Constants.APPROVED,
+        user: this.user.email
+      })
+    }
 		getStatus(s) {
 			switch (s) {
 			case Constants.PENDING:
