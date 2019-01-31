@@ -28,6 +28,7 @@
             <v-text-field v-model='user.email' label='Email' disabled box>
             </v-text-field>
           </v-flex>
+          <br/>
           <v-flex xs6>
             <v-text-field v-model.number='user.daysAnnualLeave' label='Annual Leave' disabled box>
             </v-text-field>
@@ -53,11 +54,15 @@
             </v-text-field>
           </v-flex>
           <v-flex xs6>
-            <v-text-field v-model.number='user.daysCompLeave' label='Comp Leave' disabled box>
+            <v-text-field v-model.number='this.approvedComp' label='Approved Comp Leave' disabled box>
             </v-text-field>
           </v-flex>
           <v-flex xs6>
-            <v-text-field v-model.number='user.daysSick' label='Sick' disabled box>
+            <v-text-field v-model.number='this.approvedSick' label='Approved Sick' disabled box>
+            </v-text-field>
+          </v-flex>
+          <v-flex xs6>
+            <v-text-field v-model.number='this.approvedNoPay' label='Approved No Pay' disabled box>
             </v-text-field>
           </v-flex>
           <v-flex xs6>
