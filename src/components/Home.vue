@@ -88,11 +88,11 @@ export default {
           } else if (e.leaveType == 'COMP') {
             ce2.color = 'yellow';
           } else if (e.leaveType == 'CO') {
-            ce2.color = 'purple accent-1';
+            ce2.color = 'pink';
           } else if (e.leaveType == 'SICK') {
-            ce2.color = 'light-blue';
+            ce2.color = 'DodgerBlue';
           } else if (e.leaveType == 'BL') {
-            ce2.color = 'lime';
+            ce2.color = 'YellowGreen';
           } else if (e.leaveType == 'NP') {
             ce2.color = 'orange';
           }

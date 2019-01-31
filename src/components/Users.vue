@@ -21,15 +21,21 @@
                 class='mdl-data-table__cell--non-numeric'>{{ props.item.daysAnnualLeave - props.item.approvedAnn }}</td>
 
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysCarryOver }}</td>
+                <td :style="{backgroundColor: 'grey'}"
+                 class='mdl-data-table__cell--non-numeric'>{{ props.item.approvedCarry }}</td>
+                <td :style="{backgroundColor: 'grey'}"
+                class='mdl-data-table__cell--non-numeric'>{{ props.item.daysCarryOver - props.item.approvedCarry }}</td>
 
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.approvedComp }}</td>
-                <!--<td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysBooked }}</td>
-                <td class='mdl-data-table__cell--non-numeric'>
-                  {{ props.item.daysAnnualLeave + props.item.daysCarryOver + props.item.daysCompLeave - props.item.daysBooked }}
-                </td>
+                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.approvedSick }}</td>
 
+                <td class='mdl-data-table__cell--non-numeric'>1</td>
+                <td :style="{backgroundColor: 'grey'}"
+                class='mdl-data-table__cell--non-numeric'>{{ props.item.approvedBirthday }}</td>
 
-                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.isApprover }}</td>
+                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.approvedNoPay }}</td>
+
+                <!--<td class='mdl-data-table__cell--non-numeric'>{{ props.item.isApprover }}</td>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.isAdmin }}</td>
                 -->
 
@@ -39,7 +45,11 @@
         </div>
       </v-flex>
       <v-flex class="text-xs-left">
-        *for admin, click the respective row to edit days available and status etc.
+        * for admin, click the respective row to edit days available and status etc.
+        <br/>
+        * apvd = approved
+        <br/>
+        * rmng = remaining
       </v-flex>
     </v-layout>
   </v-container>
@@ -73,15 +83,16 @@ export default {
           align: 'left',
           sortable: false,
           value: 'alDays',
+          width: '100px',
         },
         {
-          text: '(approved)',
+          text: '(apvd)',
           align: 'left',
           sortable: false,
           value: 'approvedAlDays',
         },
         {
-          text: '(remaining)',
+          text: '(rmng)',
           align: 'left',
           sortable: false,
           value: 'remainingAlDays',
@@ -93,10 +104,46 @@ export default {
           value: 'carryOver',
         },
         {
-          text: 'Approved Comp',
+          text: '(apvd)',
           align: 'left',
           sortable: false,
-          value: 'compDays',
+          value: 'approvedCoDays',
+        },
+        {
+          text: '(rmng)',
+          align: 'left',
+          sortable: false,
+          value: 'remainingCoDays',
+        },
+        {
+          text: 'Apvd Comp',
+          align: 'left',
+          sortable: false,
+          value: 'approvedCompDays',
+        },
+        {
+          text: 'Apvd Sick',
+          align: 'left',
+          sortable: false,
+          value: 'approvedSickDays',
+        },
+        {
+          text: 'Birthday',
+          align: 'left',
+          sortable: false,
+          value: 'birthDays',
+        },
+        {
+          text: '(apvd)',
+          align: 'left',
+          sortable: false,
+          value: 'approvedBirthDays',
+        },
+        {
+          text: 'Apvd No Pay',
+          align: 'left',
+          sortable: false,
+          value: 'approvedNpDays',
         },
         /*{
           text: 'Booked',
@@ -186,8 +233,16 @@ export default {
           if (entry.leaveType == 'ANN') {
             target.approvedAnn = target.approvedAnn + e.diff(s, 'days') + 1;
             //console.log('target.approvedAnn, ', target.approvedAnn);
+          } else if (entry.leaveType == 'CO') {
+            target.approvedCarry += e.diff(s, 'days') + 1;
           } else if (entry.leaveType == 'COMP') {
-            target.approvedComp = target.approvedComp + e.diff(s, 'days') + 1;
+            target.approvedComp += e.diff(s, 'days') + 1;
+          } else if (entry.leaveType == 'SICK') {
+            target.approvedSick += e.diff(s, 'days') + 1;
+          } else if (entry.leaveType == 'BL') {
+            target.approvedBirthday += e.diff(s, 'days') + 1;
+          } else if (entry.leaveType == 'NP') {
+            target.approvedNoPay += e.diff(s, 'days') + 1;
           }
 
         })
@@ -223,4 +278,5 @@ export default {
     font-size: 12px;
     text-align: left;
   }
+
 </style>

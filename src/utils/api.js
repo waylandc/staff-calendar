@@ -104,8 +104,12 @@ export function getUsers() {
             doc.data().dob,
           );
           u.comments = [];
-          u.approvedAnn = 0; //for users.vue
+          u.approvedAnn = 0; //build initial value for users.vue
           u.approvedComp = 0;
+          u.approvedCarry = 0;
+          u.approvedSick = 0;
+          u.approvedBirthday = 0;
+          u.approvedNoPay = 0;
           users.push(u);
         });
       })

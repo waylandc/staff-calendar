@@ -25,7 +25,7 @@
             </v-text-field>
           </v-flex>
           <v-flex xs6>
-            <v-text-field v-model.number='user.daysBooked' label='Booked' disabled box>
+            <v-text-field v-model.number='user.daysBirthdayLeave' label='Birthday Leave' disabled box>
             </v-text-field>
           </v-flex>
           <v-flex xs6>
@@ -33,19 +33,7 @@
             </v-text-field>
           </v-flex>
           <v-flex xs6>
-            <v-text-field v-model.number='user.daysCompLeave' label='Comp Leave' :readonly="!this.isAdmin" box>
-            </v-text-field>
-          </v-flex>
-          <v-flex xs6>
             <v-text-field v-model.number='user.daysCarryOver' label='Carry Over' :readonly="!this.isAdmin" box>
-            </v-text-field>
-          </v-flex>
-          <v-flex xs6>
-            <v-text-field v-model.number='user.daysSick' label='Sick' :readonly="!this.isAdmin" box>
-            </v-text-field>
-          </v-flex>
-          <v-flex xs6>
-            <v-text-field v-model.number='user.daysBirthdayLeave' label='Birthday Leave' :readonly="!this.isAdmin" box>
             </v-text-field>
           </v-flex>
           <v-flex xs6>
