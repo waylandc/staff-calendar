@@ -170,7 +170,6 @@
             }
 
           })
-          //console.log(target.email, target.approvedAnn);
         })
         .catch((error) => {
           this.$store.commit(mutant.SET_ERROR, error);

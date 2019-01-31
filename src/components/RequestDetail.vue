@@ -178,6 +178,9 @@ export default {
 			documentRef: null,
 			alert: false,
       copyUrl: '',
+      approvedAnn: 0,
+      approvedCo: 0,
+      userDetails: '',
 		};
 	},
 	created() {
@@ -204,10 +207,12 @@ export default {
       if (this.request.firstApprover == this.user.email ||
       this.request.secondApprover == this.user.email) {
         if (this.request.leaveType == 'CO' || this.request.leaveType == 'ANN') {
-          this.getRemainingDays(this.request.leaveType);
+          this.getRemainingDays();
+          this.fetchUser();
+
         }
       }
-    });
+    })
 	},
 	computed: {
 		aggrStatus() {
@@ -312,33 +317,36 @@ export default {
       });
      },
 		approve() {
-      //TODO may recheck availability by grabbing remaining days available
+      if (this.validateDate() == false) {
+        console.log('the request seems exceeded the quota');
+        this.$store.commit(mutant.SET_ERROR, 'the request seems exceeded the quota');
+      } else {
+        // 'o' is placeholder JSON object we'll write to DB
+        var o = {};
+        // check if we're the first or second approver
+        if (this.$store.state.loggedInUser.email === this.request.firstApprover && this.validateDate() == true) {
+          o.firstApprover = this.$store.state.loggedInUser.email;
+          if (this.request.firstComment === '') {
+            o.firstComment = '** Approved **';
+          } else {
+            o.firstComment = this.request.firstComment;
+          }
+          o.firstStatus = Constants.APPROVED;
+        }
 
-			// 'o' is placeholder JSON object we'll write to DB
-			var o = {};
-			// check if we're the first or second approver
-			if (this.$store.state.loggedInUser.email === this.request.firstApprover) {
-				o.firstApprover = this.$store.state.loggedInUser.email;
-				if (this.request.firstComment === '') {
-					o.firstComment = '** Approved **';
-				} else {
-					o.firstComment = this.request.firstComment;
-				}
-				o.firstStatus = Constants.APPROVED;
-			}
-
-			if (this.$store.state.loggedInUser.email === this.request.secondApprover) {
-				o.secondApprover = this.$store.state.loggedInUser.email;
-				if (this.request.secondComment === '') {
-					o.secondComment = '** Approved **';
-				} else {
-					o.secondComment = this.request.secondComment;
-				}
-				o.secondStatus = Constants.APPROVED;
-			}
-			// console.log(o);
-			this.documentRef.update(o);
-			this.$router.push({ path: '/leaveRequests' });
+        if (this.$store.state.loggedInUser.email === this.request.secondApprover && this.validateDate() == true) {
+          o.secondApprover = this.$store.state.loggedInUser.email;
+          if (this.request.secondComment === '') {
+            o.secondComment = '** Approved **';
+          } else {
+            o.secondComment = this.request.secondComment;
+          }
+          o.secondStatus = Constants.APPROVED;
+        }
+        // console.log(o);
+        this.documentRef.update(o);
+        this.$router.push({ path: '/leaveRequests' });
+      }
 		},
 		reject() {
 			if (!this.validateRejection()) {
@@ -363,14 +371,65 @@ export default {
 			this.documentRef.update(o);
 			this.$router.push({ path: '/leaveRequests' });
 		},
-    getRemainingDays(type) {
+    getRemainingDays() {
       this.$store.dispatch(action.GET_EVENTS,
       {
         start: moment().startOf('year'), end: moment().endOf("year"),
         status: Constants.APPROVED,
-        user: this.user.email
+        user: this.request.requestor
       })
-    }
+      .then((events) => {
+      //this.pendingRequests = events;
+      //console.log('the email: ',this.request.requestor,'list out the requests', events);
+        events.forEach((entry)=> {
+          var s = entry.startDate; //this entry's start date
+          var e = entry.endDate;
+          if (entry.leaveType == 'ANN') {
+            this.approvedAnn += e.diff(s, 'days') + 1;
+            //console.log('this.approvedAnn, ', this.approvedAnn);
+          } else if (entry.leaveType == 'CO') {
+            this.approvedCarry += e.diff(s, 'days') + 1;
+          }
+        })
+      })
+      .catch((error) => {
+        this.$store.commit(mutant.SET_ERROR, error);
+        console.log('error, ', error)
+      });
+    },
+    validateDate() {
+      console.log('in validateDate()')
+      if (this.request.leaveType == 'ANN') {
+        var a = moment(this.request.startDate.toDate());
+        var b = moment(this.request.endDate.toDate());
+        console.log('a and b', a, b);
+        console.log(a.diff(b, 'days'));
+        console.log(this.userDetails.daysAnnualLeave);
+        console.log(this.approvedAnn)
+        if (a.diff(b, 'days') + 1 > this.userDetails.daysAnnualLeave - this.approvedAnn) {
+          return false;
+        }
+      } else if (this.request.leaveType == 'CO') {
+          var a = this.request.startDate;
+          var b = this.request.endDate;
+          if (a.diff(b, 'days') + 1 > this.userDetails.daysCarryOver - this.approvedCo) {
+            return false;
+          }
+        }
+      return true;
+
+    },
+    fetchUser() {
+      this.$store.dispatch(action.GET_USER, { email: this.request.requestor })
+        .then((user) => {
+          console.log('UserDetails loaded, ', user);
+          this.userDetails = user;
+        })
+        .catch((error) => {
+          console.log(error);
+          this.$store.commit(mutant.SET_ERROR, error);
+        })
+    },
 		getStatus(s) {
 			switch (s) {
 			case Constants.PENDING:
