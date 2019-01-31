@@ -153,7 +153,9 @@
           {key:'Compensation', val: 'COMP'},
           {key: 'Carry Over', val: 'CO'},
 	        {key: 'Sick', val: 'SICK'},
-          {key: 'Birthday Leave', val: 'BL'}],
+          {key: 'Birthday Leave', val: 'BL'},
+          {key: 'No Pay', val: 'NP'},
+          ],
         leaveType: 'ANN',
         duration: ['Full', 'AM', 'PM'],
         halfDay: 'Full',
@@ -267,7 +269,7 @@
         })
         .then(events => {
           this.pendingRequests = events;
-          //console.log('list out the requests', this.pendingRequests);
+          console.log('list out the requests', this.pendingRequests);
           events.forEach((entry)=> {
             var s = entry.startDate.format("DDMMMYYYY"); //this entry's start date
             var e = entry.endDate.format("DDMMMYYYY");
@@ -371,7 +373,7 @@
         // var aa = this.daysBetween(new Date(this.sDate), new Date(this.eDate));
         // console.log('num days, ' + aa);
 
-        const niceTitle = this.$store.state.loggedInUser.firstName + '- ' + this.title;
+        const niceTitle = this.$store.state.loggedInUser.firstName + ' - ' + this.title;
         const req = new CalendarEvent(
           niceTitle,
           this.sDate,

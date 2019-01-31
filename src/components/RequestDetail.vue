@@ -164,7 +164,9 @@ export default {
 				{key:'Compensation', val: 'COMP'},
 				{key: 'Carry Over', val: 'CO'},
 				{key: 'Sick', val: 'SICK'},
-        {key: 'Birthday Leave', val: 'BL'}],
+        {key: 'Birthday Leave', val: 'BL'},
+        {key: 'No Pay', val: 'NP'},
+        ],
 			drawer: false,
 			request: '',	// CalendarEvent object
 			loaded: false,

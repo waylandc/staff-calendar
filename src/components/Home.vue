@@ -13,9 +13,15 @@
       </v-flex>
       <v-flex class="text-xs-center">
         <br/>
-        <b>Annual Leave </b><v-icon color='purple'>event</v-icon>
         <b>Public Holiday </b><v-icon color='red'>event</v-icon>
-        <b>Others </b><v-icon color='light-blue darken-4'>event</v-icon>
+        <b>Annual </b><v-icon color='purple'>event</v-icon>
+        <b>Compensation </b><v-icon color='yellow'>event</v-icon>
+        <br/>
+        <b>Carry Over </b><v-icon color='purple accent-1'>event</v-icon>
+        <b>Sick </b><v-icon color='light-blue darken-2'>event</v-icon>
+        <b>Birthday </b><v-icon color='lime'>event</v-icon>
+        <br/>
+        <b>No Pay </b><v-icon color='orange'>event</v-icon>
       </v-flex>
     </v-layout>
   </v-container>
@@ -76,11 +82,19 @@ export default {
         events.forEach((e) => {
           let ce2;
           //console.log('each e:', e);
+          ce2 = e.toCalendarEvent();
           if (e.leaveType == 'ANN') {
-            ce2 = e.toCalendarEvent();
             ce2.color = 'purple';
-          } else {
-            ce2 = e.toCalendarEvent();
+          } else if (e.leaveType == 'COMP') {
+            ce2.color = 'yellow';
+          } else if (e.leaveType == 'CO') {
+            ce2.color = 'purple accent-1';
+          } else if (e.leaveType == 'SICK') {
+            ce2.color = 'light-blue';
+          } else if (e.leaveType == 'BL') {
+            ce2.color = 'lime';
+          } else if (e.leaveType == 'NP') {
+            ce2.color = 'orange';
           }
           this.events.push(ce2);
         });

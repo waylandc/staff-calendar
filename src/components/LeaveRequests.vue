@@ -36,6 +36,9 @@
                   {{ props.item.title }}
                 </td>
                 <td class='mdl-data-table__cell--non-numeric'>
+                  {{ props.item.leaveType }}
+                </td>
+                <td class='mdl-data-table__cell--non-numeric'>
                   {{ props.item.startDate.toDate().toDateString() }}
                 </td>
                 <td class='mdl-data-table__cell--non-numeric'>
@@ -97,6 +100,12 @@
             align: 'left',
             sortable: true,
             value: 'title',
+          },
+          {
+            text: 'Type',
+            align: 'left',
+            sortable: true,
+            value: 'leaveType',
           },
           {
             text: 'Start',
@@ -174,7 +183,7 @@
           })
           .then(events => {
             this.pendingRequests = events;
-             //console.log(this.pendingRequests);
+            //console.log(this.pendingRequests);
             this.loaded = true;
           })
           .catch((error) => {
@@ -227,14 +236,16 @@
             this.getEvents(Constants.PENDING);
           })
           .then(() => {
-            var aggrString = "sick-leave-copy/"+ this.userEmail + "/" + moment(item.startDate).format("DDMMMYYYY")
-        + "-to-" + moment(item.endDate).format("DDMMMYYYY") +".pdf";
-            this.$store.dispatch(action.DELETE_SL, aggrString)
-            .then((res)=> {
-              console.log('the sick leave scan copy is also deleted', res)
-            }).catch((error) => {
-              console.error('error deleteing doc: ', error);
-            });
+            if (item.leaveType == 'SICK') {
+              var aggrString = "sick-leave-copy/"+ this.userEmail + "/" + moment(item.startDate).format("DDMMMYYYY")
++ "-to-" + moment(item.endDate).format("DDMMMYYYY") +".pdf";
+              this.$store.dispatch(action.DELETE_SL, aggrString)
+              .then((res)=> {
+                console.log('the sick leave scan copy is also deleted', res)
+              }).catch((error) => {
+                console.error('error deleteing doc: ', error);
+              });
+            }
           })
           .then(() => {
             this.successMessage = 'Request successfully deleted';

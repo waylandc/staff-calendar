@@ -13,19 +13,33 @@
             <template slot='items' slot-scope='props'>
               <tr @click='showDetails(props.item.docId, props.item.email)'>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.lastName.toUpperCase() }}, {{ props.item.firstName }}</td>
+
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysAnnualLeave }}</td>
-                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysCompLeave }}</td>
+                <td :style="{backgroundColor: 'grey'}"
+                 class='mdl-data-table__cell--non-numeric'>{{ props.item.approvedAnn }}</td>
+                <td :style="{backgroundColor: 'grey'}"
+                class='mdl-data-table__cell--non-numeric'>{{ props.item.daysAnnualLeave - props.item.approvedAnn }}</td>
+
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysCarryOver }}</td>
-                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysBooked }}</td>
+
+                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.approvedComp }}</td>
+                <!--<td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysBooked }}</td>
                 <td class='mdl-data-table__cell--non-numeric'>
                   {{ props.item.daysAnnualLeave + props.item.daysCarryOver + props.item.daysCompLeave - props.item.daysBooked }}
                 </td>
+
+
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.isApprover }}</td>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.isAdmin }}</td>
+                -->
+
               </tr>
             </template>
           </v-data-table>
         </div>
+      </v-flex>
+      <v-flex class="text-xs-left">
+        *for admin, click the respective row to edit days available and status etc.
       </v-flex>
     </v-layout>
   </v-container>
@@ -33,6 +47,8 @@
 
 <script>
 import NProgress from 'nprogress';
+import moment from 'moment-business-days';
+import Constants from '../models/common.js';
 import db from '../config/firebaseInit';
 	import * as mutant from '../store/mutation-types';
 	import * as action from '../store/action-types';
@@ -59,10 +75,16 @@ export default {
           value: 'alDays',
         },
         {
-          text: 'Comp',
+          text: '(approved)',
           align: 'left',
           sortable: false,
-          value: 'compDays',
+          value: 'approvedAlDays',
+        },
+        {
+          text: '(remaining)',
+          align: 'left',
+          sortable: false,
+          value: 'remainingAlDays',
         },
         {
           text: 'Carry',
@@ -71,6 +93,12 @@ export default {
           value: 'carryOver',
         },
         {
+          text: 'Approved Comp',
+          align: 'left',
+          sortable: false,
+          value: 'compDays',
+        },
+        /*{
           text: 'Booked',
           align: 'left',
           sortable: false,
@@ -93,10 +121,11 @@ export default {
           align: 'left',
           sortable: false,
           value: 'admin',
-        }
+        }*/
       ],
       users: [],
       alert: false,
+      //approvedAnn: '',
     };
   },
   created() {
@@ -110,7 +139,13 @@ export default {
       })
       .catch((err) => {
         this.$store.commit(mutant.SET_ERROR, err.message);
+      })
+      .then(() => {
+        this.users.forEach((u) => {
+          this.getApprovedHolidays(u);
+        })
       });
+
     NProgress.done();
   },
   computed: {
@@ -129,9 +164,41 @@ export default {
     addProperty() {
       this.$router.push({ path: '/addUser' })
     },
+
     showDetails(id, email) {
       this.$store.dispatch(action.SHOW_USER_DETAILS, { email: email, id: id });
     },
+
+    getApprovedHolidays(target) {
+      //console.log('in getApprovedHolidays()', target);
+      this.$store.dispatch(action.GET_EVENTS,
+      {
+        start: moment().startOf('year'), end: moment().endOf("year"),
+        status: Constants.APPROVED,
+        user: target.email
+      })
+      .then((events) => {
+        //this.pendingRequests = events;
+        //console.log('the email: ',target.email,'list out the requests', events);
+        events.forEach((entry)=> {
+          var s = entry.startDate; //this entry's start date
+          var e = entry.endDate;
+          if (entry.leaveType == 'ANN') {
+            target.approvedAnn = target.approvedAnn + e.diff(s, 'days') + 1;
+            //console.log('target.approvedAnn, ', target.approvedAnn);
+          } else if (entry.leaveType == 'COMP') {
+            target.approvedComp = target.approvedComp + e.diff(s, 'days') + 1;
+          }
+
+        })
+        //console.log(target.email, target.approvedAnn);
+      })
+      .catch((error) => {
+        this.$store.commit(mutant.SET_ERROR, error);
+        console.log('error, ', error)
+      });
+    },
+
   },
   watch: {
     error(value) {
