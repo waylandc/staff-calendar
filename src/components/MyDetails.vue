@@ -29,15 +29,11 @@
             </v-text-field>
           </v-flex>
           <v-flex xs6>
-            <v-text-field v-model.number='user.daysBooked' label='Booked' disabled box>
-            </v-text-field>
-          </v-flex>
-          <v-flex xs6>
             <v-text-field v-model.number='user.daysAnnualLeave' label='Annual Leave' disabled box>
             </v-text-field>
           </v-flex>
           <v-flex xs6>
-            <v-text-field v-model.number='user.daysCompLeave' label='Comp Leave' disabled box>
+            <v-text-field v-model.number='user.daysAnnualLeave - this.approvedAnn' label='Remaining' disabled box>
             </v-text-field>
           </v-flex>
           <v-flex xs6>
@@ -45,11 +41,23 @@
             </v-text-field>
           </v-flex>
           <v-flex xs6>
-            <v-text-field v-model.number='user.daysSick' label='Sick' disabled box>
+            <v-text-field v-model.number='user.daysCarryOver - this.approvedCo' label='Remaining' disabled box>
             </v-text-field>
           </v-flex>
           <v-flex xs6>
-            <v-text-field v-model.number='user.daysBirthdayLeave' label='Birthday Leave' disabled box>
+            <v-text-field value="1" label='Birthday Leave' disabled box>
+            </v-text-field>
+          </v-flex>
+          <v-flex xs6>
+            <v-text-field v-model.number='1 - this.approvedBirth' label='Remaining' disabled box>
+            </v-text-field>
+          </v-flex>
+          <v-flex xs6>
+            <v-text-field v-model.number='user.daysCompLeave' label='Comp Leave' disabled box>
+            </v-text-field>
+          </v-flex>
+          <v-flex xs6>
+            <v-text-field v-model.number='user.daysSick' label='Sick' disabled box>
             </v-text-field>
           </v-flex>
           <v-flex xs6>
@@ -76,6 +84,8 @@
   // This screen should probably be READ ONLY. Allows user to display their entitled
 
   import db from '../config/firebaseInit';
+  import moment from 'moment-business-days';
+  import Constants from '../models/common.js';
   import { createUserModel } from '../models/User';
 	import * as mutant from '../store/mutation-types';
 	import * as action from '../store/action-types';
@@ -89,6 +99,12 @@
         loaded: false,
         saved: false,
         successMessage: '',
+        approvedAnn: 0,
+        approvedCo: 0,
+        approvedComp: 0,
+        approvedSick: 0,
+        approvedBirth: 0,
+        approvedNoPay: 0,
       }
     },
     created() {
@@ -111,11 +127,50 @@
         this.$store.commit(mutant.SET_ERROR, error.message);
         console.log('Error getting document: ', error);
       });
+
+      this.getApprovedHolidays(this.$store.state.loggedInUser);
     },
     methods: {
       dismissClicked() {
         this.successMessage = '';
         this.saved = false;
+      },
+      getApprovedHolidays(target) {
+        //console.log('in getApprovedHolidays()', target);
+        this.$store.dispatch(action.GET_EVENTS,
+        {
+          start: moment().startOf('year'), end: moment().endOf("year"),
+          status: Constants.APPROVED,
+          user: target.email
+        })
+        .then((events) => {
+          //this.pendingRequests = events;
+          console.log('the email: ',target.email,'list out the requests', events);
+          events.forEach((entry)=> {
+            var s = entry.startDate; //this entry's start date
+            var e = entry.endDate;
+            if (entry.leaveType == 'ANN') {
+              this.approvedAnn += e.diff(s, 'days') + 1;
+              //console.log('target.approvedAnn, ', target.approvedAnn);
+            } else if (entry.leaveType == 'CO') {
+              this.approvedCo += e.diff(s, 'days') + 1;
+            } else if (entry.leaveType == 'COMP') {
+              this.approvedComp += e.diff(s, 'days') + 1;
+            } else if (entry.leaveType == 'SICK') {
+              this.approvedSick += e.diff(s, 'days') + 1;
+            } else if (entry.leaveType == 'BL') {
+              this.approvedBirth += e.diff(s, 'days') + 1;
+            } else if (entry.leaveType == 'NP') {
+              this.approvedNoPay += e.diff(s, 'days') + 1;
+            }
+
+          })
+          //console.log(target.email, target.approvedAnn);
+        })
+        .catch((error) => {
+          this.$store.commit(mutant.SET_ERROR, error);
+          console.log('error, ', error)
+        });
       },
     },
     computed: {
