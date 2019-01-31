@@ -263,7 +263,7 @@
         //get all pending
         this.$store.dispatch(action.GET_EVENTS,
         {
-          start: moment().subtract(7, 'y'), end: moment().add(7, 'y'),
+          start: moment().subtract(1, 'y'), end: moment().add(1, 'y'),
           status: Constants.PENDING,
           user: this.$store.state.loggedInUser.email
         })
@@ -285,7 +285,7 @@
         //get all approved
         this.$store.dispatch(action.GET_EVENTS,
         {
-          start: moment().subtract(7, 'y'), end: moment().add(7, 'y'),
+          start: moment().subtract(1, 'y'), end: moment().add(1, 'y'),
           status: Constants.APPROVED,
           user: this.$store.state.loggedInUser.email
         })
