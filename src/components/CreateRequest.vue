@@ -318,14 +318,6 @@
             }
   //          console.log('showing raw birthday...', this.dob);
   //          console.log('showing birthday...', moment(this.dob, 'MMDD').format());
-            var a = moment(this.dob, 'MMDD');
-            var b = moment(this.eDate);
-            var diff = b.diff(a, 'days', true);
-            //console.log('difference..', diff);
-            if (diff > 8 || diff <0) {
-              this.$store.commit(mutant.SET_ERROR, 'Birthday Leave should be on that day, or within one week (under discretion)');
-              return false;
-            }
             if (typeof this.dob === "undefined") {
               this.$store.commit(mutant.SET_ERROR, 'date of birth cannot be read, try to refresh page and try again');
               return false;

@@ -11,31 +11,34 @@
         <div>
           <v-data-table :headers='headers' :items='users' hide-actions dark class='elevation-1'>
             <template slot='items' slot-scope='props'>
-              <tr @click='showDetails(props.item.docId, props.item.email)'>
+              <tr>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.lastName.toUpperCase() }}, {{ props.item.firstName }}</td>
 
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysAnnualLeave }}</td>
                 <td :style="{backgroundColor: 'grey'}"
-                 class='mdl-data-table__cell--non-numeric'>{{ props.item.approvedAnn }}</td>
-                <td :style="{backgroundColor: 'grey'}"
                 class='mdl-data-table__cell--non-numeric'>{{ props.item.daysAnnualLeave - props.item.approvedAnn }}</td>
 
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysCarryOver }}</td>
-                <td :style="{backgroundColor: 'grey'}"
-                 class='mdl-data-table__cell--non-numeric'>{{ props.item.approvedCarry }}</td>
                 <td :style="{backgroundColor: 'grey'}"
                 class='mdl-data-table__cell--non-numeric'>{{ props.item.daysCarryOver - props.item.approvedCarry }}</td>
 
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.approvedComp }}</td>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.approvedSick }}</td>
 
-                <td class='mdl-data-table__cell--non-numeric'>1</td>
+                <td class='mdl-data-table__cell--non-numeric'>
+                  <v-icon
+                    @click='showDetails(props.item.docId, props.item.email)'>
+                    info
+                  </v-icon>
+                </td>
+
+                <!--<td class='mdl-data-table__cell--non-numeric'>1</td>
                 <td :style="{backgroundColor: 'grey'}"
                 class='mdl-data-table__cell--non-numeric'>{{ props.item.approvedBirthday }}</td>
 
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.approvedNoPay }}</td>
 
-                <!--<td class='mdl-data-table__cell--non-numeric'>{{ props.item.isApprover }}</td>
+                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.isApprover }}</td>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.isAdmin }}</td>
                 -->
 
@@ -86,12 +89,6 @@ export default {
           width: '100px',
         },
         {
-          text: '(apvd)',
-          align: 'left',
-          sortable: false,
-          value: 'approvedAlDays',
-        },
-        {
           text: '(rmng)',
           align: 'left',
           sortable: false,
@@ -102,12 +99,6 @@ export default {
           align: 'left',
           sortable: false,
           value: 'carryOver',
-        },
-        {
-          text: '(apvd)',
-          align: 'left',
-          sortable: false,
-          value: 'approvedCoDays',
         },
         {
           text: '(rmng)',
@@ -128,6 +119,11 @@ export default {
           value: 'approvedSickDays',
         },
         {
+          text: 'More Details',
+          align: 'left',
+          sortable: false,
+        },
+        /*{
           text: 'Birthday',
           align: 'left',
           sortable: false,
@@ -145,7 +141,7 @@ export default {
           sortable: false,
           value: 'approvedNpDays',
         },
-        /*{
+        {
           text: 'Booked',
           align: 'left',
           sortable: false,

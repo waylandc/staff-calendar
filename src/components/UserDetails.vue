@@ -13,19 +13,19 @@
       <v-form v-if="loaded" >
         <v-layout row wrap>
           <v-flex xs6>
-            <v-text-field v-model='user.firstName' label='firstName' disabled box>
+            <v-text-field v-model='user.firstName' label='First Name' disabled box>
             </v-text-field>
           </v-flex>
           <v-flex xs6>
-            <v-text-field v-model='user.lastName' label='lastName' disabled box>
+            <v-text-field v-model='user.lastName' label='Last Name' disabled box>
             </v-text-field>
           </v-flex>
           <v-flex xs6>
-            <v-text-field v-model='user.email' label='email' autocomplete="email" disabled box>
+            <v-text-field v-model='user.email' label='Email' autocomplete="email" disabled box>
             </v-text-field>
           </v-flex>
           <v-flex xs6>
-            <v-text-field value='1' label='Birthday Leave' disabled box>
+            <v-text-field disabled box>
             </v-text-field>
           </v-flex>
           <v-flex xs6>
@@ -33,7 +33,39 @@
             </v-text-field>
           </v-flex>
           <v-flex xs6>
+            <v-text-field v-model.number='user.daysAnnualLeave - this.approvedAnn' label='Remaining' disabled box>
+            </v-text-field>
+          </v-flex>
+          <v-flex xs6>
             <v-text-field v-model.number='user.daysCarryOver' label='Carry Over' :readonly="!this.isAdmin" box>
+            </v-text-field>
+          </v-flex>
+          <v-flex xs6>
+            <v-text-field v-model.number='user.daysCarryOver - this.approvedCo' label='Remaining' disabled box>
+            </v-text-field>
+          </v-flex>
+          <v-flex xs6>
+            <v-text-field value='1' label='Birthday Leave' disabled box>
+            </v-text-field>
+          </v-flex>
+          <v-flex xs6>
+            <v-text-field v-model.number='1 - this.approvedBirth' label='Remaining' disabled box>
+            </v-text-field>
+          </v-flex>
+          <v-flex xs6>
+            <v-text-field v-model.number='this.approvedComp' label='Approved Comp Leave' disabled box>
+            </v-text-field>
+          </v-flex>
+          <v-flex xs6>
+            <v-text-field v-model.number='this.approvedSick' label='Approved Sick' disabled box>
+            </v-text-field>
+          </v-flex>
+          <v-flex xs6>
+            <v-text-field v-model.number='this.approvedNoPay' label='Approved No Pay' disabled box>
+            </v-text-field>
+          </v-flex>
+          <v-flex xs6>
+            <v-text-field disabled box>
             </v-text-field>
           </v-flex>
           <v-flex xs6>
@@ -78,6 +110,8 @@
 
 <script>
   import db from '../config/firebaseInit';
+  import moment from 'moment-business-days';
+  import Constants from '../models/common.js';
   import { createUserModel } from '../models/User';
   import * as mutant from '../store/mutation-types';
   import * as action from '../store/action-types';
@@ -92,6 +126,12 @@
         loaded: false,
         successMessage: '',
         comment: '',
+        approvedAnn: 0,
+        approvedCo: 0,
+        approvedComp: 0,
+        approvedSick: 0,
+        approvedBirth: 0,
+        approvedNoPay: 0,
       }
     },
     created() {
@@ -99,6 +139,7 @@
       console.log('UserDetails, ', this.$store.state.selectedUser);
       if (this.$store.state.selectedUser !== null && this.$store.state.selectedUser !== '') {
         this.fetchUser();
+        this.getApprovedHolidays(this.$store.state.selectedUser);
       } else {
         console.log('no selectedUser');
         this.$store.commit(mutant.SET_ERROR, 'Cannot load, no selectedUser found');
@@ -143,7 +184,46 @@
       resetPassword() {
         this.$store.dispatch(action.RESET_PASSWORD, { email: this.user.email });
         this.successMessage = 'Reset Password email sent to ', this.user.email;
-      }
+      },
+
+      getApprovedHolidays(target) {
+        console.log('in getApprovedHolidays()', target);
+        this.$store.dispatch(action.GET_EVENTS,
+        {
+          start: moment().startOf('year'), end: moment().endOf("year"),
+          status: Constants.APPROVED,
+          user: target
+        })
+        .then((events) => {
+          //this.pendingRequests = events;
+          console.log('the email: ',target.email,'list out the requests', events);
+          events.forEach((entry)=> {
+            var s = entry.startDate; //this entry's start date
+            var e = entry.endDate;
+            if (entry.leaveType == 'ANN') {
+              this.approvedAnn += e.diff(s, 'days') + 1;
+              //console.log('target.approvedAnn, ', target.approvedAnn);
+            } else if (entry.leaveType == 'CO') {
+              this.approvedCo += e.diff(s, 'days') + 1;
+            } else if (entry.leaveType == 'COMP') {
+              this.approvedComp += e.diff(s, 'days') + 1;
+            } else if (entry.leaveType == 'SICK') {
+              this.approvedSick += e.diff(s, 'days') + 1;
+            } else if (entry.leaveType == 'BL') {
+              this.approvedBirth += e.diff(s, 'days') + 1;
+            } else if (entry.leaveType == 'NP') {
+              this.approvedNoPay += e.diff(s, 'days') + 1;
+            }
+
+          })
+        })
+        .catch((error) => {
+          this.$store.commit(mutant.SET_ERROR, error);
+          console.log('error, ', error)
+        });
+      },
+
+
     },
     computed: {
       error() {

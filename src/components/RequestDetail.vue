@@ -54,7 +54,7 @@
 			    </v-text-field>
           <v-text-field
         v-model = 'this.requestorDob'
-             label = 'Birthday (MMDD)'
+             label = 'Birthday'
              v-if="this.convertLeaveType === 'Birthday Leave'"
              :readonly = "true"
         box>
@@ -307,7 +307,7 @@ export default {
           return;
         }
         snapshot.forEach(doc => {
-          this.requestorDob = doc.data().dob;
+          this.requestorDob = moment(doc.data().dob, "MMDD").format("ddd MMM D YYYY");
           //console.log(this.requestorDob);
         })
       })

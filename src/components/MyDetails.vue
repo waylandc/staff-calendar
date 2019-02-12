@@ -21,7 +21,7 @@
             </v-text-field>
           </v-flex>
           <v-flex xs6>
-            <v-text-field v-model='user.dob' label='Birthday (MMDD)' disabled box>
+            <v-text-field v-model='user.dobstring' label='Birthday' disabled box>
             </v-text-field>
           </v-flex>
           <v-flex xs6>
@@ -63,6 +63,10 @@
           </v-flex>
           <v-flex xs6>
             <v-text-field v-model.number='this.approvedNoPay' label='Approved No Pay' disabled box>
+            </v-text-field>
+          </v-flex>
+          <v-flex xs6>
+            <v-text-field disabled box>
             </v-text-field>
           </v-flex>
           <v-flex xs6>
@@ -123,6 +127,7 @@
           this.user = createUserModel(doc.data());
           //console.log(this.user);
           this.user.docId = this.userId;
+          this.user.dobstring = moment(this.user.dob, "MMDD").format("ddd MMM D YYYY")
           this.loaded = true;
         } else {
           this.$store.commit(mutant.SET_ERROR, 'Error, user does not exist');
