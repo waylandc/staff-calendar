@@ -269,7 +269,7 @@
         })
         .then(events => {
           this.pendingRequests = events;
-          console.log('list out the requests', this.pendingRequests);
+          console.log('list out the pending requests', this.pendingRequests);
           events.forEach((entry)=> {
             var s = entry.startDate.format("DDMMMYYYY"); //this entry's start date
             var e = entry.endDate.format("DDMMMYYYY");
@@ -291,7 +291,7 @@
         })
         .then(events => {
           this.pendingRequests = events;
-          //console.log('list out the requests', this.pendingRequests);
+          console.log('list out the approved requests', this.pendingRequests);
           events.forEach((entry)=> {
             var s = entry.startDate.format("DDMMMYYYY"); //this entry's start date
             var e = entry.endDate.format("DDMMMYYYY");
@@ -341,13 +341,15 @@
           return false;
         }
 
-        //check holiday overlaps
+        //check own request overlaps
         var sDateSimple = moment(this.sDate).format("DDMMMYYYY");
         var eDateSimple = moment(this.eDate).format("DDMMMYYYY");
         //console.log('start and end of the request: ', sDateSimple, 'and', eDateSimple);
         for (var i = 0; i < this.selfHolidays.length; i++) {
-          if ((sDateSimple <= this.selfHolidays[i][1] && sDateSimple >= this.selfHolidays[i][0]) ||
-          (eDateSimple <= this.selfHolidays[i][1] && eDateSimple >= this.selfHolidays[i][0])) {
+          let cri1 = moment(sDateSimple, "DDMMMYYYY").diff(moment(this.selfHolidays[i][1])) > 0; //new request is later than the ith holiday
+          let cri2 = moment(eDateSimple, "DDMMMYYYY").diff(moment(this.selfHolidays[i][0])) < 0; //new request is older than the ith holiday
+          if ((cri1 || cri2) == false) {
+            console.log('error in: ', sDateSimple, eDateSimple, this.selfHolidays[i][0], this.selfHolidays[i][1]);
             this.$store.commit(mutant.SET_ERROR, 'Your leave request clashed with your previous approved/pending requests!');
             return false;
           }

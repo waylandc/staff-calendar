@@ -168,7 +168,7 @@ export default {
       ],
       users: [],
       alert: false,
-      //approvedAnn: '',
+      holidays: [],
     };
   },
   created() {
@@ -182,6 +182,9 @@ export default {
       })
       .catch((err) => {
         this.$store.commit(mutant.SET_ERROR, err.message);
+      })
+      .then(() => {
+        this.getPublicHolidays();
       })
       .then(() => {
         this.users.forEach((u) => {
@@ -212,8 +215,20 @@ export default {
       this.$store.dispatch(action.SHOW_USER_DETAILS, { email: email, id: id });
     },
 
+    getPublicHolidays() {
+      this.$store.dispatch(action.GET_HOLIDAYS,
+        { startDate: moment().subtract(1, 'y'), endDate: moment().add(1, 'y') })
+        .then(holidays => {
+          this.holidays = holidays;
+          console.log('holidays,', this.holidays)
+        })
+        .catch((err) => {
+          this.$store.commit(mutant.SET_ERROR, err.message);
+        });
+    },
+
     getApprovedHolidays(target) {
-      //console.log('in getApprovedHolidays()', target);
+      console.log('in getApprovedHolidays()', target);
       this.$store.dispatch(action.GET_EVENTS,
       {
         start: moment().startOf('year'), end: moment().endOf("year"),
@@ -226,11 +241,32 @@ export default {
         events.forEach((entry)=> {
           var s = entry.startDate; //this entry's start date
           var e = entry.endDate;
+          //*** note this approvedAnn and approvedCarry will exclude public holiday and weekend(TODO)
           if (entry.leaveType == 'ANN') {
-            target.approvedAnn = target.approvedAnn + e.diff(s, 'days') + 1;
-            //console.log('target.approvedAnn, ', target.approvedAnn);
+            target.approvedAnn += e.diff(s, 'days') + 1;
+            var publicHolidayExclusion = 0
+            var index, len;
+            for (index = 0, len = this.holidays.length; index < len; ++index) {
+                let h = this.holidays[index];
+                //console.log(h.startDate, s, e);
+                //console.log(h.startDate.isBetween(s, e, null, '[]'));
+                if (h.startDate.isBetween(s, e, null, '[]')) {
+                  publicHolidayExclusion += h.startDate.diff(h.endDate, 'days') + 1;
+                }
+              }
+            //console.log('no. of days public holidays exluded', publicHolidayExclusion)
+            target.approvedAnn -= publicHolidayExclusion;
           } else if (entry.leaveType == 'CO') {
             target.approvedCarry += e.diff(s, 'days') + 1;
+            var publicHolidayExclusion = 0
+            var index, len;
+            for (index = 0, len = this.holidays.length; index < len; ++index) {
+                let h = this.holidays[index];
+                if (h.startDate.isBetween(s, e, null, '[]')) {
+                  publicHolidayExclusion += h.startDate.diff(h.endDate, 'days') + 1;
+                }
+              }
+            target.approvedCarry -= publicHolidayExclusion;
           } else if (entry.leaveType == 'COMP') {
             target.approvedComp += e.diff(s, 'days') + 1;
           } else if (entry.leaveType == 'SICK') {

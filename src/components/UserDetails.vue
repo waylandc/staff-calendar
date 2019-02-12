@@ -139,7 +139,7 @@
       console.log('UserDetails, ', this.$store.state.selectedUser);
       if (this.$store.state.selectedUser !== null && this.$store.state.selectedUser !== '') {
         this.fetchUser();
-        this.getApprovedHolidays(this.$store.state.selectedUser);
+        this.getPublicHolidays();
       } else {
         console.log('no selectedUser');
         this.$store.commit(mutant.SET_ERROR, 'Cannot load, no selectedUser found');
@@ -186,6 +186,21 @@
         this.successMessage = 'Reset Password email sent to ', this.user.email;
       },
 
+      getPublicHolidays() {
+        this.$store.dispatch(action.GET_HOLIDAYS,
+          { startDate: moment().subtract(1, 'y'), endDate: moment().add(1, 'y') })
+          .then(holidays => {
+            this.holidays = holidays;
+            console.log('holidays,', this.holidays);
+          })
+          .catch((err) => {
+            this.$store.commit(mutant.SET_ERROR, err.message);
+          })
+          .then(() => {
+            this.getApprovedHolidays(this.$store.state.selectedUser);
+          })
+      },
+
       getApprovedHolidays(target) {
         console.log('in getApprovedHolidays()', target);
         this.$store.dispatch(action.GET_EVENTS,
@@ -200,11 +215,29 @@
           events.forEach((entry)=> {
             var s = entry.startDate; //this entry's start date
             var e = entry.endDate;
+            //*** note this approvedAnn and approvedCarry will exclude public holiday and weekend(TODO)
             if (entry.leaveType == 'ANN') {
               this.approvedAnn += e.diff(s, 'days') + 1;
-              //console.log('target.approvedAnn, ', target.approvedAnn);
+              var publicHolidayExclusion = 0
+              var index, len;
+              for (index = 0, len = this.holidays.length; index < len; ++index) {
+                  let h = this.holidays[index];
+                  if (h.startDate.isBetween(s, e, null, '[]')) {
+                    publicHolidayExclusion += h.startDate.diff(h.endDate, 'days') + 1;
+                  }
+                }
+              this.approvedAnn -= publicHolidayExclusion;
             } else if (entry.leaveType == 'CO') {
               this.approvedCo += e.diff(s, 'days') + 1;
+              var publicHolidayExclusion = 0
+              var index, len;
+              for (index = 0, len = this.holidays.length; index < len; ++index) {
+                  let h = this.holidays[index];
+                  if (h.startDate.isBetween(s, e, null, '[]')) {
+                    publicHolidayExclusion += h.startDate.diff(h.endDate, 'days') + 1;
+                  }
+                }
+              this.approvedCo -= publicHolidayExclusion;
             } else if (entry.leaveType == 'COMP') {
               this.approvedComp += e.diff(s, 'days') + 1;
             } else if (entry.leaveType == 'SICK') {

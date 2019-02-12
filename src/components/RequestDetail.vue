@@ -181,6 +181,7 @@ export default {
       approvedAnn: 0,
       approvedCo: 0,
       userDetails: '',
+      holidays: [],
 		};
 	},
 	created() {
@@ -208,6 +209,7 @@ export default {
       this.request.secondApprover == this.user.email) {
         if (this.request.leaveType == 'CO' || this.request.leaveType == 'ANN') {
           this.getRemainingDays();
+          this.getPublicHolidays();
           this.fetchUser();
 
         }
@@ -316,7 +318,18 @@ export default {
         console.log('Error getting document: ', error);
       });
      },
-		approve() {
+     getPublicHolidays() {
+       this.$store.dispatch(action.GET_HOLIDAYS,
+         { startDate: moment().subtract(1, 'y'), endDate: moment().add(1, 'y') })
+         .then(holidays => {
+           this.holidays = holidays;
+           console.log('holidays,', this.holidays)
+         })
+         .catch((err) => {
+           this.$store.commit(mutant.SET_ERROR, err.message);
+         });
+     },
+		 approve() {
       if (this.validateDate() == false) {
         console.log('the request seems exceeded the quota');
         this.$store.commit(mutant.SET_ERROR, 'the request seems exceeded the quota');
@@ -388,7 +401,7 @@ export default {
             this.approvedAnn += e.diff(s, 'days') + 1;
             //console.log('this.approvedAnn, ', this.approvedAnn);
           } else if (entry.leaveType == 'CO') {
-            this.approvedCarry += e.diff(s, 'days') + 1;
+            this.approvedCo += e.diff(s, 'days') + 1;
           }
         })
       })
@@ -402,17 +415,37 @@ export default {
       if (this.request.leaveType == 'ANN') {
         var a = moment(this.request.startDate.toDate());
         var b = moment(this.request.endDate.toDate());
-        console.log('a and b', a, b);
-        console.log(a.diff(b, 'days'));
-        console.log(this.userDetails.daysAnnualLeave);
-        console.log(this.approvedAnn)
-        if (a.diff(b, 'days') + 1 > this.userDetails.daysAnnualLeave - this.approvedAnn) {
+        // get public holidays between the requested start and end date
+        var publicHolidayExclusion = 0
+        var index, len;
+        for (index = 0, len = this.holidays.length; index < len; ++index) {
+            //console.log(this.holidays[index]);
+            //console.log(this.holidays[index].startDate.diff(this.holidays[index].endDate, 'days'));
+            let h = this.holidays[index];
+            //console.log(h.startDate, a, b);
+            //console.log(h.startDate.isBetween(a, b, null, '[]'));
+            if (h.startDate.isBetween(a, b, null, '[]')) {
+              publicHolidayExclusion += h.startDate.diff(h.endDate, 'days') + 1;
+            }
+        }
+        console.log('no. of days public holidays excluded', publicHolidayExclusion);
+        if (a.diff(b, 'days') + 1 - publicHolidayExclusion> this.userDetails.daysCarryOver - this.approvedCo) {
           return false;
         }
       } else if (this.request.leaveType == 'CO') {
-          var a = this.request.startDate;
-          var b = this.request.endDate;
-          if (a.diff(b, 'days') + 1 > this.userDetails.daysCarryOver - this.approvedCo) {
+          var a = moment(this.request.startDate.toDate());
+          var b = moment(this.request.endDate.toDate());
+          // get public holidays between the requested start and end date
+          var publicHolidayExclusion = 0
+          var index, len;
+          for (index = 0, len = this.holidays.length; index < len; ++index) {
+              let h = this.holidays[index];
+              if (h.startDate.isBetween(a, b, null, '[]')) {
+                publicHolidayExclusion += h.startDate.diff(h.endDate, 'days') + 1;
+              }
+          }
+          console.log('no. of days public holidays excluded', publicHolidayExclusion);
+          if (a.diff(b, 'days') + 1 - publicHolidayExclusion> this.userDetails.daysCarryOver - this.approvedCo) {
             return false;
           }
         }
