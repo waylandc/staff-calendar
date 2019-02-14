@@ -78,7 +78,7 @@ const store = new Vuex.Store({
       // Firestore which hasn't been created yet.
       // TODO - check if api.createUser returns a user object that contains the id
       // I think it's populated in the subsequent call to getUser
-      const u = new User(p.email, false, false, 0, 0, 0, 0, 0, null, p.firstName, p.lastName, []);
+      const u = new User(p.email, false, false, 0, 0, 0, 0, 0, 0, null, p.firstName, p.lastName, p.dob, []);
       api.createUser(u, p.password)
         .then(() => {
           commit(mutant.SET_LOADING, true);
@@ -186,6 +186,22 @@ const store = new Vuex.Store({
         });
     },
 
+    [action.EDIT_EVENT]({ commit }, payload) {
+      commit(mutant.SET_LOADING, true);
+      // payload should be CalendarEvent.toJSON()
+      console.log('EDIT_EVENT, 1', payload);
+      api.editEvent(payload)
+        .then((doc) => {
+          console.log('EDIT_EVENT, ', doc);
+          commit(mutant.SET_LOADING, false);
+        })
+        .catch((error) => {
+          console.log('EDIT_EVENT, ', error);
+          commit(mutant.SET_ERROR, error);
+          commit(mutant.SET_LOADING, false);
+        });
+    },
+
     [action.GET_EVENTS]({ commit }, payload) {
       commit(mutant.SET_LOADING, true);
       return new Promise((resolve, reject) => {
@@ -238,6 +254,26 @@ const store = new Vuex.Store({
       });
     },
 
+    [action.DELETE_HOLIDAY]({ commit }, payload) {
+      // payload should be { docID }
+      commit(mutant.SET_LOADING, true);
+      return new Promise((resolve, reject) => {
+        console.log('DELETE_HOLIDAY, ', payload);
+        api.deleteHoliday(payload)
+          .then((doc) => {
+            console.log('DELETE_HOLIDAY, ', doc);
+            commit(mutant.SET_LOADING, false);
+            resolve(doc);
+          })
+          .catch((error) => {
+            console.log('DELETE_HOLIDAY, ', error);
+            commit(mutant.SET_ERROR, error);
+            commit(mutant.SET_LOADING, false);
+            reject(error);
+          });
+      });
+    },
+
     [action.RESET_PASSWORD]({ commit }, payload) {
       // payload is {email: string}
       commit(mutant.SET_LOADING, true);
@@ -266,7 +302,69 @@ const store = new Vuex.Store({
         });
       });
     },
+
+    [action.DELETE_REQUEST]({ commit }, payload) {
+      // payload should be { docID }
+      console.log("now in index.js");
+      commit(mutant.SET_LOADING, true);
+      return new Promise((resolve, reject) => {
+        console.log('DELETE_REQUEST, ', payload);
+        api.deleteRequest(payload)
+          .then((doc) => {
+            console.log('DELETE_REQUEST, ', doc);
+            commit(mutant.SET_LOADING, false);
+            resolve(doc);
+          })
+          .catch((error) => {
+            console.log('DELETE_REQUEST, ', error);
+            commit(mutant.SET_ERROR, error);
+            commit(mutant.SET_LOADING, false);
+            reject(error);
+          });
+      });
+    },
+
+    [action.UPLOAD_SL]({ commit }, payload) {
+      commit(mutant.SET_LOADING, true);
+      return new Promise((resolve, reject) => {
+        console.log('UPLOAD_SL, ', payload);
+        api.uploadSl(payload)
+          .then((doc) => {
+            console.log('UPLOAD_SL, ', doc);
+            commit(mutant.SET_LOADING, false);
+            resolve(doc);
+          })
+          .catch((error) => {
+            console.log('UPLOAD_SL, ', error);
+            commit(mutant.SET_ERROR, error);
+            commit(mutant.SET_LOADING, false);
+            reject(error);
+          });
+      });
+    },
+
+    [action.DELETE_SL]({ commit }, payload) {
+      commit(mutant.SET_LOADING, true);
+      return new Promise((resolve, reject) => {
+        console.log('DELETE_SL, ', payload);
+        api.deleteSl(payload)
+          .then((doc) => {
+            console.log('DELETE_SL, ', doc);
+            commit(mutant.SET_LOADING, false);
+            resolve(doc);
+          })
+          .catch((error) => {
+            console.log('DELETE_SL, ', error);
+            commit(mutant.SET_ERROR, error);
+            commit(mutant.SET_LOADING, false);
+            reject(error);
+          });
+      });
+    },
+
   },
+
+
 
   getters: {
     isAuthenticated(state) {

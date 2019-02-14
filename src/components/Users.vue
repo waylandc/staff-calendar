@@ -11,21 +11,50 @@
         <div>
           <v-data-table :headers='headers' :items='users' hide-actions dark class='elevation-1'>
             <template slot='items' slot-scope='props'>
-              <tr @click='showDetails(props.item.docId, props.item.email)'>
+              <tr>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.lastName.toUpperCase() }}, {{ props.item.firstName }}</td>
+
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysAnnualLeave }}</td>
-                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysCompLeave }}</td>
+                <td :style="{backgroundColor: 'grey'}"
+                class='mdl-data-table__cell--non-numeric'>{{ props.item.daysAnnualLeave - props.item.approvedAnn }}</td>
+
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysCarryOver }}</td>
-                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.daysBooked }}</td>
+                <td :style="{backgroundColor: 'grey'}"
+                class='mdl-data-table__cell--non-numeric'>{{ props.item.daysCarryOver - props.item.approvedCarry }}</td>
+
+                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.approvedComp }}</td>
+                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.approvedSick }}</td>
+
                 <td class='mdl-data-table__cell--non-numeric'>
-                  {{ props.item.daysAnnualLeave + props.item.daysCarryOver + props.item.daysCompLeave - props.item.daysBooked }}
+                  <v-icon
+                    @click='showDetails(props.item.docId, props.item.email)'>
+                    info
+                  </v-icon>
                 </td>
+
+                <!--<td class='mdl-data-table__cell--non-numeric'>1</td>
+                <td :style="{backgroundColor: 'grey'}"
+                class='mdl-data-table__cell--non-numeric'>{{ props.item.approvedBirthday }}</td>
+
+                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.approvedNoPay }}</td>
+
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.isApprover }}</td>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.isAdmin }}</td>
+                -->
+
               </tr>
             </template>
           </v-data-table>
         </div>
+      </v-flex>
+      <v-flex class="text-xs-left">
+        * for admin, click the respective row to edit days available and status etc.
+        <br/>
+        * apvd = approved
+        <br/>
+        * rmng = remaining
+        <br/>
+        * chances are the decimals in strange form -- float problem
       </v-flex>
     </v-layout>
   </v-container>
@@ -33,6 +62,8 @@
 
 <script>
 import NProgress from 'nprogress';
+import moment from 'moment-business-days';
+import Constants from '../models/common.js';
 import db from '../config/firebaseInit';
 	import * as mutant from '../store/mutation-types';
 	import * as action from '../store/action-types';
@@ -57,18 +88,60 @@ export default {
           align: 'left',
           sortable: false,
           value: 'alDays',
+          width: '100px',
         },
         {
-          text: 'Comp',
+          text: '(rmng)',
           align: 'left',
           sortable: false,
-          value: 'compDays',
+          value: 'remainingAlDays',
         },
         {
           text: 'Carry',
           align: 'left',
           sortable: false,
           value: 'carryOver',
+        },
+        {
+          text: '(rmng)',
+          align: 'left',
+          sortable: false,
+          value: 'remainingCoDays',
+        },
+        {
+          text: 'Apvd Comp',
+          align: 'left',
+          sortable: false,
+          value: 'approvedCompDays',
+        },
+        {
+          text: 'Apvd Sick',
+          align: 'left',
+          sortable: false,
+          value: 'approvedSickDays',
+        },
+        {
+          text: 'More Details',
+          align: 'left',
+          sortable: false,
+        },
+        /*{
+          text: 'Birthday',
+          align: 'left',
+          sortable: false,
+          value: 'birthDays',
+        },
+        {
+          text: '(apvd)',
+          align: 'left',
+          sortable: false,
+          value: 'approvedBirthDays',
+        },
+        {
+          text: 'Apvd No Pay',
+          align: 'left',
+          sortable: false,
+          value: 'approvedNpDays',
         },
         {
           text: 'Booked',
@@ -93,10 +166,11 @@ export default {
           align: 'left',
           sortable: false,
           value: 'admin',
-        }
+        }*/
       ],
       users: [],
       alert: false,
+      holidays: [],
     };
   },
   created() {
@@ -105,11 +179,21 @@ export default {
     this.$store.dispatch(action.GET_USERS)
       .then((users) => {
         this.users = users;
+        //console.log(this.users);
         this.loaded = true;
       })
       .catch((err) => {
         this.$store.commit(mutant.SET_ERROR, err.message);
+      })
+      .then(() => {
+        this.getPublicHolidays();
+      })
+      .then(() => {
+        this.users.forEach((u) => {
+          this.getApprovedHolidays(u);
+        })
       });
+
     NProgress.done();
   },
   computed: {
@@ -128,9 +212,91 @@ export default {
     addProperty() {
       this.$router.push({ path: '/addUser' })
     },
+
     showDetails(id, email) {
       this.$store.dispatch(action.SHOW_USER_DETAILS, { email: email, id: id });
     },
+
+    getPublicHolidays() {
+      this.$store.dispatch(action.GET_HOLIDAYS,
+        { startDate: moment().subtract(1, 'y'), endDate: moment().add(1, 'y') })
+        .then(holidays => {
+          this.holidays = holidays;
+          console.log('holidays,', this.holidays)
+        })
+        .catch((err) => {
+          this.$store.commit(mutant.SET_ERROR, err.message);
+        });
+    },
+
+    getApprovedHolidays(target) {
+      console.log('in getApprovedHolidays()', target);
+      this.$store.dispatch(action.GET_EVENTS,
+      {
+        start: moment().startOf('year'), end: moment().endOf("year"),
+        status: Constants.APPROVED,
+        user: target.email
+      })
+      .then((events) => {
+        //this.pendingRequests = events;
+        //console.log('the email: ',target.email,'list out the requests', events);
+        events.forEach((entry)=> {
+          var s = entry.startDate.startOf('day'); //this entry's start date
+          var e = entry.endDate.startOf('day');
+          //*** note this approvedAnn and approvedCarry will exclude public holiday and weekend(TODO)
+          if (entry.leaveType == 'ANN') {
+            if (entry.halfDay != 'Full') {
+              target.approvedAnn += 0.5;
+            } else {
+              target.approvedAnn += s.businessDiff(e) + 1;
+            }
+            //console.log('approvedAnn = ', target.approvedAnn);
+            var publicHolidayExclusion = 0
+            var index, len;
+            for (index = 0, len = this.holidays.length; index < len; ++index) {
+                let h = this.holidays[index];
+                //console.log(h.startDate, s, e);
+                //console.log(h.startDate.isBetween(s, e, null, '[]'));
+                if (h.startDate.startOf('day').isBetween(s, e, null, '[]')) {
+                  publicHolidayExclusion += h.startDate.diff(h.endDate, 'days') + 1;
+                }
+              }
+            //console.log('no. of days public holidays exluded', publicHolidayExclusion)
+            target.approvedAnn -= publicHolidayExclusion;
+          } else if (entry.leaveType == 'CO') {
+            if (entry.halfDay != 'Full') {
+              target.approvedCarry += 0.5;
+            } else {
+              target.approvedCarry += s.businessDiff(e) + 1;
+            }
+            var publicHolidayExclusion = 0
+            var index, len;
+            for (index = 0, len = this.holidays.length; index < len; ++index) {
+                let h = this.holidays[index];
+                if (h.startDate.startOf('day').isBetween(s, e, null, '[]')) {
+                  publicHolidayExclusion += h.startDate.diff(h.endDate, 'days') + 1;
+                }
+              }
+            target.approvedCarry -= publicHolidayExclusion;
+          } else if (entry.leaveType == 'COMP') {
+            target.approvedComp += s.businessDiff(e) + 1;
+          } else if (entry.leaveType == 'SICK') {
+            target.approvedSick += s.businessDiff(e) + 1;
+          } else if (entry.leaveType == 'BL') {
+            target.approvedBirthday += s.businessDiff(e) + 1;
+          } else if (entry.leaveType == 'NP') {
+            target.approvedNoPay += s.businessDiff(e) + 1;
+          }
+
+        })
+        //console.log(target.email, target.approvedAnn);
+      })
+      .catch((error) => {
+        this.$store.commit(mutant.SET_ERROR, error);
+        console.log('error, ', error)
+      });
+    },
+
   },
   watch: {
     error(value) {
@@ -147,7 +313,7 @@ export default {
 };
 </script>
 
-// not sure how to change fonts. I could've created custom class but didn't want to add it everywhere so this seems to 
+// not sure how to change fonts. I could've created custom class but didn't want to add it everywhere so this seems to
 // override it within this component
 // TODO should this be put in master css?
 <style scoped>
@@ -155,4 +321,5 @@ export default {
     font-size: 12px;
     text-align: left;
   }
+
 </style>

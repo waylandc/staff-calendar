@@ -1,6 +1,6 @@
 <template>
   <v-container grid-list-md text-xs-center>
-    <h1>Apply New Leave</h1><br/>
+    <h1>Edit Request</h1><br/>
     <v-flex>
       <v-alert type="error" dismissible v-model="alert">
         {{ error }}
@@ -13,7 +13,6 @@
             <v-text-field
               v-model='title'
               label='Title'
-              autocomplete="off"
               box>
             </v-text-field>
           </v-flex>
@@ -113,9 +112,9 @@
           <v-flex class="text-xs-center" mt-5>
             <v-btn
               color="approve"
-              @click.stop="createRequest"
+              @click.stop="updateRequest"
               >
-              Apply
+              Save Changes
             </v-btn>
           </v-flex>
         </v-layout>
@@ -125,16 +124,15 @@
 </template>
 
 <script>
-  import moment from 'moment-business-days';
+  import moment from 'moment';
   import db from '../config/firebaseInit';
   import Constants from '../models/common.js';
   import { CalendarEvent } from '../models/CalendarEvent';
-  import { createUserModel } from '../models/User';
   import * as mutant from '../store/mutation-types';
   import * as action from '../store/action-types';
 
   export default {
-    name: 'CreateEvent',
+    name: 'EditRequest',
     data() {
       return {
         drawer: false,
@@ -142,6 +140,8 @@
         loaded: false,
         startDate: new Date().toISOString().substr(0, 10),
         endDate: new Date().toISOString().substr(0, 10),
+        startString: '',
+        endString: '',
         numDays: 0, // TODO useless, remove??
         menu1: false,
         menu2: false,
@@ -162,20 +162,50 @@
         firstApprover: '',
         secondApprover: '',
         approvers: [],
+        request: '',
         dob: '',
         imageName: '',
         imageUrl: '',
         imageFile: '',
+        oldSDate: '',
+        oldEDate: '',
+        oldLeaveType: '',
         selfHolidays: [],
       };
     },
     created() {
       this.loaded = false;
+      this.propId = this.$route.params.id;
+      //fetch approvers
       this.$store.dispatch(action.GET_APPROVERS)
         .then((approvers) => {
           this.approvers = approvers;
           //console.log(this.approvers);
+        })
+        .catch((error) => {
+          this.$store.commit(mutant.SET_ERROR, error);
+        })
+      const docRef = db.collection('leaveRequests').doc(this.propId);
+      // fetch leaveRequest document which is a JSON object and convert to CalendarEvent
+      docRef.get().then((doc) => {
+        if (doc.exists) {
+          this.request = CalendarEvent.fromJSON(doc.data());
+          this.documentRef = docRef;
+        } else {
+          this.$store.commit(mutant.SET_ERROR, 'Error, No such document');
+          console.log(this.error);
+        }}).then(() => {
+          this.title = this.request.title;
+          this.halfDay = this.request.halfDay;
+          this.leaveType = this.request.leaveType;
+          this.startDate = moment(this.request.startDate.toDate()).format().substr(0,10);
+          this.endDate = moment(this.request.endDate.toDate()).format().substr(0,10);
+          this.firstApprover = this.request.firstApprover;
+          this.secondApprover = this.request.secondApprover;
           this.loaded = true;
+          this.oldSDate = this.startDate;
+          this.oldEDate = this.endDate;
+          this.oldLeaveType = this.leaveType;
         })
         .catch((error) => {
           this.$store.commit(mutant.SET_ERROR, error);
@@ -245,7 +275,7 @@
 
         docRef.get().then((doc) => {
           if (doc.exists) {
-            console.log(doc.data());
+            //console.log(doc.data());
             this.dob = (doc.data().dob);
             console.log('found dob, ', this.dob);
           } else {
@@ -263,13 +293,13 @@
         //get all pending
         this.$store.dispatch(action.GET_EVENTS,
         {
-          start: moment().subtract(1, 'y'), end: moment().add(1, 'y'),
+          start: moment().subtract(7, 'y'), end: moment().add(7, 'y'),
           status: Constants.PENDING,
           user: this.$store.state.loggedInUser.email
         })
         .then(events => {
           this.pendingRequests = events;
-          console.log('list out the pending requests', this.pendingRequests);
+          //console.log('list out the requests', this.pendingRequests);
           events.forEach((entry)=> {
             var s = entry.startDate.format("DDMMMYYYY"); //this entry's start date
             var e = entry.endDate.format("DDMMMYYYY");
@@ -285,13 +315,13 @@
         //get all approved
         this.$store.dispatch(action.GET_EVENTS,
         {
-          start: moment().subtract(1, 'y'), end: moment().add(1, 'y'),
+          start: moment().subtract(7, 'y'), end: moment().add(7, 'y'),
           status: Constants.APPROVED,
           user: this.$store.state.loggedInUser.email
         })
         .then(events => {
           this.pendingRequests = events;
-          console.log('list out the approved requests', this.pendingRequests);
+          //console.log('list out the requests', this.pendingRequests);
           events.forEach((entry)=> {
             var s = entry.startDate.format("DDMMMYYYY"); //this entry's start date
             var e = entry.endDate.format("DDMMMYYYY");
@@ -316,23 +346,31 @@
               this.$store.commit(mutant.SET_ERROR, 'Birthday Leave has only one day');
               return false;
             }
-  //          console.log('showing raw birthday...', this.dob);
-  //          console.log('showing birthday...', moment(this.dob, 'MMDD').format());
+            //console.log('showing raw birthday...', this.dob);
+            //console.log('showing birthday...', moment(this.dob, 'MMDD').format());
+            var a = moment(this.dob, 'MMDD');
+            var b = moment(this.eDate);
+            var diff = b.diff(a, 'days', true);
+            //console.log('difference...', diff);
+            if (diff > 8 || diff <0) {
+              //console.log('should return false and error...');
+              this.$store.commit(mutant.SET_ERROR, 'Birthday Leave should be on that day, or within one week (under discretion)');
+              return false;
+            }
             if (typeof this.dob === "undefined") {
               this.$store.commit(mutant.SET_ERROR, 'date of birth cannot be read, try to refresh page and try again');
               return false;
             }
         } else if (this.leaveType === 'SICK') {
-            if (this.imageFile == '') {
-              this.$store.commit(mutant.SET_ERROR, 'Please attach sick leave scan copy');
-              console.log('sensed error..');s
-              return false;
+          if (this.oldLeaveType != 'SICK' && this.imageFile == '') {
+            this.$store.commit(mutant.SET_ERROR, 'If you change to sick leave you must upload the document');
+            return false;
           }
-        }
-
-        if (this.firstApprover === '') {
-          this.$store.commit(mutant.SET_ERROR, 'You must specify at least one approver');
-          return false;
+          if (this.imageFile == '' &&
+          (this.oldSDate != this.startDate || this.oldEDate != this.endDate)) {
+            this.$store.commit(mutant.SET_ERROR, 'If you change dates you must re-upload the document, you can go back to download the old scan copy first if needed');
+            return false;
+          }
         }
 
         if (this.firstApprover == this.$store.state.loggedInUser.email ||
@@ -340,7 +378,7 @@
           this.$store.commit(mutant.SET_ERROR, 'Approver cannot be yourself!');
           return false;
         }
-
+        
         if (this.halfDay != 'Full') {
           if (moment(this.sDate).dayOfYear()
           - moment(this.eDate).dayOfYear() != 0 ) {
@@ -369,72 +407,17 @@
           }
         }
 
-
         return true;
       },
 
-
-      createRequest() {
-        if (!this.validateRequest()) {
-          return;
-        }
-        // var aa = this.daysBetween(new Date(this.sDate), new Date(this.eDate));
-        // console.log('num days, ' + aa);
-
-        const niceTitle = this.$store.state.loggedInUser.firstName + ' - ' + this.title;
-        const req = new CalendarEvent(
-          niceTitle,
-          this.sDate,
-          this.eDate,
-          this.halfDay,
-          this.$store.state.loggedInUser.email,
-          this.firstApprover,
-          this.secondApprover,
-          Constants.PENDING,
-          Constants.PENDING,
-          '',
-          '',
-          null, // docId is populated on a fetch
-          this.leaveType,
-        );
-        console.log(req);
-        this.$store.dispatch(action.ADD_EVENT, req.toJSON())
-          .then((docRef) => {
-            console.log('doc written with id, ', docRef);
-            //this.$router.push({ path: '/leaveRequests' });
-          }).catch((error) => {
-            this.$store.commit(mutant.SET_ERROR, error.message);
-            console.log(error)
-          }).then(()=> {
-            if (this.leaveType == 'SICK') {
-              var sDateSimple = moment(this.sDate).format("DDMMMYYYY");
-              var eDateSimple = moment(this.eDate).format("DDMMMYYYY");
-              var aggrString = 'sick-leave-copy/'+this.$store.state.loggedInUser.email+'/'
-                                +sDateSimple+'-to-'+eDateSimple+'.pdf';
-              console.log('aggrstring: ', aggrString);
-              this.$store.dispatch(action.UPLOAD_SL, [this.imageFile, aggrString])
-              .then((res)=>{
-                //response
-                console.log('sick leave copy uploaded', res);
-                this.$router.push({ path: '/leaveRequests' });
-              }).catch((error) => {
-                this.$store.commit(mutant.SET_ERROR, error.message);
-                console.error('error adding doc: ', error);
-              });
-            } else {
-              this.$router.push({ path: '/leaveRequests' });
-            }
-        });
+      pickFile () {
+        this.$refs.image.click ()
       },
 
-        pickFile () {
-            this.$refs.image.click ()
-        },
-
-        onFilePicked (e) {
+      onFilePicked (e) {
         const files = e.target.files
         if(files[0] !== undefined) {
-        this.imageName = files[0].name
+          this.imageName = files[0].name
         if(this.imageName.lastIndexOf('.') <= 0) {
           return
         }
@@ -450,7 +433,78 @@
           this.imageFile = ''
           this.imageUrl = ''
         }
+      },
+
+      updateRequest() {
+        if (!this.validateRequest()) {
+          return;
         }
+        // var aa = this.daysBetween(new Date(this.sDate), new Date(this.eDate));
+        // console.log('num days, ' + aa);
+
+        const req = new CalendarEvent(
+          this.title,
+          this.sDate,
+          this.eDate,
+          this.halfDay,
+          this.$store.state.loggedInUser.email,
+          this.firstApprover,
+          this.secondApprover,
+          Constants.PENDING,
+          Constants.PENDING,
+          '',
+          '',
+          this.propId,
+          this.leaveType,
+        );
+        this.$store.dispatch(action.EDIT_EVENT, [this.propId, req.toJSON()])
+          .then((docRef) => {
+            console.log('id overwritten with changes');
+            //this.$router.push({ path: '/leaveRequests' });
+          }).catch((error) => {
+            this.$store.commit(mutant.SET_ERROR, error.message);
+            console.log(error)
+          }).then(()=> { //delete old attachment
+            if (this.imageFile != '' ||
+            (this.oldLeaveType == 'SICK' && this.leaveType != 'SICK')
+            ) {
+              var oldSDateSimple = moment(this.oldSDate).format("DDMMMYYYY");
+              var oldEDateSimple = moment(this.oldEDate).format("DDMMMYYYY");
+              var oldAggrString = 'sick-leave-copy/'+this.$store.state.loggedInUser.email+'/'
+                                +oldSDateSimple+'-to-'+oldEDateSimple+'.pdf';
+              console.log('aggrstring: ', oldAggrString);
+              this.$store.dispatch(action.DELETE_SL, oldAggrString)
+              .then((res)=>{
+                //response
+                console.log('old sick leave copy deleted', res);
+              }).catch((error) => {
+                console.error('error deleting doc: ', error);
+              });
+            }
+
+          }).then(()=> { //upload new attachment
+
+              if (this.imageFile != '') {
+              var sDateSimple = moment(this.sDate).format("DDMMMYYYY");
+              var eDateSimple = moment(this.eDate).format("DDMMMYYYY");
+              var aggrString = 'sick-leave-copy/'+this.$store.state.loggedInUser.email+'/'
+                                +sDateSimple+'-to-'+eDateSimple+'.pdf';
+              console.log('aggrstring: ', aggrString);
+              this.$store.dispatch(action.UPLOAD_SL, [this.imageFile, aggrString])
+              .then((res)=>{
+                //response
+                console.log('sick leave copy re-uploaded', res);
+                this.$router.push({ path: '/leaveRequests' });
+              }).catch((error) => {
+                this.$store.commit(mutant.SET_ERROR, error.message);
+                console.error('error adding doc: ', error);
+              });
+            } else {
+              this.$router.push({ path: '/leaveRequests' });
+            }
+
+          });
+      },
     }
 
   }

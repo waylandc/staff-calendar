@@ -11,7 +11,7 @@ import Constants from './common';
 //   secondApprover: string[email],
 //   firstStatus: int[PENDING|APPROVED|REJECTED],
 //   secondStatus: int[PENDING|APPROVED|REJECTED],
-//   leaveType: string[ANN, COMP, CARRY, SICK],
+//   leaveType: string[ANN, COMP, CARRY, SICK, BIRTH, NP],
 // }
 export class CalendarEvent {
   constructor(title, start, end, half, req, fApprov, sApprov, fSt, sSt, fC, sC, id, lt) {
@@ -123,4 +123,3 @@ export class CalendarEvent {
     return true;
   }
 }
-

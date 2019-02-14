@@ -11,6 +11,18 @@
           <!-- :event-sources='eventSources'
           @event-selected='eventSelected'/> -->
       </v-flex>
+      <v-flex class="text-xs-center">
+        <br/>
+        <b>Public Holiday </b><v-icon color='red'>event</v-icon>
+        <b>Annual </b><v-icon color='purple'>event</v-icon>
+        <b>Compensation </b><v-icon color='yellow'>event</v-icon>
+        <br/>
+        <b>Carry Over </b><v-icon color='purple accent-1'>event</v-icon>
+        <b>Sick </b><v-icon color='light-blue darken-2'>event</v-icon>
+        <b>Birthday </b><v-icon color='lime'>event</v-icon>
+        <br/>
+        <b>No Pay </b><v-icon color='orange'>event</v-icon>
+      </v-flex>
     </v-layout>
   </v-container>
 </template>
@@ -54,6 +66,9 @@ export default {
             ce = new CalendarEvent(h.title, h.startDate, h.endDate, '', '', '', '', Constants.PENDING, null, '');
             ce = ce.toCalendarEvent();
             ce.cssClass = 'holiday';
+            ce.textColor = 'red';
+            ce.backgroundColor = 'white';
+            ce.borderColor = 'grey lighten-2';
             this.events.push(ce);
           });
         })
@@ -65,7 +80,23 @@ export default {
       { start: moment().subtract(6, 'M'), end: moment().add(1, 'y'), user: '', status: Constants.APPROVED })
       .then((events) => {
         events.forEach((e) => {
-          this.events.push(e.toCalendarEvent());
+          let ce2;
+          //console.log('each e:', e);
+          ce2 = e.toCalendarEvent();
+          if (e.leaveType == 'ANN') {
+            ce2.color = 'purple';
+          } else if (e.leaveType == 'COMP') {
+            ce2.color = 'yellow';
+          } else if (e.leaveType == 'CO') {
+            ce2.color = 'pink';
+          } else if (e.leaveType == 'SICK') {
+            ce2.color = 'DodgerBlue';
+          } else if (e.leaveType == 'BL') {
+            ce2.color = 'YellowGreen';
+          } else if (e.leaveType == 'NP') {
+            ce2.color = 'orange';
+          }
+          this.events.push(ce2);
         });
         // console.log(this.events);
       })

@@ -13,19 +13,19 @@
       <v-form v-if="loaded" >
         <v-layout row wrap>
           <v-flex xs6>
-            <v-text-field v-model='user.firstName' label='firstName' disabled box>
+            <v-text-field v-model='user.firstName' label='First Name' disabled box>
             </v-text-field>
           </v-flex>
           <v-flex xs6>
-            <v-text-field v-model='user.lastName' label='lastName' disabled box>
+            <v-text-field v-model='user.lastName' label='Last Name' disabled box>
             </v-text-field>
           </v-flex>
           <v-flex xs6>
-            <v-text-field v-model='user.email' label='email' autocomplete="email" disabled box>
+            <v-text-field v-model='user.email' label='Email' autocomplete="email" disabled box>
             </v-text-field>
           </v-flex>
           <v-flex xs6>
-            <v-text-field v-model.number='user.daysBooked' label='Booked' disabled box>
+            <v-text-field disabled box>
             </v-text-field>
           </v-flex>
           <v-flex xs6>
@@ -33,7 +33,7 @@
             </v-text-field>
           </v-flex>
           <v-flex xs6>
-            <v-text-field v-model.number='user.daysCompLeave' label='Comp Leave' :readonly="!this.isAdmin" box>
+            <v-text-field v-model.number='user.daysAnnualLeave - this.approvedAnn' label='Remaining' disabled box>
             </v-text-field>
           </v-flex>
           <v-flex xs6>
@@ -41,7 +41,31 @@
             </v-text-field>
           </v-flex>
           <v-flex xs6>
-            <v-text-field v-model.number='user.daysSick' label='Sick' :readonly="!this.isAdmin" box>
+            <v-text-field v-model.number='user.daysCarryOver - this.approvedCo' label='Remaining' disabled box>
+            </v-text-field>
+          </v-flex>
+          <v-flex xs6>
+            <v-text-field value='1' label='Birthday Leave' disabled box>
+            </v-text-field>
+          </v-flex>
+          <v-flex xs6>
+            <v-text-field v-model.number='1 - this.approvedBirth' label='Remaining' disabled box>
+            </v-text-field>
+          </v-flex>
+          <v-flex xs6>
+            <v-text-field v-model.number='this.approvedComp' label='Approved Comp Leave' disabled box>
+            </v-text-field>
+          </v-flex>
+          <v-flex xs6>
+            <v-text-field v-model.number='this.approvedSick' label='Approved Sick' disabled box>
+            </v-text-field>
+          </v-flex>
+          <v-flex xs6>
+            <v-text-field v-model.number='this.approvedNoPay' label='Approved No Pay' disabled box>
+            </v-text-field>
+          </v-flex>
+          <v-flex xs6>
+            <v-text-field disabled box>
             </v-text-field>
           </v-flex>
           <v-flex xs6>
@@ -86,6 +110,8 @@
 
 <script>
   import db from '../config/firebaseInit';
+  import moment from 'moment-business-days';
+  import Constants from '../models/common.js';
   import { createUserModel } from '../models/User';
   import * as mutant from '../store/mutation-types';
   import * as action from '../store/action-types';
@@ -100,6 +126,12 @@
         loaded: false,
         successMessage: '',
         comment: '',
+        approvedAnn: 0,
+        approvedCo: 0,
+        approvedComp: 0,
+        approvedSick: 0,
+        approvedBirth: 0,
+        approvedNoPay: 0,
       }
     },
     created() {
@@ -107,6 +139,7 @@
       console.log('UserDetails, ', this.$store.state.selectedUser);
       if (this.$store.state.selectedUser !== null && this.$store.state.selectedUser !== '') {
         this.fetchUser();
+        this.getPublicHolidays();
       } else {
         console.log('no selectedUser');
         this.$store.commit(mutant.SET_ERROR, 'Cannot load, no selectedUser found');
@@ -128,7 +161,7 @@
           })
       },
       save() {
-        this.$store.dispatch(action.SAVE_USER, { 
+        this.$store.dispatch(action.SAVE_USER, {
           user: this.user,
           comment: this.comment,
           changedBy: this.$store.state.loggedInUser.email })
@@ -151,7 +184,86 @@
       resetPassword() {
         this.$store.dispatch(action.RESET_PASSWORD, { email: this.user.email });
         this.successMessage = 'Reset Password email sent to ', this.user.email;
-      }
+      },
+
+      getPublicHolidays() {
+        this.$store.dispatch(action.GET_HOLIDAYS,
+          { startDate: moment().subtract(1, 'y'), endDate: moment().add(1, 'y') })
+          .then(holidays => {
+            this.holidays = holidays;
+            console.log('holidays,', this.holidays);
+          })
+          .catch((err) => {
+            this.$store.commit(mutant.SET_ERROR, err.message);
+          })
+          .then(() => {
+            this.getApprovedHolidays(this.$store.state.selectedUser);
+          })
+      },
+
+      getApprovedHolidays(target) {
+        console.log('in getApprovedHolidays()', target);
+        this.$store.dispatch(action.GET_EVENTS,
+        {
+          start: moment().startOf('year'), end: moment().endOf("year"),
+          status: Constants.APPROVED,
+          user: target
+        })
+        .then((events) => {
+          //this.pendingRequests = events;
+          console.log('the email: ',target.email,'list out the requests', events);
+          events.forEach((entry)=> {
+            var s = entry.startDate.startOf('day'); //this entry's start date
+            var e = entry.endDate.startOf('day');
+            var dif ='';
+            if (entry.halfDay != 'Full') {
+              dif = 0.5
+            } else {
+              dif = s.businessDiff(e) + 1;
+            }
+            //*** note this approvedAnn and approvedCarry will exclude public holiday and weekend(TODO)
+            if (entry.leaveType == 'ANN') {
+              this.approvedAnn += dif;
+              var publicHolidayExclusion = 0
+              var index, len;
+              for (index = 0, len = this.holidays.length; index < len; ++index) {
+                  let h = this.holidays[index];
+                  if (h.startDate.startOf('day').isBetween(s, e, null, '[]')) {
+                    publicHolidayExclusion += h.startDate.diff(h.endDate, 'days') + 1;
+                  }
+                }
+              this.approvedAnn -= publicHolidayExclusion;
+
+            } else if (entry.leaveType == 'CO') {
+              this.approvedCo += dif;
+              var publicHolidayExclusion = 0
+              var index, len;
+              for (index = 0, len = this.holidays.length; index < len; ++index) {
+                  let h = this.holidays[index];
+                  if (h.startDate.startOf('day').isBetween(s, e, null, '[]')) {
+                    publicHolidayExclusion += h.startDate.diff(h.endDate, 'days') + 1;
+                  }
+                }
+              this.approvedCo -= publicHolidayExclusion;
+            } else if (entry.leaveType == 'COMP') {
+              this.approvedComp += dif;
+            } else if (entry.leaveType == 'SICK') {
+              this.approvedSick += dif;
+            } else if (entry.leaveType == 'BL') {
+              this.approvedBirth += dif;
+            } else if (entry.leaveType == 'NP') {
+              this.approvedNoPay += dif;
+            }
+
+          })
+        })
+        .catch((error) => {
+          this.$store.commit(mutant.SET_ERROR, error);
+          console.log('error, ', error)
+        });
+      },
+
+
     },
     computed: {
       error() {

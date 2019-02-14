@@ -52,7 +52,7 @@ export function createUser(newUser, passwd) {
   return new Promise((resolve, reject) => {
     firebase.auth().createUserWithEmailAndPassword(newUser.email, passwd)
       .then((firebaseUser) => {
-        console.log(firebaseUser);
+        console.log('firebase user', firebaseUser);
         // TODO if this add() fails, we need to delete the user from firebase
         db.collection('users').add(newUser.toJSON())
           .then((u) => {
@@ -77,7 +77,7 @@ export function createUser(newUser, passwd) {
  * @return {[User]} users
  */
 export function getUsers() {
-  // console.log('api.getUsers...');
+  console.log('api.getUsers...');
   const users = [];
   return new Promise((resolve, reject) => {
     db
@@ -87,20 +87,29 @@ export function getUsers() {
       .then((querySnapshot) => {
         let u;
         querySnapshot.forEach((doc) => {
+          //console.log('raw data here', doc.data());
           u = new User(
             doc.data().email,
             doc.data().isAdmin,
             doc.data().isApprover,
             doc.data().daysAnnualLeave,
+            doc.data().daysBooked,
             doc.data().daysCarryOver,
             doc.data().daysCompLeave,
-            doc.data().daysBooked,
             doc.data().daysSick,
+            doc.data().daysBirthdayLeave,
             doc.id,
             doc.data().firstName,
             doc.data().lastName,
+            doc.data().dob,
           );
           u.comments = [];
+          u.approvedAnn = 0; //build initial value for users.vue
+          u.approvedComp = 0;
+          u.approvedCarry = 0;
+          u.approvedSick = 0;
+          u.approvedBirthday = 0;
+          u.approvedNoPay = 0;
           users.push(u);
         });
       })
@@ -149,6 +158,7 @@ export function getApprovers() {
     });
   });
 }
+
 
 function validateDateParams(d) {
   // both start/end were not passed in
@@ -211,11 +221,13 @@ export function getEvents(data) {
             doc.data().secondStatus,
             doc.data().firstComment,
             doc.data().secondComment,
-            doc.id);
+            doc.id,
+            doc.data().leaveType,
+            );
 
           // console.log('getEvents filter, user= ', data.email, ' status= ', data.status);
           //  NOTE - firestore queries don't support multiple fields
-          //    so we need to filter on the server. YES THIS IS A BLOODY MESS but we need
+          //    so we need to filter on the server. YES THIS IS A BLOoODY MESS but we need
           //    to provide query capability.
           let isFiltered = false; // set to true if we fail filter criteria
           // if user param is present, test that this event requestor matches filter
@@ -283,8 +295,8 @@ export function getUser(email) {
           u = new User(
             user.data().email, user.data().isAdmin,
             user.data().isApprover, user.data().daysAnnualLeave,
-            user.data().daysCompLeave, user.data().daysCarryOver, user.data().daysBooked,
-            user.data().daysSick, user.id, user.data().firstName, user.data().lastName, [],
+            user.data().daysBooked, user.data().daysCarryOver, user.data().daysCompLeave,
+            user.data().daysSick, user.data().daysBirthdayLeave, user.id, user.data().firstName, user.data().lastName, user.data().dob, [],
           );
         });
       },
@@ -344,13 +356,53 @@ export function createEvent(data) {
   console.log('api.createEvent...', data);
   return new Promise((resolve, reject) => {
     db.collection('leaveRequests').add(data)
-      .then(docRef => resolve(docRef))
+      .then(docRef => resolve(docRef));
+  });
+}
+
+export function editEvent(data) {
+  console.log('api.editEvent...', data[0]);
+  return new Promise((resolve, reject) => {
+    db.collection('leaveRequests').doc(data[0]).set(data[1])
+      .then( () => resolve())
       .catch((error) => {
         console.log(error);
         reject(error);
       });
   });
 }
+
+export function uploadSl(data) {
+  console.log('api.uploadSl...', data);
+  return new Promise((resolve, reject) => {
+    var file = data[0]
+    var metadata = {
+      contentType: file.type
+    }
+    var storageRef = firebase.storage().ref();
+    storageRef.child(data[1]).put(file, metadata)
+    .then( (snapshot) => {
+      console.log('successfully uploaded the file!');
+      resolve(snapshot);
+    }).catch((error) => {
+      console.log(error);
+      reject(error);
+    });
+  });
+}
+
+export function deleteSl(data) {
+  console.log('api.deleteSl...', data);
+  return new Promise((resolve, reject) => {
+    console.log('delete attachment: ', data);
+    var storage = firebase.storage();
+    var storageRef = storage.ref();
+    storageRef.child(data).delete().catch((error) =>
+    console.log('It doesnt really matter if your attachment is not deleted',error))
+  });
+}
+
+
 
 /**
  * Return a list of all the holidays
@@ -397,6 +449,34 @@ export function createHoliday(data) {
   return new Promise((resolve, reject) => {
     db.collection('holidays').add(data)
       .then(docRef => resolve(docRef))
+      .catch((error) => {
+        console.log(error);
+        reject(error);
+      });
+  });
+}
+
+export function deleteHoliday(docId) {
+  console.log('api.deleteHoliday...', docId);
+  return new Promise((resolve, reject) => {
+    db.collection('holidays').doc(docId).delete()
+      .then(() => {
+        resolve();
+      })
+      .catch((error) => {
+        console.log(error);
+        reject(error);
+      });
+  });
+}
+
+export function deleteRequest(docId) {
+  console.log('api.deleteRequest...', docId);
+  return new Promise((resolve, reject) => {
+    db.collection('leaveRequests').doc(docId).delete()
+      .then(() => {
+        resolve();
+      })
       .catch((error) => {
         console.log(error);
         reject(error);

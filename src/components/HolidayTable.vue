@@ -14,17 +14,17 @@
           <v-layout row wrap>
             <v-flex xs6>
               <v-text-field
-                v-model='newTitle' 
-                label='Title' 
-                autocomplete="off" 
+                v-model='newTitle'
+                label='Title'
+                autocomplete="off"
                 box>
               </v-text-field>
             </v-flex>
             <v-flex xs6>
               <v-text-field
-                v-model='newCountry' 
-                label='Country' 
-                autocomplete="off" 
+                v-model='newCountry'
+                label='Country'
+                autocomplete="off"
                 box>
               </v-text-field>
             </v-flex>
@@ -38,7 +38,7 @@
                 offset-y
                 full-width
                 min-width="290px"
-              >            
+              >
                 <v-text-field
                   slot='activator'
                   v-model='startDate'
@@ -94,6 +94,11 @@
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.startDate.toDate().toDateString() }}</td>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.title }}</td>
                 <td class='mdl-data-table__cell--non-numeric'>{{ props.item.country }}</td>
+                <td class='mdl-data-table__cell--non-numeric'>
+                  <v-icon @click='deleteHoliday(props.item)'>
+                    delete
+                  </v-icon>
+                </td>
               </tr>
             </template>
           </v-data-table>
@@ -152,7 +157,7 @@ export default {
     fetchData() {
       this.loaded = false;
 
-      this.$store.dispatch(action.GET_HOLIDAYS, 
+      this.$store.dispatch(action.GET_HOLIDAYS,
         { startDate: moment().subtract(1, 'y'), endDate: moment().add(1, 'y') })
         .then(holidays => {
           this.holidays = holidays;
@@ -177,13 +182,33 @@ export default {
           this.fetchData();
         })
         .then(() => {
-          this.successMessage = 'Successfully created';
+          this.successMessage = 'Holiday successfully created';
+          // clear title
+          this.startDate = new Date().toISOString().substr(0, 10);  // this is a string
+          this.endDate = new Date().toISOString().substr(0, 10);    // this is a string
+          this.newTitle= '';
+          this.newCountry = 'Hong Kong';
+          this.sDate = new Date();  // this is a Date
+          this.eDate = new Date();  // this is a Date
         })
         .catch((error) => {
           this.$store.commit(mutant.SET_ERROR, error.message);
           console.error('error adding doc: ', error);
         });
-
+    },
+    deleteHoliday (item) {
+      this.$store.dispatch(action.DELETE_HOLIDAY, item.docId)
+        .then((docRef) => {
+          // refetch data to refresh
+          this.fetchData();
+        })
+        .then(() => {
+          this.successMessage = 'Holiday successfully deleted';
+        })
+        .catch((error) => {
+          this.$store.commit(mutant.SET_ERROR, error.message);
+          console.error('error deleting doc: ', error);
+        });
     },
     dismissClicked() {
       this.successMessage = '';
@@ -194,7 +219,7 @@ export default {
       this.newCountry = 'Hong Kong';
       this.sDate = new Date();  // this is a Date
       this.eDate = new Date();  // this is a Date
-      
+
     },
   },
   computed: {
@@ -253,6 +278,11 @@ export default {
       sortable: false,
       value: 'country',
     },
+    {
+      text: 'Delete',
+      align: 'left',
+      sortable: false,
+    }
 
   ]
 </script>

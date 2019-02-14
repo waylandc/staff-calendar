@@ -16,6 +16,9 @@
             <v-text-field name="lastName" label="Last Name" id="lastName" type="text" v-model="lastName" required></v-text-field>
           </v-flex>
           <v-flex>
+            <v-text-field name="dob" label="Date of Birth (MMDD)" id="dob" type="number" counter="4" v-model="dob" required></v-text-field>
+          </v-flex>
+          <v-flex>
             <v-text-field name="email" label="Email" id="email" type="email" v-model="email" required></v-text-field>
           </v-flex>
           <v-flex>
@@ -44,6 +47,7 @@ export default {
     return {
       firstName: '',
       lastName: '',
+      dob: '',
       email: '',
       password: '',
       confirmPassword: '',
@@ -67,8 +71,12 @@ export default {
         this.$store.commit(mutant.SET_ERROR, 'Passwords don\'t match');
         return;
       }
-      this.$store.dispatch(action.USER_SIGNUP, 
-        { email: this.email, password: this.password, firstName: this.firstName, lastName: this.lastName });
+      if (this.dob.length !== 4) {
+        this.$store.commit(mutant.SET_ERROR, 'DOB should be in DDMM format');
+        return;
+      }
+      this.$store.dispatch(action.USER_SIGNUP,
+        { email: this.email, password: this.password, firstName: this.firstName, lastName: this.lastName, dob: this.dob });
     },
   },
   watch: {

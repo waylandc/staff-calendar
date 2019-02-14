@@ -12,9 +12,9 @@
 		    <v-layout row wrap>
 			<v-flex xs12>
 			    <v-text-field
-				v-model='request.title' 
-					 label='Title' 
-					 autocomplete="off" 
+				v-model='request.title'
+					 label='Title'
+					 autocomplete="off"
 					 :readonly="true"
 					 box>
 			    </v-text-field>
@@ -22,26 +22,26 @@
 			<v-flex xs6>
 			    <v-text-field
 				v-model='startString'
-					 label='Start Date' 
-					 autocomplete="off" 
+					 label='Start Date'
+					 autocomplete="off"
 					 :readonly="true"
 					 box>
 			    </v-text-field>
 			</v-flex>
 			<v-flex xs6>
 			    <v-text-field
-				v-model = 'endString' 
-					   label = 'End Date' 
-					   autocomplete = "off" 
+				v-model = 'endString'
+					   label = 'End Date'
+					   autocomplete = "off"
 					   :readonly = "true"
 					   box>
 			    </v-text-field>
 			</v-flex>
 			<v-flex xs6>
 			    <v-text-field
-				v-model = 'request.halfDay' 
-					   label = 'Half Day' 
-					   :readonly = "true" 
+				v-model = 'request.halfDay'
+					   label = 'Half Day'
+					   :readonly = "true"
 					   box>
 			    </v-text-field>
 			</v-flex>
@@ -52,6 +52,17 @@
 					   :readonly = "true"
 				box>
 			    </v-text-field>
+          <v-text-field
+        v-model = 'this.requestorDob'
+             label = 'Birthday'
+             v-if="this.convertLeaveType === 'Birthday Leave'"
+             :readonly = "true"
+        box>
+          </v-text-field>
+          <v-btn small v-if="this.convertLeaveType === 'Sick'"
+            color="green"
+            @click.stop="downloadAttachment" > Download sick leave scan copy
+          </v-btn>
 			</v-flex>
 			<v-flex xs6>
 			    <v-text-field
@@ -63,19 +74,19 @@
 			</v-flex>
 			<v-flex xs6>
 			    <v-text-field
-				v-model='request.requestor' 
-					 label='Requestor' 
-					 autocomplete = "name" 
-					 :readonly = "true" 
+				v-model='request.requestor'
+					 label='Requestor'
+					 autocomplete = "name"
+					 :readonly = "true"
 					 box>
 			    </v-text-field>
 			</v-flex>
 			<v-flex xs6>
 			    <v-text-field
-				v-model='request.firstApprover' 
-					 label='First Approver' 
-					 autocomplete = "name" 
-					 :readonly = "true" 
+				v-model='request.firstApprover'
+					 label='First Approver'
+					 autocomplete = "name"
+					 :readonly = "true"
 					 box>
 			    </v-text-field>
 			</v-flex>
@@ -89,10 +100,10 @@
 			</v-flex>
 			<v-flex xs6>
 			    <v-text-field
-				v-model='request.secondApprover' 
-					 label='Second Approver' 
-					 autocomplete = "name" 
-					 :readonly = "true" 
+				v-model='request.secondApprover'
+					 label='Second Approver'
+					 autocomplete = "name"
+					 :readonly = "true"
 					 box>
 			    </v-text-field>
 			</v-flex>
@@ -104,14 +115,22 @@
 					   box>
 			    </v-text-field>
 			</v-flex>
-			<v-flex v-if="canApproveReject" class="text-xs-center" mt-5>
-			    <v-btn 
+      <v-flex v-if="canEdit" class="text-xs-center" mt-5>
+          <v-btn
+        color="brown"
+              @click.stop="editProperty"
+          >
+        Edit
+          </v-btn>
+      </v-flex>
+      <v-flex v-if="canApproveReject" class="text-xs-center" mt-5>
+			    <v-btn
 				color="approve"
 				       @click.stop="approve"
 			    >
 				Approve
 			    </v-btn>
-			    <v-btn 
+			    <v-btn
 				color="reject"
 				       @click.stop="reject"
 			    >
@@ -126,8 +145,10 @@
 </template>
 
 <script>
+import moment from 'moment-business-days';
 import { isNullOrUndefined } from 'util';
 import db from '../config/firebaseInit';
+import firebase from 'firebase';
 import { CalendarEvent } from '../models/CalendarEvent';
 import Constants from '../models/common.js';
 import * as mutant from '../store/mutation-types';
@@ -142,7 +163,10 @@ export default {
 				{key: 'Annual', val: 'ANN'},
 				{key:'Compensation', val: 'COMP'},
 				{key: 'Carry Over', val: 'CO'},
-				{key: 'Sick', val: 'SICK'}],
+				{key: 'Sick', val: 'SICK'},
+        {key: 'Birthday Leave', val: 'BL'},
+        {key: 'No Pay', val: 'NP'},
+        ],
 			drawer: false,
 			request: '',	// CalendarEvent object
 			loaded: false,
@@ -150,8 +174,14 @@ export default {
 			startString: '',
 			endString: '',
 			user: null,
+      requestorDob: '',
 			documentRef: null,
 			alert: false,
+      copyUrl: '',
+      approvedAnn: 0,
+      approvedCo: 0,
+      userDetails: '',
+      holidays: [],
 		};
 	},
 	created() {
@@ -165,6 +195,7 @@ export default {
 				this.request = CalendarEvent.fromJSON(doc.data());
 				this.documentRef = docRef;
 				this.loaded = true;
+        console.log(this.request);
 			} else {
 				this.$store.commit(mutant.SET_ERROR, 'Error, No such document');
 				console.log(this.error);
@@ -172,7 +203,23 @@ export default {
 		}).catch((error) => {
 			this.$store.commit(mutant.SET_ERROR, 'Error loading document');
 			console.log('error getting document: ', error);
-		});
+		}).then(() => {
+      this.getRequestorDob(this.request.requestor);
+      if (this.request.firstApprover == this.user.email ||
+      this.request.secondApprover == this.user.email) {
+        if (this.request.leaveType == 'CO' || this.request.leaveType == 'ANN') {
+          this.getPublicHolidays();
+          this.fetchUser();
+        }
+      }
+    }).then(() => {
+      if (this.request.firstApprover == this.user.email ||
+      this.request.secondApprover == this.user.email) {
+        if (this.request.leaveType == 'CO' || this.request.leaveType == 'ANN') {
+          this.getRemainingDays();
+        }
+      }
+    })
 	},
 	computed: {
 		aggrStatus() {
@@ -184,6 +231,12 @@ export default {
 		loading() {
 			return this.$store.state.loading;
 		},
+    canEdit() {
+      // check is owner of the request, then check state of the request
+      return ((this.request.requestor == this.$store.state.loggedInUser.email) &&
+        this.request.firstStatus == 0 && this.request.secondStatus == 0
+      );
+    },
 		canApproveReject() {
 			// check loggedInUser is approver first, then check state of this request
 			return (this.$store.state.loggedInUser.isApprover &&
@@ -211,38 +264,107 @@ export default {
 				return (this.request.secondComment !== '');
 			}
 		},
-		// TODO don't support edit request yet
-		// https://gitlab.com/waylandc/oax-staff-calendar/issues/5
-		// editProperty() {
-		//   console.log('calling editRequest')
-		//   this.$router.push(`/leaveRequest/edit/${this.propId}`);
-		// },
-		approve() {
-			// 'o' is placeholder JSON object we'll write to DB
-			var o = {};
-			// check if we're the first or second approver
-			if (this.$store.state.loggedInUser.email === this.request.firstApprover) {
-				o.firstApprover = this.$store.state.loggedInUser.email;
-				if (this.request.firstComment === '') {
-					o.firstComment = '** Approved **';
-				} else {
-					o.firstComment = this.request.firstComment;
-				}
-				o.firstStatus = Constants.APPROVED;
-			}
+    downloadAttachment() {
 
-			if (this.$store.state.loggedInUser.email === this.request.secondApprover) {
-				o.secondApprover = this.$store.state.loggedInUser.email;
-				if (this.request.secondComment === '') {
-					o.secondComment = '** Approved **';
-				} else {
-					o.secondComment = this.request.secondComment;
-				}
-				o.secondStatus = Constants.APPROVED;
-			}
-			// console.log(o);
-			this.documentRef.update(o);
-			this.$router.push({ path: '/leaveRequests' });
+      var startDateSimple = moment(this.request.startDate.toDate()).format("DDMMMYYYY");
+      var endDateSimple = moment(this.request.endDate.toDate()).format("DDMMMYYYY");
+      var aggrString = 'sick-leave-copy/'+this.request.requestor+'/'
+                        +startDateSimple+'-to-'+endDateSimple+'.pdf'
+      //console.log("sdate: ", startDateSimple);
+      console.log('downloading: ', aggrString);
+      firebase.storage().ref().child(aggrString)
+      .getDownloadURL().then(function(url) {
+        // `url` is the download URL for 'images/stars.jpg'
+
+        var xhr = new XMLHttpRequest();
+        xhr.responseType = 'blob';
+        xhr.onload = function(event) {
+          var blob = xhr.response;
+
+          let a = document.createElement("a");
+          a.style = "display: none";
+          document.body.appendChild(a);
+
+          let url = window.URL.createObjectURL(blob);
+          a.href = url;
+          a.download = aggrString;
+
+          a.click();
+
+          window.URL.revokeObjectURL(url);
+        };
+        xhr.open('GET', url);
+        xhr.send();
+      }).catch((error) => {
+        this.$store.commit(mutant.SET_ERROR, error.message);
+        console.log(error);
+      });
+    },
+		 editProperty() {
+		   console.log('calling editRequest')
+		   this.$router.push({ path: `/leaveRequests/edit/${this.propId}` });
+		 },
+     getRequestorDob(person) {
+      console.log('start to find dob of ', person);
+      const docRef = db.collection('users').where('email', '==', person);
+
+      docRef.get().then((snapshot) => {
+        if(snapshot.empty) {
+          console.log('no matching documents');
+          return;
+        }
+        snapshot.forEach(doc => {
+          this.requestorDob = moment(doc.data().dob, "MMDD").format("ddd MMM D YYYY");
+          //console.log(this.requestorDob);
+        })
+      })
+      .catch((error) => {
+        this.$store.commit(mutant.SET_ERROR, error.message);
+        console.log('Error getting document: ', error);
+      });
+     },
+     getPublicHolidays() {
+       this.$store.dispatch(action.GET_HOLIDAYS,
+         { startDate: moment().subtract(1, 'y'), endDate: moment().add(1, 'y') })
+         .then(holidays => {
+           this.holidays = holidays;
+           console.log('holidays,', this.holidays)
+         })
+         .catch((err) => {
+           this.$store.commit(mutant.SET_ERROR, err.message);
+         });
+     },
+		 approve() {
+      if (this.validateDate() == false) {
+        console.log('the request seems exceeded the quota');
+        this.$store.commit(mutant.SET_ERROR, 'the request seems exceeded the quota');
+      } else {
+        // 'o' is placeholder JSON object we'll write to DB
+        var o = {};
+        // check if we're the first or second approver
+        if (this.$store.state.loggedInUser.email === this.request.firstApprover && this.validateDate() == true) {
+          o.firstApprover = this.$store.state.loggedInUser.email;
+          if (this.request.firstComment === '') {
+            o.firstComment = '** Approved **';
+          } else {
+            o.firstComment = this.request.firstComment;
+          }
+          o.firstStatus = Constants.APPROVED;
+        }
+
+        if (this.$store.state.loggedInUser.email === this.request.secondApprover && this.validateDate() == true) {
+          o.secondApprover = this.$store.state.loggedInUser.email;
+          if (this.request.secondComment === '') {
+            o.secondComment = '** Approved **';
+          } else {
+            o.secondComment = this.request.secondComment;
+          }
+          o.secondStatus = Constants.APPROVED;
+        }
+        // console.log(o);
+        this.documentRef.update(o);
+        this.$router.push({ path: '/leaveRequests' });
+      }
 		},
 		reject() {
 			if (!this.validateRejection()) {
@@ -267,12 +389,154 @@ export default {
 			this.documentRef.update(o);
 			this.$router.push({ path: '/leaveRequests' });
 		},
+    getRemainingDays() {
+      this.$store.dispatch(action.GET_EVENTS,
+      {
+        start: moment().startOf('year'), end: moment().endOf("year"),
+        status: Constants.APPROVED,
+        user: this.request.requestor
+      })
+      .then((events) => {
+      //this.pendingRequests = events;
+      //console.log('the email: ',this.request.requestor,'list out the requests', events);
+        events.forEach((entry)=> {
+          var s = entry.startDate.startOf('day'); //this entry's start date
+          var e = entry.endDate.startOf('day');
+          //for halfdays
+          if (entry.halfDay != 'Full') {
+            if (entry.leaveType == 'ANN') {
+              this.approvedAnn += 0.5;
+            } else if (entry.leaveType == 'CO') {
+              this.approvedCo += 0.5;
+            }
+          } else { //for full days
+            if (entry.leaveType == 'ANN') {
+            // get public holidays between the requested start and end date
+            // to exclude from the approved leave requests
+              var publicHolidayExclusion = 0
+              var index, len;
+              for (index = 0, len = this.holidays.length; index < len; ++index) {
+                  let h = this.holidays[index];
+                  if (h.startDate.startOf('day').isBetween(s, e, null, '[]')) {
+                    publicHolidayExclusion += h.startDate.diff(h.endDate, 'days') + 1;
+                  }
+              }
+              //console.log('no. of days public holidays excluded', publicHolidayExclusion);
+              //console.log(a,b);
+              this.approvedAnn += s.businessDiff(e) + 1 - publicHolidayExclusion;
+              //console.log('this.approvedAnn, ', this.approvedAnn);
+            } else if (entry.leaveType == 'CO') {
+              // get public holidays between the requested start and end date
+                var publicHolidayExclusion = 0
+                var index, len;
+                for (index = 0, len = this.holidays.length; index < len; ++index) {
+                    let h = this.holidays[index];
+                    if (h.startDate.startOf('day').isBetween(s, e, null, '[]')) {
+                      publicHolidayExclusion += h.startDate.diff(h.endDate, 'days') + 1;
+                    }
+                }
+              console.log('no. of days public holidays excluded', publicHolidayExclusion);
+              this.approvedCo += s.businessDiff(e) + 1 - publicHolidayExclusion;
+            }
+          }
+
+
+
+        })
+      })
+      .catch((error) => {
+        this.$store.commit(mutant.SET_ERROR, error);
+        console.log('error, ', error)
+      });
+    },
+    validateDate() {
+      console.log('in validateDate()')
+      //for halfdays
+      if (this.request.halfDay != 'Full') {
+        if (this.request.leaveType == 'ANN') {
+          var a = moment(this.request.startDate.toDate()).startOf('day');
+          var b = moment(this.request.endDate.toDate()).startOf('day');
+          //deal with floats
+          if (5 > Math.round((this.userDetails.daysAnnualLeave - this.approvedAnn)*10)) {
+            return false
+          }
+        } else if (this.request.leaveType == 'CO') {
+          var a = moment(this.request.startDate.toDate()).startOf('day');
+          var b = moment(this.request.endDate.toDate()).startOf('day');
+          //deal with floats
+          if (5 > Math.round((this.userDetails.daysCarryOver - this.approvedCo)*10)) {
+            return false
+          }
+        }
+      } else { //for fulldays
+        if (this.request.leaveType == 'ANN') {
+          var a = moment(this.request.startDate.toDate()).startOf('day');
+          var b = moment(this.request.endDate.toDate()).startOf('day');
+          // get public holidays between the requested start and end date
+          // to exclude from this leave request
+          var publicHolidayExclusion = 0
+          var index, len;
+          for (index = 0, len = this.holidays.length; index < len; ++index) {
+              //console.log(this.holidays[index]);
+              //console.log(this.holidays[index].startDate.diff(this.holidays[index].endDate, 'days'));
+              let h = this.holidays[index];
+              //console.log(h.startDate, a, b);
+              //console.log(h.startDate.isBetween(a, b, null, '[]'));
+              //***assumes each public holiday has duration 1 only
+              if (h.startDate.startOf('day').isBetween(a, b, null, '[]')) {
+                publicHolidayExclusion += h.startDate.diff(h.endDate, 'days') + 1;
+              }
+          }
+          console.log('no. of days public holidays excluded', publicHolidayExclusion);
+          //console.log(a,b);
+          //console.log(a.businessDiff(b));
+          //console.log('remaining should be = ',this.userDetails.daysCarryOver, '-', this.approvedCo, '+', publicHolidayExclusion);
+          //deal with floats
+          if ((a.businessDiff(b) + 1 - publicHolidayExclusion)*10 > Math.round((this.userDetails.daysAnnualLeave - this.approvedAnn)*10)) {
+            return false;
+          }
+        } else if (this.request.leaveType == 'CO') {
+            var a = moment(this.request.startDate.toDate()).startOf('day');
+            var b = moment(this.request.endDate.toDate()).startOf('day');
+            // get public holidays between the requested start and end date
+            var publicHolidayExclusion = 0
+            var index, len;
+            for (index = 0, len = this.holidays.length; index < len; ++index) {
+                let h = this.holidays[index];
+                if (h.startDate.startOf('day').isBetween(a, b, null, '[]')) {
+                  publicHolidayExclusion += h.startDate.diff(h.endDate, 'days') + 1;
+                }
+            }
+            console.log('no. of days public holidays excluded', publicHolidayExclusion);
+            //console.log(a,b);
+            console.log('remaining should be = ',this.userDetails.daysCarryOver, '-', this.approvedCo, '+', publicHolidayExclusion);
+            //deal with floats
+            if ((a.businessDiff(b) + 1 - publicHolidayExclusion)*10 > Math.round((this.userDetails.daysCarryOver - this.approvedCo)*10)) {
+              return false;
+            }
+          }
+      }
+
+      return true;
+
+    },
+    fetchUser() {
+      this.$store.dispatch(action.GET_USER, { email: this.request.requestor })
+        .then((user) => {
+          console.log('UserDetails loaded, ', user);
+          this.userDetails = user;
+        })
+        .catch((error) => {
+          console.log(error);
+          this.$store.commit(mutant.SET_ERROR, error);
+        })
+    },
 		getStatus(s) {
 			switch (s) {
 			case Constants.PENDING:
 				return "Pending";
 				break;
-			case Constants.APPROVED: 
+			case Constants.APPROVED:
 				return "Approved";
 				break;
 			case Constants.REJECTED:
@@ -286,7 +550,7 @@ export default {
 	watch: {
 		// these watch methods are to generate a formatted date value because v-text-field
 		// doesn't support formatting of the v-model object. so create a formatted string
-		// here and display it on form instead of the v-model 
+		// here and display it on form instead of the v-model
 		'request.startDate': function(val, oldVal) {
 			this.startString = val.toDate().toDateString();
 		},
