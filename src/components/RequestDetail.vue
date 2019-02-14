@@ -492,7 +492,7 @@ export default {
           //console.log(a.businessDiff(b));
           //console.log('remaining should be = ',this.userDetails.daysCarryOver, '-', this.approvedCo, '+', publicHolidayExclusion);
           //deal with floats
-          if ((a.businessDiff(b) + 1 - publicHolidayExclusion)*10 > Math.round((this.userDetails.daysAnnualLeave - this.approvedAnn)*10) {
+          if ((a.businessDiff(b) + 1 - publicHolidayExclusion)*10 > Math.round((this.userDetails.daysAnnualLeave - this.approvedAnn)*10)) {
             return false;
           }
         } else if (this.request.leaveType == 'CO') {
@@ -511,7 +511,7 @@ export default {
             //console.log(a,b);
             console.log('remaining should be = ',this.userDetails.daysCarryOver, '-', this.approvedCo, '+', publicHolidayExclusion);
             //deal with floats
-            if ((a.businessDiff(b) + 1 - publicHolidayExclusion)*10 > Math.round(this.userDetails.daysCarryOver - this.approvedCo)*10) {
+            if ((a.businessDiff(b) + 1 - publicHolidayExclusion)*10 > Math.round((this.userDetails.daysCarryOver - this.approvedCo)*10)) {
               return false;
             }
           }
