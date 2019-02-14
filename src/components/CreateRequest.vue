@@ -125,7 +125,7 @@
 </template>
 
 <script>
-  import moment from 'moment';
+  import moment from 'moment-business-days';
   import db from '../config/firebaseInit';
   import Constants from '../models/common.js';
   import { CalendarEvent } from '../models/CalendarEvent';
@@ -338,6 +338,12 @@
         if (this.firstApprover == this.$store.state.loggedInUser.email ||
         this.secondApprover == this.$store.state.loggedInUser.email) {
           this.$store.commit(mutant.SET_ERROR, 'Approver cannot be yourself!');
+          return false;
+        }
+
+        //start and end of request must not be weekend
+        if ((moment(this.sDate).isBusinessDay() && moment(this.eDate).isBusinessDay()) == false) {
+          this.$store.commit(mutant.SET_ERROR, 'Leave should not be starting or ending on weekend');
           return false;
         }
 

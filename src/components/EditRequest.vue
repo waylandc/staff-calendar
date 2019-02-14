@@ -379,6 +379,12 @@
           return false;
         }
 
+        //start and end of request must not be weekend
+        if ((moment(this.sDate).isBusinessDay() && moment(this.eDate).isBusinessDay()) == false) {
+          this.$store.commit(mutant.SET_ERROR, 'Leave should not be starting or ending on weekend');
+          return false;
+        }
+
         //check own request overlaps
         var sDateSimple = moment(this.sDate).format("DDMMMYYYY");
         var eDateSimple = moment(this.eDate).format("DDMMMYYYY");
