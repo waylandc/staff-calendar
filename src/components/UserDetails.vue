@@ -213,39 +213,39 @@
           //this.pendingRequests = events;
           console.log('the email: ',target.email,'list out the requests', events);
           events.forEach((entry)=> {
-            var s = entry.startDate; //this entry's start date
-            var e = entry.endDate;
+            var s = entry.startDate.startOf('day'); //this entry's start date
+            var e = entry.endDate.startOf('day');
             //*** note this approvedAnn and approvedCarry will exclude public holiday and weekend(TODO)
             if (entry.leaveType == 'ANN') {
-              this.approvedAnn += e.diff(s, 'days') + 1;
+              this.approvedAnn += s.businessDiff(e) + 1;
               var publicHolidayExclusion = 0
               var index, len;
               for (index = 0, len = this.holidays.length; index < len; ++index) {
                   let h = this.holidays[index];
-                  if (h.startDate.isBetween(s, e, null, '[]')) {
+                  if (h.startDate.startOf('day').isBetween(s, e, null, '[]')) {
                     publicHolidayExclusion += h.startDate.diff(h.endDate, 'days') + 1;
                   }
                 }
               this.approvedAnn -= publicHolidayExclusion;
             } else if (entry.leaveType == 'CO') {
-              this.approvedCo += e.diff(s, 'days') + 1;
+              this.approvedCo += s.businessDiff(e) + 1;
               var publicHolidayExclusion = 0
               var index, len;
               for (index = 0, len = this.holidays.length; index < len; ++index) {
                   let h = this.holidays[index];
-                  if (h.startDate.isBetween(s, e, null, '[]')) {
+                  if (h.startDate.startOf('day').isBetween(s, e, null, '[]')) {
                     publicHolidayExclusion += h.startDate.diff(h.endDate, 'days') + 1;
                   }
                 }
               this.approvedCo -= publicHolidayExclusion;
             } else if (entry.leaveType == 'COMP') {
-              this.approvedComp += e.diff(s, 'days') + 1;
+              this.approvedComp += s.businessDiff(e) + 1;
             } else if (entry.leaveType == 'SICK') {
-              this.approvedSick += e.diff(s, 'days') + 1;
+              this.approvedSick += s.businessDiff(e) + 1;
             } else if (entry.leaveType == 'BL') {
-              this.approvedBirth += e.diff(s, 'days') + 1;
+              this.approvedBirth += s.businessDiff(e) + 1;
             } else if (entry.leaveType == 'NP') {
-              this.approvedNoPay += e.diff(s, 'days') + 1;
+              this.approvedNoPay += s.businessDiff(e) + 1;
             }
 
           })

@@ -239,42 +239,43 @@ export default {
         //this.pendingRequests = events;
         //console.log('the email: ',target.email,'list out the requests', events);
         events.forEach((entry)=> {
-          var s = entry.startDate; //this entry's start date
-          var e = entry.endDate;
+          var s = entry.startDate.startOf('day'); //this entry's start date
+          var e = entry.endDate.startOf('day');
           //*** note this approvedAnn and approvedCarry will exclude public holiday and weekend(TODO)
           if (entry.leaveType == 'ANN') {
-            target.approvedAnn += e.diff(s, 'days') + 1;
+            target.approvedAnn += s.businessDiff(e) + 1;
+            //console.log('approvedAnn = ', target.approvedAnn);
             var publicHolidayExclusion = 0
             var index, len;
             for (index = 0, len = this.holidays.length; index < len; ++index) {
                 let h = this.holidays[index];
                 //console.log(h.startDate, s, e);
                 //console.log(h.startDate.isBetween(s, e, null, '[]'));
-                if (h.startDate.isBetween(s, e, null, '[]')) {
+                if (h.startDate.startOf('day').isBetween(s, e, null, '[]')) {
                   publicHolidayExclusion += h.startDate.diff(h.endDate, 'days') + 1;
                 }
               }
             //console.log('no. of days public holidays exluded', publicHolidayExclusion)
             target.approvedAnn -= publicHolidayExclusion;
           } else if (entry.leaveType == 'CO') {
-            target.approvedCarry += e.diff(s, 'days') + 1;
+            target.approvedCarry += s.businessDiff(e) + 1;
             var publicHolidayExclusion = 0
             var index, len;
             for (index = 0, len = this.holidays.length; index < len; ++index) {
                 let h = this.holidays[index];
-                if (h.startDate.isBetween(s, e, null, '[]')) {
+                if (h.startDate.startOf('day').isBetween(s, e, null, '[]')) {
                   publicHolidayExclusion += h.startDate.diff(h.endDate, 'days') + 1;
                 }
               }
             target.approvedCarry -= publicHolidayExclusion;
           } else if (entry.leaveType == 'COMP') {
-            target.approvedComp += e.diff(s, 'days') + 1;
+            target.approvedComp += s.businessDiff(e) + 1;
           } else if (entry.leaveType == 'SICK') {
-            target.approvedSick += e.diff(s, 'days') + 1;
+            target.approvedSick += s.businessDiff(e) + 1;
           } else if (entry.leaveType == 'BL') {
-            target.approvedBirthday += e.diff(s, 'days') + 1;
+            target.approvedBirthday += s.businessDiff(e) + 1;
           } else if (entry.leaveType == 'NP') {
-            target.approvedNoPay += e.diff(s, 'days') + 1;
+            target.approvedNoPay += s.businessDiff(e) + 1;
           }
 
         })
