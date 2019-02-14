@@ -33,7 +33,9 @@
               item-text = 'key'
               label = 'Leave Type'>
             </v-select>
-            <v-text-field label="Select sick leave pdf" @click='pickFile' v-if="leaveType=='SICK'" v-model='imageName' prepend-icon='attach_file'>
+            <v-text-field label="Select sick leave pdf" @click='pickFile' v-if="leaveType == 'SICK' || leaveType == 'COMP'
+            || leaveType == 'EXAM' || leaveType == 'MAT' || leaveType == 'PAT'
+            || leaveType == 'MAR'" v-model='imageName' prepend-icon='attach_file'>
             </v-text-field>
               <input
                 type="file"
@@ -155,6 +157,13 @@
 	        {key: 'Sick', val: 'SICK'},
           {key: 'Birthday Leave', val: 'BL'},
           {key: 'No Pay', val: 'NP'},
+          {key: 'Examination Leave', val: 'EXAM'},
+          {key: 'Maternity Leave', val: 'MAT'},
+          {key: 'Paternity Leave', val: 'PAT'},
+          {key: 'Marriage Leave', val: 'MAR'},
+          {key: 'Jury', val: 'JURY'},
+          {key: 'Compassionate Leave', val: 'COMPA'},
+          {key: 'Others', val: 'OTHER'},
           ],
         leaveType: 'ANN',
         duration: ['Full', 'AM', 'PM'],
@@ -361,9 +370,11 @@
               this.$store.commit(mutant.SET_ERROR, 'date of birth cannot be read, try to refresh page and try again');
               return false;
             }
-        } else if (this.leaveType === 'SICK') {
-          if (this.oldLeaveType != 'SICK' && this.imageFile == '') {
-            this.$store.commit(mutant.SET_ERROR, 'If you change to sick leave you must upload the document');
+        } else if (this.leaveType == 'SICK' || this.leaveType == 'COMP'
+        || this.leaveType == 'EXAM' || this.leaveType == 'MAT'
+        || this.leaveType == 'PAT' || this.leaveType == 'MAR') {
+          if (this.oldLeaveType != this.leaveType && this.imageFile == '') {
+            this.$store.commit(mutant.SET_ERROR, 'If you change to this type of leave you must upload the document');
             return false;
           }
           if (this.imageFile == '' &&
@@ -378,7 +389,7 @@
           this.$store.commit(mutant.SET_ERROR, 'Approver cannot be yourself!');
           return false;
         }
-        
+
         if (this.halfDay != 'Full') {
           if (moment(this.sDate).dayOfYear()
           - moment(this.eDate).dayOfYear() != 0 ) {
@@ -393,11 +404,19 @@
           return false;
         }
 
-        //check own request overlaps
+        //check own request overlaps (dont include this request)
         var sDateSimple = moment(this.sDate).format("DDMMMYYYY");
         var eDateSimple = moment(this.eDate).format("DDMMMYYYY");
+        var oldSDateSimple = moment(this.oldSDate).format("DDMMMYYYY");
+        var oldEDateSimple = moment(this.oldEDate).format("DDMMMYYYY");
         //console.log('start and end of the request: ', sDateSimple, 'and', eDateSimple);
         for (var i = 0; i < this.selfHolidays.length; i++) {
+          console.log('CHECK! ',this.selfHolidays[i][1], oldSDateSimple, this.selfHolidays[i][0], oldEDateSimple);
+
+          if (this.selfHolidays[i][1] == oldEDateSimple
+          && this.selfHolidays[i][0] == oldSDateSimple) {
+            continue;
+          }
           let cri1 = moment(sDateSimple, "DDMMMYYYY").diff(moment(this.selfHolidays[i][1])) > 0; //new request is later than the ith holiday
           let cri2 = moment(eDateSimple, "DDMMMYYYY").diff(moment(this.selfHolidays[i][0])) < 0; //new request is older than the ith holiday
           if ((cri1 || cri2) == false) {
@@ -466,17 +485,35 @@
             console.log(error)
           }).then(()=> { //delete old attachment
             if (this.imageFile != '' ||
-            (this.oldLeaveType == 'SICK' && this.leaveType != 'SICK')
-            ) {
+            (this.oldLeaveType != this.leaveType && ['SICK','COMP'
+            ,'EXAM','MAT','PAT','MAR'].includes(this.oldLeaveType))) {
               var oldSDateSimple = moment(this.oldSDate).format("DDMMMYYYY");
               var oldEDateSimple = moment(this.oldEDate).format("DDMMMYYYY");
-              var oldAggrString = 'sick-leave-copy/'+this.$store.state.loggedInUser.email+'/'
-                                +oldSDateSimple+'-to-'+oldEDateSimple+'.pdf';
-              console.log('aggrstring: ', oldAggrString);
+              if (this.oldLeaveType == 'SICK') {
+                var oldAggrString = 'sick-leave-copy/'+this.$store.state.loggedInUser.email+'/'
+                                  +oldSDateSimple+'-to-'+oldEDateSimple+'.pdf';
+                console.log('aggrstring: ', oldAggrString);
+              } else if (this.oldLeaveType == 'COMP') {
+                var oldAggrString = 'compensation-leave-copy/'+this.$store.state.loggedInUser.email+'/'
+                  +oldSDateSimple+'-to-'+oldEDateSimple+'.pdf';
+              } else if (this.oldLeaveType == 'EXAM') {
+                var oldAggrString = 'exam-leave-copy/'+this.$store.state.loggedInUser.email+'/'
+                  +oldSDateSimple+'-to-'+oldEDateSimple+'.pdf';
+              } else if (this.oldLeaveType == 'MAT') {
+                var oldAggrString = 'maternity-leave-copy/'+this.$store.state.loggedInUser.email+'/'
+                  +oldSDateSimple+'-to-'+oldEDateSimple+'.pdf';
+              } else if (this.oldLeaveType == 'PAT') {
+                var oldAggrString = 'paternity-leave-copy/'+this.$store.state.loggedInUser.email+'/'
+                  +oldSDateSimple+'-to-'+oldEDateSimple+'.pdf';
+              } else if (this.oldLeaveType == 'MAR') {
+                var oldAggrString = 'marriage-leave-copy/'+this.$store.state.loggedInUser.email+'/'
+                  +oldSDateSimple+'-to-'+oldEDateSimple+'.pdf';
+              }
+
               this.$store.dispatch(action.DELETE_SL, oldAggrString)
               .then((res)=>{
                 //response
-                console.log('old sick leave copy deleted', res);
+                console.log('old copy deleted', res);
               }).catch((error) => {
                 console.error('error deleting doc: ', error);
               });
@@ -487,13 +524,31 @@
               if (this.imageFile != '') {
               var sDateSimple = moment(this.sDate).format("DDMMMYYYY");
               var eDateSimple = moment(this.eDate).format("DDMMMYYYY");
-              var aggrString = 'sick-leave-copy/'+this.$store.state.loggedInUser.email+'/'
-                                +sDateSimple+'-to-'+eDateSimple+'.pdf';
-              console.log('aggrstring: ', aggrString);
+              if (this.leaveType == 'SICK') {
+                var aggrString = 'sick-leave-copy/'+this.$store.state.loggedInUser.email+'/'
+                                  +sDateSimple+'-to-'+eDateSimple+'.pdf';
+                console.log('aggrstring: ', aggrString);
+              } else if (this.leaveType == 'COMP') {
+                var aggrString = 'compensation-leave-copy/'+this.$store.state.loggedInUser.email+'/'
+                                  +sDateSimple+'-to-'+eDateSimple+'.pdf';
+              } else if (this.leaveType == 'EXAM') {
+                var aggrString = 'exam-leave-copy/'+this.$store.state.loggedInUser.email+'/'
+                                  +sDateSimple+'-to-'+eDateSimple+'.pdf';
+              } else if (this.leaveType == 'MAT') {
+                var aggrString = 'maternity-leave-copy/'+this.$store.state.loggedInUser.email+'/'
+                                  +sDateSimple+'-to-'+eDateSimple+'.pdf';
+              } else if (this.leaveType == 'PAT') {
+                var aggrString = 'paternity-leave-copy/'+this.$store.state.loggedInUser.email+'/'
+                                  +sDateSimple+'-to-'+eDateSimple+'.pdf';
+              } else if (this.leaveType == 'MAR') {
+                var aggrString = 'marriage-leave-copy/'+this.$store.state.loggedInUser.email+'/'
+                                  +sDateSimple+'-to-'+eDateSimple+'.pdf';
+              }
+
               this.$store.dispatch(action.UPLOAD_SL, [this.imageFile, aggrString])
               .then((res)=>{
                 //response
-                console.log('sick leave copy re-uploaded', res);
+                console.log(aggrString,' re-uploaded', res);
                 this.$router.push({ path: '/leaveRequests' });
               }).catch((error) => {
                 this.$store.commit(mutant.SET_ERROR, error.message);

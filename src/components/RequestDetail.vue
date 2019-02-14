@@ -59,9 +59,11 @@
              :readonly = "true"
         box>
           </v-text-field>
-          <v-btn small v-if="this.convertLeaveType === 'Sick'"
+          <v-btn small v-if="['Sick','Examination Leave',
+          'Compensation','Maternity Leave','Paternity Leave',
+          'Marriage Leave'].includes(this.convertLeaveType)"
             color="green"
-            @click.stop="downloadAttachment" > Download sick leave scan copy
+            @click.stop="downloadAttachment" > Download proof scan copy
           </v-btn>
 			</v-flex>
 			<v-flex xs6>
@@ -166,6 +168,13 @@ export default {
 				{key: 'Sick', val: 'SICK'},
         {key: 'Birthday Leave', val: 'BL'},
         {key: 'No Pay', val: 'NP'},
+        {key: 'Examination Leave', val: 'EXAM'},
+        {key: 'Maternity Leave', val: 'MAT'},
+        {key: 'Paternity Leave', val: 'PAT'},
+        {key: 'Marriage Leave', val: 'MAR'},
+        {key: 'Jury', val: 'JURY'},
+        {key: 'Compassionate Leave', val: 'COMPA'},
+        {key: 'Others', val: 'OTHER'},
         ],
 			drawer: false,
 			request: '',	// CalendarEvent object
@@ -268,8 +277,27 @@ export default {
 
       var startDateSimple = moment(this.request.startDate.toDate()).format("DDMMMYYYY");
       var endDateSimple = moment(this.request.endDate.toDate()).format("DDMMMYYYY");
-      var aggrString = 'sick-leave-copy/'+this.request.requestor+'/'
-                        +startDateSimple+'-to-'+endDateSimple+'.pdf'
+      //console.log(this.request.leaveType, this.request.requestor,startDateSimple,endDateSimple);
+      if (this.request.leaveType == 'SICK') {
+        var aggrString = 'sick-leave-copy/'+this.request.requestor+'/'
+                          +startDateSimple+'-to-'+endDateSimple+'.pdf';
+        console.log('aggrstring: ', aggrString);
+      } else if (this.request.leaveType == 'COMP') {
+        var aggrString = 'compensation-leave-copy/'+this.request.requestor+'/'
+                          +startDateSimple+'-to-'+endDateSimple+'.pdf';
+      } else if (this.request.leaveType == 'EXAM') {
+        var aggrString = 'exam-leave-copy/'+this.request.requestor+'/'
+                          +startDateSimple+'-to-'+endDateSimple+'.pdf';
+      } else if (this.request.leaveType == 'MAT') {
+        var aggrString = 'maternity-leave-copy/'+this.request.requestor+'/'
+                          +startDateSimple+'-to-'+endDateSimple+'.pdf';
+      } else if (this.request.leaveType == 'PAT') {
+        var aggrString = 'paternity-leave-copy/'+this.request.requestor+'/'
+                          +startDateSimple+'-to-'+endDateSimple+'.pdf';
+      } else if (this.request.leaveType == 'MAR') {
+        var aggrString = 'marriage-leave-copy/'+this.request.requestor+'/'
+                          +startDateSimple+'-to-'+endDateSimple+'.pdf';
+      }
       //console.log("sdate: ", startDateSimple);
       console.log('downloading: ', aggrString);
       firebase.storage().ref().child(aggrString)

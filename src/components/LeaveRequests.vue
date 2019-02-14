@@ -236,12 +236,30 @@
             this.getEvents(Constants.PENDING);
           })
           .then(() => {
-            if (item.leaveType == 'SICK') {
-              var aggrString = "sick-leave-copy/"+ this.userEmail + "/" + moment(item.startDate).format("DDMMMYYYY")
-+ "-to-" + moment(item.endDate).format("DDMMMYYYY") +".pdf";
+            if (['SICK','COMP','EXAM','MAT','PAT','MAR'].includes(item.leaveType)) {
+              if (item.leaveType == 'SICK') {
+                var aggrString = "sick-leave-copy/"+ this.userEmail + "/" + moment(item.startDate).format("DDMMMYYYY")
+                + "-to-" + moment(item.endDate).format("DDMMMYYYY") +".pdf";
+              } else if (item.leaveType == 'COMP') {
+                var aggrString = "compensation-leave-copy/"+ this.userEmail + "/" + moment(item.startDate).format("DDMMMYYYY")
+                + "-to-" + moment(item.endDate).format("DDMMMYYYY") +".pdf";
+              } else if (item.leaveType == 'EXAM') {
+                var aggrString = "exam-leave-copy/"+ this.userEmail + "/" + moment(item.startDate).format("DDMMMYYYY")
+                + "-to-" + moment(item.endDate).format("DDMMMYYYY") +".pdf";
+              } else if (item.leaveType == 'MAT') {
+                var aggrString = "maternity-leave-copy/"+ this.userEmail + "/" + moment(item.startDate).format("DDMMMYYYY")
+                + "-to-" + moment(item.endDate).format("DDMMMYYYY") +".pdf";
+              } else if (item.leaveType == 'PAT') {
+                var aggrString = "paternity-leave-copy/"+ this.userEmail + "/" + moment(item.startDate).format("DDMMMYYYY")
+                + "-to-" + moment(item.endDate).format("DDMMMYYYY") +".pdf";
+              } else if (item.leaveType == 'MAR') {
+                var aggrString = "marriage-leave-copy/"+ this.userEmail + "/" + moment(item.startDate).format("DDMMMYYYY")
+                + "-to-" + moment(item.endDate).format("DDMMMYYYY") +".pdf";
+              }
+
               this.$store.dispatch(action.DELETE_SL, aggrString)
               .then((res)=> {
-                console.log('the sick leave scan copy is also deleted', res)
+                console.log('the scan copy is also deleted', res)
               }).catch((error) => {
                 console.error('error deleteing doc: ', error);
               });
