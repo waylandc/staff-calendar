@@ -215,9 +215,15 @@
           events.forEach((entry)=> {
             var s = entry.startDate.startOf('day'); //this entry's start date
             var e = entry.endDate.startOf('day');
+            var dif ='';
+            if (entry.halfDay != 'Full') {
+              dif = 0.5
+            } else {
+              dif = s.businessDiff(e) + 1;
+            }
             //*** note this approvedAnn and approvedCarry will exclude public holiday and weekend(TODO)
             if (entry.leaveType == 'ANN') {
-              this.approvedAnn += s.businessDiff(e) + 1;
+              this.approvedAnn += dif;
               var publicHolidayExclusion = 0
               var index, len;
               for (index = 0, len = this.holidays.length; index < len; ++index) {
@@ -227,8 +233,9 @@
                   }
                 }
               this.approvedAnn -= publicHolidayExclusion;
+
             } else if (entry.leaveType == 'CO') {
-              this.approvedCo += s.businessDiff(e) + 1;
+              this.approvedCo += dif;
               var publicHolidayExclusion = 0
               var index, len;
               for (index = 0, len = this.holidays.length; index < len; ++index) {
@@ -239,13 +246,13 @@
                 }
               this.approvedCo -= publicHolidayExclusion;
             } else if (entry.leaveType == 'COMP') {
-              this.approvedComp += s.businessDiff(e) + 1;
+              this.approvedComp += dif;
             } else if (entry.leaveType == 'SICK') {
-              this.approvedSick += s.businessDiff(e) + 1;
+              this.approvedSick += dif;
             } else if (entry.leaveType == 'BL') {
-              this.approvedBirth += s.businessDiff(e) + 1;
+              this.approvedBirth += dif;
             } else if (entry.leaveType == 'NP') {
-              this.approvedNoPay += s.businessDiff(e) + 1;
+              this.approvedNoPay += dif;
             }
 
           })

@@ -138,13 +138,29 @@
         console.log('Error getting document: ', error);
       });
 
-      this.getApprovedHolidays(this.$store.state.loggedInUser);
+      this.getPublicHolidays();
     },
     methods: {
       dismissClicked() {
         this.successMessage = '';
         this.saved = false;
       },
+
+      getPublicHolidays() {
+        this.$store.dispatch(action.GET_HOLIDAYS,
+          { startDate: moment().subtract(1, 'y'), endDate: moment().add(1, 'y') })
+          .then(holidays => {
+            this.holidays = holidays;
+            console.log('holidays,', this.holidays);
+          })
+          .catch((err) => {
+            this.$store.commit(mutant.SET_ERROR, err.message);
+          })
+          .then(() => {
+            this.getApprovedHolidays(this.$store.state.loggedInUser);
+          })
+      },
+
       getApprovedHolidays(target) {
         //console.log('in getApprovedHolidays()', target);
         this.$store.dispatch(action.GET_EVENTS,
@@ -157,21 +173,45 @@
           //this.pendingRequests = events;
           console.log('the email: ',target.email,'list out the requests', events);
           events.forEach((entry)=> {
-            var s = entry.startDate; //this entry's start date
-            var e = entry.endDate;
+            var s = entry.startDate.startOf('day'); //this entry's start date
+            var e = entry.endDate.startOf('day');
+            var dif = '';
+            if (entry.halfDay != 'Full') {
+              dif = 0.5
+            } else {
+              dif = s.businessDiff(e) + 1;
+            }
             if (entry.leaveType == 'ANN') {
-              this.approvedAnn += e.diff(s, 'days') + 1;
-              //console.log('target.approvedAnn, ', target.approvedAnn);
+              this.approvedAnn += dif;
+              var publicHolidayExclusion = 0
+              var index, len;
+              for (index = 0, len = this.holidays.length; index < len; ++index) {
+                  let h = this.holidays[index];
+                  if (h.startDate.startOf('day').isBetween(s, e, null, '[]')) {
+                    publicHolidayExclusion += h.startDate.diff(h.endDate, 'days') + 1;
+                  }
+                }
+              this.approvedAnn -= publicHolidayExclusion;
+              console.log('target.approvedAnn, ', this.approvedAnn);
             } else if (entry.leaveType == 'CO') {
-              this.approvedCo += e.diff(s, 'days') + 1;
+              this.approvedCo += dif;
+              var publicHolidayExclusion = 0
+              var index, len;
+              for (index = 0, len = this.holidays.length; index < len; ++index) {
+                  let h = this.holidays[index];
+                  if (h.startDate.startOf('day').isBetween(s, e, null, '[]')) {
+                    publicHolidayExclusion += h.startDate.diff(h.endDate, 'days') + 1;
+                  }
+                }
+              this.approvedCo -= publicHolidayExclusion;
             } else if (entry.leaveType == 'COMP') {
-              this.approvedComp += e.diff(s, 'days') + 1;
+              this.approvedComp += dif;
             } else if (entry.leaveType == 'SICK') {
-              this.approvedSick += e.diff(s, 'days') + 1;
+              this.approvedSick += dif;
             } else if (entry.leaveType == 'BL') {
-              this.approvedBirth += e.diff(s, 'days') + 1;
+              this.approvedBirth += dif;
             } else if (entry.leaveType == 'NP') {
-              this.approvedNoPay += e.diff(s, 'days') + 1;
+              this.approvedNoPay += dif;
             }
 
           })

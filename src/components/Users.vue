@@ -53,6 +53,8 @@
         * apvd = approved
         <br/>
         * rmng = remaining
+        <br/>
+        * chances are the decimals in strange form -- float problem
       </v-flex>
     </v-layout>
   </v-container>
@@ -243,7 +245,11 @@ export default {
           var e = entry.endDate.startOf('day');
           //*** note this approvedAnn and approvedCarry will exclude public holiday and weekend(TODO)
           if (entry.leaveType == 'ANN') {
-            target.approvedAnn += s.businessDiff(e) + 1;
+            if (entry.halfDay != 'Full') {
+              target.approvedAnn += 0.5;
+            } else {
+              target.approvedAnn += s.businessDiff(e) + 1;
+            }
             //console.log('approvedAnn = ', target.approvedAnn);
             var publicHolidayExclusion = 0
             var index, len;
@@ -258,7 +264,11 @@ export default {
             //console.log('no. of days public holidays exluded', publicHolidayExclusion)
             target.approvedAnn -= publicHolidayExclusion;
           } else if (entry.leaveType == 'CO') {
-            target.approvedCarry += s.businessDiff(e) + 1;
+            if (entry.halfDay != 'Full') {
+              target.approvedCarry += 0.5;
+            } else {
+              target.approvedCarry += s.businessDiff(e) + 1;
+            }
             var publicHolidayExclusion = 0
             var index, len;
             for (index = 0, len = this.holidays.length; index < len; ++index) {

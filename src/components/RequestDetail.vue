@@ -402,23 +402,17 @@ export default {
         events.forEach((entry)=> {
           var s = entry.startDate.startOf('day'); //this entry's start date
           var e = entry.endDate.startOf('day');
-          if (entry.leaveType == 'ANN') {
-          // get public holidays between the requested start and end date
-          // to exclude from the approved leave requests
-            var publicHolidayExclusion = 0
-            var index, len;
-            for (index = 0, len = this.holidays.length; index < len; ++index) {
-                let h = this.holidays[index];
-                if (h.startDate.startOf('day').isBetween(s, e, null, '[]')) {
-                  publicHolidayExclusion += h.startDate.diff(h.endDate, 'days') + 1;
-                }
+          //for halfdays
+          if (entry.halfDay != 'Full') {
+            if (entry.leaveType == 'ANN') {
+              this.approvedAnn += 0.5;
+            } else if (entry.leaveType == 'CO') {
+              this.approvedCo += 0.5;
             }
-            //console.log('no. of days public holidays excluded', publicHolidayExclusion);
-            //console.log(a,b);
-            this.approvedAnn += s.businessDiff(e) + 1 - publicHolidayExclusion;
-            //console.log('this.approvedAnn, ', this.approvedAnn);
-          } else if (entry.leaveType == 'CO') {
+          } else { //for full days
+            if (entry.leaveType == 'ANN') {
             // get public holidays between the requested start and end date
+            // to exclude from the approved leave requests
               var publicHolidayExclusion = 0
               var index, len;
               for (index = 0, len = this.holidays.length; index < len; ++index) {
@@ -427,9 +421,27 @@ export default {
                     publicHolidayExclusion += h.startDate.diff(h.endDate, 'days') + 1;
                   }
               }
-            console.log('no. of days public holidays excluded', publicHolidayExclusion);
-            this.approvedCo += s.businessDiff(e) + 1 - publicHolidayExclusion;
+              //console.log('no. of days public holidays excluded', publicHolidayExclusion);
+              //console.log(a,b);
+              this.approvedAnn += s.businessDiff(e) + 1 - publicHolidayExclusion;
+              //console.log('this.approvedAnn, ', this.approvedAnn);
+            } else if (entry.leaveType == 'CO') {
+              // get public holidays between the requested start and end date
+                var publicHolidayExclusion = 0
+                var index, len;
+                for (index = 0, len = this.holidays.length; index < len; ++index) {
+                    let h = this.holidays[index];
+                    if (h.startDate.startOf('day').isBetween(s, e, null, '[]')) {
+                      publicHolidayExclusion += h.startDate.diff(h.endDate, 'days') + 1;
+                    }
+                }
+              console.log('no. of days public holidays excluded', publicHolidayExclusion);
+              this.approvedCo += s.businessDiff(e) + 1 - publicHolidayExclusion;
+            }
           }
+
+
+
         })
       })
       .catch((error) => {
@@ -439,50 +451,72 @@ export default {
     },
     validateDate() {
       console.log('in validateDate()')
-      if (this.request.leaveType == 'ANN') {
-        var a = moment(this.request.startDate.toDate()).startOf('day');
-        var b = moment(this.request.endDate.toDate()).startOf('day');
-        // get public holidays between the requested start and end date
-        // to exclude from this leave request
-        var publicHolidayExclusion = 0
-        var index, len;
-        for (index = 0, len = this.holidays.length; index < len; ++index) {
-            //console.log(this.holidays[index]);
-            //console.log(this.holidays[index].startDate.diff(this.holidays[index].endDate, 'days'));
-            let h = this.holidays[index];
-            //console.log(h.startDate, a, b);
-            //console.log(h.startDate.isBetween(a, b, null, '[]'));
-            //***assumes each public holiday has duration 1 only
-            if (h.startDate.startOf('day').isBetween(a, b, null, '[]')) {
-              publicHolidayExclusion += h.startDate.diff(h.endDate, 'days') + 1;
-            }
+      //for halfdays
+      if (this.request.halfDay != 'Full') {
+        if (this.request.leaveType == 'ANN') {
+          var a = moment(this.request.startDate.toDate()).startOf('day');
+          var b = moment(this.request.endDate.toDate()).startOf('day');
+          //deal with floats
+          if (5 > Math.round((this.userDetails.daysAnnualLeave - this.approvedAnn)*10)) {
+            return false
+          }
+        } else if (this.request.leaveType == 'CO') {
+          var a = moment(this.request.startDate.toDate()).startOf('day');
+          var b = moment(this.request.endDate.toDate()).startOf('day');
+          //deal with floats
+          if (5 > Math.round((this.userDetails.daysCarryOver - this.approvedCo)*10)) {
+            return false
+          }
         }
-        console.log('no. of days public holidays excluded', publicHolidayExclusion);
-        //console.log(a,b);
-        //console.log(a.businessDiff(b));
-        //console.log('remaining should be = ',this.userDetails.daysCarryOver, '-', this.approvedCo, '+', publicHolidayExclusion);
-        if (a.businessDiff(b) + 1 - publicHolidayExclusion > this.userDetails.daysCarryOver - this.approvedCo) {
-          return false;
-        }
-      } else if (this.request.leaveType == 'CO') {
+      } else { //for fulldays
+        if (this.request.leaveType == 'ANN') {
           var a = moment(this.request.startDate.toDate()).startOf('day');
           var b = moment(this.request.endDate.toDate()).startOf('day');
           // get public holidays between the requested start and end date
+          // to exclude from this leave request
           var publicHolidayExclusion = 0
           var index, len;
           for (index = 0, len = this.holidays.length; index < len; ++index) {
+              //console.log(this.holidays[index]);
+              //console.log(this.holidays[index].startDate.diff(this.holidays[index].endDate, 'days'));
               let h = this.holidays[index];
+              //console.log(h.startDate, a, b);
+              //console.log(h.startDate.isBetween(a, b, null, '[]'));
+              //***assumes each public holiday has duration 1 only
               if (h.startDate.startOf('day').isBetween(a, b, null, '[]')) {
                 publicHolidayExclusion += h.startDate.diff(h.endDate, 'days') + 1;
               }
           }
           console.log('no. of days public holidays excluded', publicHolidayExclusion);
           //console.log(a,b);
-          console.log('remaining should be = ',this.userDetails.daysCarryOver, '-', this.approvedCo, '+', publicHolidayExclusion);
-          if (a.businessDiff(b) + 1 - publicHolidayExclusion > this.userDetails.daysCarryOver - this.approvedCo) {
+          //console.log(a.businessDiff(b));
+          //console.log('remaining should be = ',this.userDetails.daysCarryOver, '-', this.approvedCo, '+', publicHolidayExclusion);
+          //deal with floats
+          if ((a.businessDiff(b) + 1 - publicHolidayExclusion)*10 > Math.round((this.userDetails.daysAnnualLeave - this.approvedAnn)*10) {
             return false;
           }
-        }
+        } else if (this.request.leaveType == 'CO') {
+            var a = moment(this.request.startDate.toDate()).startOf('day');
+            var b = moment(this.request.endDate.toDate()).startOf('day');
+            // get public holidays between the requested start and end date
+            var publicHolidayExclusion = 0
+            var index, len;
+            for (index = 0, len = this.holidays.length; index < len; ++index) {
+                let h = this.holidays[index];
+                if (h.startDate.startOf('day').isBetween(a, b, null, '[]')) {
+                  publicHolidayExclusion += h.startDate.diff(h.endDate, 'days') + 1;
+                }
+            }
+            console.log('no. of days public holidays excluded', publicHolidayExclusion);
+            //console.log(a,b);
+            console.log('remaining should be = ',this.userDetails.daysCarryOver, '-', this.approvedCo, '+', publicHolidayExclusion);
+            //deal with floats
+            if ((a.businessDiff(b) + 1 - publicHolidayExclusion)*10 > Math.round(this.userDetails.daysCarryOver - this.approvedCo)*10) {
+              return false;
+            }
+          }
+      }
+
       return true;
 
     },

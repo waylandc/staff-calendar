@@ -341,6 +341,14 @@
           return false;
         }
 
+        if (this.halfDay != 'Full') {
+          if (moment(this.sDate).dayOfYear()
+          - moment(this.eDate).dayOfYear() != 0 ) {
+            this.$store.commit(mutant.SET_ERROR, 'A half day leave should be within a day');
+            return false;
+          }
+        }
+
         //start and end of request must not be weekend
         if ((moment(this.sDate).isBusinessDay() && moment(this.eDate).isBusinessDay()) == false) {
           this.$store.commit(mutant.SET_ERROR, 'Leave should not be starting or ending on weekend');
