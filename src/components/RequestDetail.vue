@@ -206,20 +206,6 @@ export default {
 			console.log('error getting document: ', error);
 		}).then(() => {
       this.getRequestorDob(this.request.requestor);
-      if (this.request.firstApprover == this.user.email ||
-      this.request.secondApprover == this.user.email) {
-        if (this.request.leaveType == 'CO' || this.request.leaveType == 'ANN') {
-          this.getPublicHolidays();
-          this.fetchUser();
-        }
-      }
-    }).then(() => {
-      if (this.request.firstApprover == this.user.email ||
-      this.request.secondApprover == this.user.email) {
-        if (this.request.leaveType == 'CO' || this.request.leaveType == 'ANN') {
-          this.getRemainingDays();
-        }
-      }
     })
 	},
 	computed: {
@@ -339,13 +325,17 @@ export default {
          { startDate: moment().subtract(1, 'y'), endDate: moment().add(1, 'y') })
          .then(holidays => {
            this.holidays = holidays;
-           console.log('holidays,', this.holidays)
+           console.log('holidays,', this.holidays);
+           this.fetchUser();
          })
          .catch((err) => {
            this.$store.commit(mutant.SET_ERROR, err.message);
          });
      },
 		 approve() {
+       this.getPublicHolidays();
+		},
+    approveAction(){
       if (this.validateDate() == false) {
         console.log('the request seems exceeded the quota');
         this.$store.commit(mutant.SET_ERROR, 'the request seems exceeded the quota');
@@ -376,7 +366,8 @@ export default {
         this.documentRef.update(o);
         this.$router.push({ path: '/leaveRequests' });
       }
-		},
+    },
+
 		reject() {
 			if (!this.validateRejection()) {
 				this.$store.commit(mutant.SET_ERROR, 'You must include a comment when rejecting');
@@ -450,10 +441,8 @@ export default {
               this.approvedCo += s.businessDiff(e) + 1 - publicHolidayExclusion;
             }
           }
-
-
-
         })
+        this.approveAction();
       })
       .catch((error) => {
         this.$store.commit(mutant.SET_ERROR, error);
@@ -536,6 +525,7 @@ export default {
         .then((user) => {
           console.log('UserDetails loaded, ', user);
           this.userDetails = user;
+          this.getRemainingDays();
         })
         .catch((error) => {
           console.log(error);
