@@ -86,7 +86,7 @@ export default {
           if (e.leaveType == 'ANN') {
             ce2.color = 'purple';
           } else if (e.leaveType == 'COMP') {
-            ce2.color = 'yellow';
+            ce2.color = 'Gold';
           } else if (e.leaveType == 'CO') {
             ce2.color = 'pink';
           } else if (e.leaveType == 'SICK') {
