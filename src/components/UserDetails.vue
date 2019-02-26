@@ -132,6 +132,13 @@
         approvedSick: 0,
         approvedBirth: 0,
         approvedNoPay: 0,
+        approvedExam: 0,
+        approvedMat: 0,
+        approvedPat: 0,
+        approvedMar: 0,
+        approvedJury: 0,
+        approvedCompa: 0,
+
       }
     },
     created() {
@@ -220,10 +227,6 @@
               dif = 0.5
             } else {
               dif = s.businessDiff(e) + 1;
-            }
-            //*** note this approvedAnn and approvedCarry will exclude public holiday and weekend(TODO)
-            if (entry.leaveType == 'ANN') {
-              this.approvedAnn += dif;
               var publicHolidayExclusion = 0
               var index, len;
               for (index = 0, len = this.holidays.length; index < len; ++index) {
@@ -232,29 +235,33 @@
                     publicHolidayExclusion += h.startDate.diff(h.endDate, 'days') + 1;
                   }
                 }
-              this.approvedAnn -= publicHolidayExclusion;
+              if (entry.leaveType == 'ANN') {
+                this.approvedAnn += dif - publicHolidayExclusion;
 
-            } else if (entry.leaveType == 'CO') {
-              this.approvedCo += dif;
-              var publicHolidayExclusion = 0
-              var index, len;
-              for (index = 0, len = this.holidays.length; index < len; ++index) {
-                  let h = this.holidays[index];
-                  if (h.startDate.startOf('day').isBetween(s, e, null, '[]')) {
-                    publicHolidayExclusion += h.startDate.diff(h.endDate, 'days') + 1;
-                  }
-                }
-              this.approvedCo -= publicHolidayExclusion;
-            } else if (entry.leaveType == 'COMP') {
-              this.approvedComp += dif;
-            } else if (entry.leaveType == 'SICK') {
-              this.approvedSick += dif;
-            } else if (entry.leaveType == 'BL') {
-              this.approvedBirth += dif;
-            } else if (entry.leaveType == 'NP') {
-              this.approvedNoPay += dif;
+              } else if (entry.leaveType == 'CO') {
+                this.approvedCo += dif - publicHolidayExclusion;
+              } else if (entry.leaveType == 'COMP') {
+                this.approvedComp += dif - publicHolidayExclusion;
+              } else if (entry.leaveType == 'SICK') {
+                this.approvedSick += dif - publicHolidayExclusion;
+              } else if (entry.leaveType == 'BL') {
+                this.approvedBirth += dif - publicHolidayExclusion;
+              } else if (entry.leaveType == 'NP') {
+                this.approvedNoPay += dif - publicHolidayExclusion;
+              } else if (entry.leaveType == 'EXAM') {
+                this.approvedExam += dif - publicHolidayExclusion;
+              } else if (entry.leaveType == 'MAT') {
+                this.approvedMat += dif - publicHolidayExclusion;
+              } else if (entry.leaveType == 'PAT') {
+                this.approvedPat += dif - publicHolidayExclusion;
+              } else if (entry.leaveType == 'MAR') {
+                this.approvedMar += dif - publicHolidayExclusion;
+              } else if (entry.leaveType == 'JURY') {
+                this.approvedJury += dif - publicHolidayExclusion;
+              } else if (entry.leaveType == 'COMPA') {
+                this.approvedCompa += dif - publicHolidayExclusion;
+              }
             }
-
           })
         })
         .catch((error) => {

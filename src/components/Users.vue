@@ -22,8 +22,6 @@
                 <td :style="{backgroundColor: 'grey'}"
                 class='mdl-data-table__cell--non-numeric'>{{ props.item.daysCarryOver - props.item.approvedCarry }}</td>
 
-                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.approvedComp }}</td>
-                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.approvedSick }}</td>
 
                 <td class='mdl-data-table__cell--non-numeric'>
                   <v-icon
@@ -32,7 +30,9 @@
                   </v-icon>
                 </td>
 
-                <!--<td class='mdl-data-table__cell--non-numeric'>1</td>
+                <!--<td class='mdl-data-table__cell--non-numeric'>{{ props.item.approvedSick }}</td>
+                <td class='mdl-data-table__cell--non-numeric'>{{ props.item.approvedComp }}</td>
+                <td class='mdl-data-table__cell--non-numeric'>1</td>
                 <td :style="{backgroundColor: 'grey'}"
                 class='mdl-data-table__cell--non-numeric'>{{ props.item.approvedBirthday }}</td>
 
@@ -91,34 +91,22 @@ export default {
           width: '100px',
         },
         {
-          text: '(rmng)',
+          text: 'remaining',
           align: 'left',
           sortable: false,
           value: 'remainingAlDays',
         },
         {
-          text: 'Carry',
+          text: 'Carry Over',
           align: 'left',
           sortable: false,
           value: 'carryOver',
         },
         {
-          text: '(rmng)',
+          text: 'remaining',
           align: 'left',
           sortable: false,
-          value: 'remainingCoDays',
-        },
-        {
-          text: 'Apvd Comp',
-          align: 'left',
-          sortable: false,
-          value: 'approvedCompDays',
-        },
-        {
-          text: 'Apvd Sick',
-          align: 'left',
-          sortable: false,
-          value: 'approvedSickDays',
+          value: 'remainingComp',
         },
         {
           text: 'More Details',
@@ -243,50 +231,91 @@ export default {
         events.forEach((entry)=> {
           var s = entry.startDate.startOf('day'); //this entry's start date
           var e = entry.endDate.startOf('day');
-          //*** note this approvedAnn and approvedCarry will exclude public holiday and weekend(TODO)
+          var publicHolidayExclusion = 0
+          var index, len;
+          for (index = 0, len = this.holidays.length; index < len; ++index) {
+              let h = this.holidays[index];
+              //console.log(h.startDate, s, e);
+              //console.log(h.startDate.isBetween(s, e, null, '[]'));
+              if (h.startDate.startOf('day').isBetween(s, e, null, '[]')) {
+                publicHolidayExclusion += h.startDate.diff(h.endDate, 'days') + 1;
+              }
+            }
+          //*** note this approvedAnn and approvedCarry will exclude public holiday and weekend
           if (entry.leaveType == 'ANN') {
             if (entry.halfDay != 'Full') {
               target.approvedAnn += 0.5;
             } else {
               target.approvedAnn += s.businessDiff(e) + 1;
-            }
+
             //console.log('approvedAnn = ', target.approvedAnn);
-            var publicHolidayExclusion = 0
-            var index, len;
-            for (index = 0, len = this.holidays.length; index < len; ++index) {
-                let h = this.holidays[index];
-                //console.log(h.startDate, s, e);
-                //console.log(h.startDate.isBetween(s, e, null, '[]'));
-                if (h.startDate.startOf('day').isBetween(s, e, null, '[]')) {
-                  publicHolidayExclusion += h.startDate.diff(h.endDate, 'days') + 1;
-                }
-              }
+
             //console.log('no. of days public holidays exluded', publicHolidayExclusion)
             target.approvedAnn -= publicHolidayExclusion;
+            }
           } else if (entry.leaveType == 'CO') {
             if (entry.halfDay != 'Full') {
               target.approvedCarry += 0.5;
             } else {
               target.approvedCarry += s.businessDiff(e) + 1;
+              target.approvedCarry -= publicHolidayExclusion;
             }
-            var publicHolidayExclusion = 0
-            var index, len;
-            for (index = 0, len = this.holidays.length; index < len; ++index) {
-                let h = this.holidays[index];
-                if (h.startDate.startOf('day').isBetween(s, e, null, '[]')) {
-                  publicHolidayExclusion += h.startDate.diff(h.endDate, 'days') + 1;
-                }
-              }
-            target.approvedCarry -= publicHolidayExclusion;
           } else if (entry.leaveType == 'COMP') {
-            target.approvedComp += s.businessDiff(e) + 1;
-          } else if (entry.leaveType == 'SICK') {
-            target.approvedSick += s.businessDiff(e) + 1;
+            if (entry.halfDay != 'Full') {
+              target.approvedComp += 0.5;
+            } else {
+              target.approvedComp += s.businessDiff(e) + 1;
+              target.approvedComp -= publicHolidayExclusion;
+            }
+          } /*else if (entry.leaveType == 'SICK') {
+            if (entry.halfDay != 'Full') {
+              target.approvedSick += 0.5;
+            } else {
+              target.approvedSick += s.businessDiff(e) + 1;
+              target.approvedSick -= publicHolidayExclusion;
+            }
           } else if (entry.leaveType == 'BL') {
-            target.approvedBirthday += s.businessDiff(e) + 1;
+            if (entry.halfDay != 'Full') {
+              target.approvedBirthday += 0.5;
+            } else {
+              target.approvedBirthday += s.businessDiff(e) + 1;
+              target.approvedBirthday -= publicHolidayExclusion;
+            }
           } else if (entry.leaveType == 'NP') {
-            target.approvedNoPay += s.businessDiff(e) + 1;
-          }
+            if (entry.halfDay != 'Full') {
+              target.approvedNoPay += 0.5;
+            } else {
+              target.approvedNoPay += s.businessDiff(e) + 1;
+              target.approvedNoPay -= publicHolidayExclusion;
+            }
+          } else if (entry.leaveType == 'EXAM') {
+            if (entry.halfDay != 'Full') {
+              target.approvedExam += 0.5;
+            } else {
+              target.approvedExam += s.businessDiff(e) + 1;
+              target.approvedExam -= publicHolidayExclusion;
+            }
+          } else if (entry.leaveType == 'MAT') {
+            if (entry.halfDay != 'Full') {
+              target.approvedMat += 0.5;
+            } else {
+              target.approvedMat += s.businessDiff(e) + 1;
+              target.approvedMat -= publicHolidayExclusion;
+            }
+          } else if (entry.leaveType == 'PAT') {
+            if (entry.halfDay != 'Full') {
+              target.approvedPat += 0.5;
+            } else {
+              target.approvedPat += s.businessDiff(e) + 1;
+              target.approvedPat -= publicHolidayExclusion;
+            }
+          } else if (entry.leaveType == 'MAR') {
+            target.approvedMar += s.businessDiff(e) + 1;
+          } else if (entry.leaveType == 'JURY') {
+            target.approvedJury += s.businessDiff(e) + 1;
+          } else if (entry.leaveType == 'COMPA') {
+            target.approvedCompa += s.businessDiff(e) + 1;
+          }*/
 
         })
         //console.log(target.email, target.approvedAnn);
