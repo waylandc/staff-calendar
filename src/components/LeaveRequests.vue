@@ -126,7 +126,7 @@
             value: 'halfDay',
           },
           {
-            text: 'Details/Edit/Approve',
+            text: 'Details/Approve',
             align: 'left',
             sortable: false,
           },
