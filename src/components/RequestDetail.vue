@@ -117,14 +117,6 @@
 					   box>
 			    </v-text-field>
 			</v-flex>
-      <v-flex v-if="canEdit" class="text-xs-center" mt-5>
-          <v-btn
-        color="brown"
-              @click.stop="editProperty"
-          >
-        Edit
-          </v-btn>
-      </v-flex>
       <v-flex v-if="canApproveReject" class="text-xs-center" mt-5>
 			    <v-btn
 				color="approve"
@@ -240,12 +232,7 @@ export default {
 		loading() {
 			return this.$store.state.loading;
 		},
-    canEdit() {
-      // check is owner of the request, then check state of the request
-      return ((this.request.requestor == this.$store.state.loggedInUser.email) &&
-        this.request.firstStatus == 0 && this.request.secondStatus == 0
-      );
-    },
+
 		canApproveReject() {
 			// check loggedInUser is approver first, then check state of this request
 			return (this.$store.state.loggedInUser.isApprover &&
@@ -328,10 +315,6 @@ export default {
         console.log(error);
       });
     },
-		 editProperty() {
-		   console.log('calling editRequest')
-		   this.$router.push({ path: `/leaveRequests/edit/${this.propId}` });
-		 },
      getRequestorDob(person) {
       console.log('start to find dob of ', person);
       const docRef = db.collection('users').where('email', '==', person);
