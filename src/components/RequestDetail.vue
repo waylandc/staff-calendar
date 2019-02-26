@@ -59,9 +59,11 @@
              :readonly = "true"
         box>
           </v-text-field>
-          <v-btn small v-if="this.convertLeaveType === 'Sick'"
+          <v-btn small v-if="['Sick','Examination Leave',
+          'Compensation','Maternity Leave','Paternity Leave',
+          'Marriage Leave'].includes(this.convertLeaveType)"
             color="green"
-            @click.stop="downloadAttachment" > Download sick leave scan copy
+            @click.stop="downloadAttachment" > Download proof scan copy
           </v-btn>
 			</v-flex>
 			<v-flex xs6>
@@ -115,14 +117,6 @@
 					   box>
 			    </v-text-field>
 			</v-flex>
-      <v-flex v-if="canEdit" class="text-xs-center" mt-5>
-          <v-btn
-        color="brown"
-              @click.stop="editProperty"
-          >
-        Edit
-          </v-btn>
-      </v-flex>
       <v-flex v-if="canApproveReject" class="text-xs-center" mt-5>
 			    <v-btn
 				color="approve"
@@ -166,6 +160,13 @@ export default {
 				{key: 'Sick', val: 'SICK'},
         {key: 'Birthday Leave', val: 'BL'},
         {key: 'No Pay', val: 'NP'},
+        {key: 'Examination Leave', val: 'EXAM'},
+        {key: 'Maternity Leave', val: 'MAT'},
+        {key: 'Paternity Leave', val: 'PAT'},
+        {key: 'Marriage Leave', val: 'MAR'},
+        {key: 'Jury', val: 'JURY'},
+        {key: 'Compassionate Leave', val: 'COMPA'},
+        {key: 'Others', val: 'OTHER'},
         ],
 			drawer: false,
 			request: '',	// CalendarEvent object
@@ -205,20 +206,6 @@ export default {
 			console.log('error getting document: ', error);
 		}).then(() => {
       this.getRequestorDob(this.request.requestor);
-      if (this.request.firstApprover == this.user.email ||
-      this.request.secondApprover == this.user.email) {
-        if (this.request.leaveType == 'CO' || this.request.leaveType == 'ANN') {
-          this.getPublicHolidays();
-          this.fetchUser();
-        }
-      }
-    }).then(() => {
-      if (this.request.firstApprover == this.user.email ||
-      this.request.secondApprover == this.user.email) {
-        if (this.request.leaveType == 'CO' || this.request.leaveType == 'ANN') {
-          this.getRemainingDays();
-        }
-      }
     })
 	},
 	computed: {
@@ -231,12 +218,7 @@ export default {
 		loading() {
 			return this.$store.state.loading;
 		},
-    canEdit() {
-      // check is owner of the request, then check state of the request
-      return ((this.request.requestor == this.$store.state.loggedInUser.email) &&
-        this.request.firstStatus == 0 && this.request.secondStatus == 0
-      );
-    },
+
 		canApproveReject() {
 			// check loggedInUser is approver first, then check state of this request
 			return (this.$store.state.loggedInUser.isApprover &&
@@ -268,8 +250,27 @@ export default {
 
       var startDateSimple = moment(this.request.startDate.toDate()).format("DDMMMYYYY");
       var endDateSimple = moment(this.request.endDate.toDate()).format("DDMMMYYYY");
-      var aggrString = 'sick-leave-copy/'+this.request.requestor+'/'
-                        +startDateSimple+'-to-'+endDateSimple+'.pdf'
+      //console.log(this.request.leaveType, this.request.requestor,startDateSimple,endDateSimple);
+      if (this.request.leaveType == 'SICK') {
+        var aggrString = 'sick-leave-copy/'+this.request.requestor+'/'
+                          +startDateSimple+'-to-'+endDateSimple+'.pdf';
+        console.log('aggrstring: ', aggrString);
+      } else if (this.request.leaveType == 'COMP') {
+        var aggrString = 'compensation-leave-copy/'+this.request.requestor+'/'
+                          +startDateSimple+'-to-'+endDateSimple+'.pdf';
+      } else if (this.request.leaveType == 'EXAM') {
+        var aggrString = 'exam-leave-copy/'+this.request.requestor+'/'
+                          +startDateSimple+'-to-'+endDateSimple+'.pdf';
+      } else if (this.request.leaveType == 'MAT') {
+        var aggrString = 'maternity-leave-copy/'+this.request.requestor+'/'
+                          +startDateSimple+'-to-'+endDateSimple+'.pdf';
+      } else if (this.request.leaveType == 'PAT') {
+        var aggrString = 'paternity-leave-copy/'+this.request.requestor+'/'
+                          +startDateSimple+'-to-'+endDateSimple+'.pdf';
+      } else if (this.request.leaveType == 'MAR') {
+        var aggrString = 'marriage-leave-copy/'+this.request.requestor+'/'
+                          +startDateSimple+'-to-'+endDateSimple+'.pdf';
+      }
       //console.log("sdate: ", startDateSimple);
       console.log('downloading: ', aggrString);
       firebase.storage().ref().child(aggrString)
@@ -300,10 +301,6 @@ export default {
         console.log(error);
       });
     },
-		 editProperty() {
-		   console.log('calling editRequest')
-		   this.$router.push({ path: `/leaveRequests/edit/${this.propId}` });
-		 },
      getRequestorDob(person) {
       console.log('start to find dob of ', person);
       const docRef = db.collection('users').where('email', '==', person);
@@ -328,13 +325,17 @@ export default {
          { startDate: moment().subtract(1, 'y'), endDate: moment().add(1, 'y') })
          .then(holidays => {
            this.holidays = holidays;
-           console.log('holidays,', this.holidays)
+           console.log('holidays,', this.holidays);
+           this.fetchUser();
          })
          .catch((err) => {
            this.$store.commit(mutant.SET_ERROR, err.message);
          });
      },
 		 approve() {
+       this.getPublicHolidays();
+		},
+    approveAction(){
       if (this.validateDate() == false) {
         console.log('the request seems exceeded the quota');
         this.$store.commit(mutant.SET_ERROR, 'the request seems exceeded the quota');
@@ -365,7 +366,8 @@ export default {
         this.documentRef.update(o);
         this.$router.push({ path: '/leaveRequests' });
       }
-		},
+    },
+
 		reject() {
 			if (!this.validateRejection()) {
 				this.$store.commit(mutant.SET_ERROR, 'You must include a comment when rejecting');
@@ -439,10 +441,8 @@ export default {
               this.approvedCo += s.businessDiff(e) + 1 - publicHolidayExclusion;
             }
           }
-
-
-
         })
+        this.approveAction();
       })
       .catch((error) => {
         this.$store.commit(mutant.SET_ERROR, error);
@@ -525,6 +525,7 @@ export default {
         .then((user) => {
           console.log('UserDetails loaded, ', user);
           this.userDetails = user;
+          this.getRemainingDays();
         })
         .catch((error) => {
           console.log(error);

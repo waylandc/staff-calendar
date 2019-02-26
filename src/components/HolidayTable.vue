@@ -42,7 +42,7 @@
                 <v-text-field
                   slot='activator'
                   v-model='startDate'
-                  label='Start Date'
+                  label='Date'
                   prepend-icon='event'
                   readonly></v-text-field>
                 <v-date-picker
@@ -51,7 +51,7 @@
                 </v-date-picker>
               </v-menu>
             </v-flex>
-            <v-flex xs6>
+            <!-- <v-flex xs6>
               <v-menu
                 :close-on-content-click="false"
                 v-model="menu2"
@@ -73,6 +73,9 @@
                   @input='menu2 = false'>
                 </v-date-picker>
               </v-menu>
+            </v-flex> -->
+            <v-flex class="text-xs-left">
+              * for multiple-day holidays input them individually
             </v-flex>
             <v-flex class="text-xs-center" mt-5>
               <v-btn
@@ -82,6 +85,7 @@
                 Create Holiday
               </v-btn>
             </v-flex>
+
           </v-layout>
         </v-form>
     </div>
@@ -105,6 +109,7 @@
         </div>
       </v-flex>
     </v-layout>
+
   </v-container>
 </template>
 
@@ -173,7 +178,7 @@ export default {
       const newHoliday = {
         title: this.newTitle,
         startDate: this.sDate,
-        endDate: this.eDate,
+        endDate: this.sDate,
         country: this.newCountry,
       };
       this.$store.dispatch(action.ADD_HOLIDAY, newHoliday)
