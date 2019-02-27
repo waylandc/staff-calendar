@@ -19,9 +19,9 @@
         <br/>
         <b>Carry Over </b><v-icon color='purple accent-1'>event</v-icon>
         <b>Sick </b><v-icon color='light-blue darken-2'>event</v-icon>
-        <b>Birthday </b><v-icon color='lime'>event</v-icon>
-        <br/>
         <b>No Pay </b><v-icon color='orange'>event</v-icon>
+        <br/>
+        <b>Others </b><v-icon color='light-green accent-3'>event</v-icon>
       </v-flex>
     </v-layout>
   </v-container>
@@ -91,10 +91,10 @@ export default {
             ce2.color = 'pink';
           } else if (e.leaveType == 'SICK') {
             ce2.color = 'DodgerBlue';
-          } else if (e.leaveType == 'BL') {
-            ce2.color = 'YellowGreen';
           } else if (e.leaveType == 'NP') {
             ce2.color = 'orange';
+          } else {
+            ce2.color = 'Chartreuse';
           }
           this.events.push(ce2);
         });

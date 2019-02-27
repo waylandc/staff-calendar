@@ -33,7 +33,7 @@
             </v-text-field>
           </v-flex>
           <v-flex xs6>
-            <v-text-field v-model.number='user.daysAnnualLeave - this.approvedAnn' label='Remaining' disabled box>
+            <v-text-field v-model.number='user.daysAnnualLeave - this.approvedAnn' label='Remaining Annual Leave' disabled box>
             </v-text-field>
           </v-flex>
           <v-flex xs6>
@@ -41,7 +41,15 @@
             </v-text-field>
           </v-flex>
           <v-flex xs6>
-            <v-text-field v-model.number='user.daysCarryOver - this.approvedCo' label='Remaining' disabled box>
+            <v-text-field v-model.number='user.daysCarryOver - this.approvedCo' label='Remaining Carry Over' disabled box>
+            </v-text-field>
+          </v-flex>
+          <v-flex xs6>
+            <v-text-field v-model.number='user.daysCompLeave' label='Compensation Leave' :readonly="!this.isAdmin" box>
+            </v-text-field>
+          </v-flex>
+          <v-flex xs6>
+            <v-text-field v-model.number='user.daysCompLeave - this.approvedComp' label='Remaining Compensation Leave' disabled box>
             </v-text-field>
           </v-flex>
           <v-flex xs6>
@@ -53,21 +61,38 @@
             </v-text-field>
           </v-flex>
           <v-flex xs6>
-            <v-text-field v-model.number='this.approvedComp' label='Approved Comp Leave' disabled box>
+            <v-text-field v-model.number='this.approvedSick' label='Approved Sick Leave' disabled box>
             </v-text-field>
           </v-flex>
           <v-flex xs6>
-            <v-text-field v-model.number='this.approvedSick' label='Approved Sick' disabled box>
+            <v-text-field v-model.number='this.approvedNoPay' label='Approved No Pay Leave' disabled box>
             </v-text-field>
           </v-flex>
           <v-flex xs6>
-            <v-text-field v-model.number='this.approvedNoPay' label='Approved No Pay' disabled box>
+            <v-text-field v-model.number='this.approvedExam' label='Approved Examination Leave' disabled box>
             </v-text-field>
           </v-flex>
           <v-flex xs6>
-            <v-text-field disabled box>
+            <v-text-field v-model.number='this.approvedMat' label='Approved Maternity Leave' disabled box>
             </v-text-field>
           </v-flex>
+          <v-flex xs6>
+            <v-text-field v-model.number='this.approvedPat' label='Approved Paternity Leave' disabled box>
+            </v-text-field>
+          </v-flex>
+          <v-flex xs6>
+            <v-text-field v-model.number='this.approvedMar' label='Approved Marriage Leave' disabled box>
+            </v-text-field>
+          </v-flex>
+          <v-flex xs6>
+            <v-text-field v-model.number='this.approvedJury' label='Approved Jury Leave' disabled box>
+            </v-text-field>
+          </v-flex>
+          <v-flex xs6>
+            <v-text-field v-model.number='this.approvedCompa' label='Approved Compassionate Leave' disabled box>
+            </v-text-field>
+          </v-flex>
+
           <v-flex xs6>
             <v-switch
               :label="`Administrator: ${user.isAdmin.toString()}`"
@@ -225,9 +250,10 @@
             var dif ='';
             if (entry.halfDay != 'Full') {
               dif = 0.5
+              var publicHolidayExclusion = 0;
             } else {
               dif = s.businessDiff(e) + 1;
-              var publicHolidayExclusion = 0
+              var publicHolidayExclusion = 0;
               var index, len;
               for (index = 0, len = this.holidays.length; index < len; ++index) {
                   let h = this.holidays[index];
@@ -235,9 +261,10 @@
                     publicHolidayExclusion += h.startDate.diff(h.endDate, 'days') + 1;
                   }
                 }
+              }
+
               if (entry.leaveType == 'ANN') {
                 this.approvedAnn += dif - publicHolidayExclusion;
-
               } else if (entry.leaveType == 'CO') {
                 this.approvedCo += dif - publicHolidayExclusion;
               } else if (entry.leaveType == 'COMP') {
@@ -261,7 +288,7 @@
               } else if (entry.leaveType == 'COMPA') {
                 this.approvedCompa += dif - publicHolidayExclusion;
               }
-            }
+
           })
         })
         .catch((error) => {
