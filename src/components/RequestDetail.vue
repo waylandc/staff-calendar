@@ -174,7 +174,7 @@ export default {
         {key: 'Marriage Leave', val: 'MAR'},
         {key: 'Jury', val: 'JURY'},
         {key: 'Compassionate Leave', val: 'COMPA'},
-        {key: 'Others', val: 'OTHER'},
+
         ],
 			drawer: false,
 			request: '',	// CalendarEvent object

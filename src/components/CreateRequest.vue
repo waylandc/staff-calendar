@@ -163,7 +163,7 @@
           {key: 'Marriage Leave', val: 'MAR'},
           {key: 'Jury', val: 'JURY'},
           {key: 'Compassionate Leave', val: 'COMPA'},
-          {key: 'Others', val: 'OTHER'},
+
           ],
         leaveType: 'ANN',
         duration: ['Full', 'AM', 'PM'],
@@ -343,6 +343,11 @@
 
         if (this.firstApprover === '') {
           this.$store.commit(mutant.SET_ERROR, 'You must specify at least one approver');
+          return false;
+        }
+
+        if (this.firstApprover == this.secondApprover) {
+          this.$store.commit(mutant.SET_ERROR, 'Approvers should be different');
           return false;
         }
 

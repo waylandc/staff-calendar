@@ -12,6 +12,7 @@ const routerOptions = [
   { path: '/', component: 'Landing' },
   { path: '/signin', component: 'Signin' },
   { path: '/register', component: 'Registration' },
+  { path: '/resetPassword', component: 'ResetPassword'},
   { path: '/changePassword', component: 'ChangePassword', meta: { requiresAuth: true } },
   { path: '/home', component: 'Home', meta: { requiresAuth: true } },
   { path: '/users', component: 'Users', meta: { requiresAuth: true , requiresAdmin: true} },
