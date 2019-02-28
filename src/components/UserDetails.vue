@@ -57,7 +57,7 @@
             </v-text-field>
           </v-flex>
           <v-flex xs6>
-            <v-text-field v-model.number='1 - this.approvedBirth' label='Remaining' disabled box>
+            <v-text-field v-model.number='1 - this.approvedBirth' label='Remaining Birthday Leave' disabled box>
             </v-text-field>
           </v-flex>
           <v-flex xs6>
@@ -193,6 +193,11 @@
           })
       },
       save() {
+        if (this.comment == '') {
+          this.$store.commit(mutant.SET_ERROR, 'You must include a comment when updating');
+  				return;
+        }
+        console.log('->', this.user, this.comment, this.$store.state.loggedInUser.email);
         this.$store.dispatch(action.SAVE_USER, {
           user: this.user,
           comment: this.comment,
@@ -243,7 +248,7 @@
         })
         .then((events) => {
           //this.pendingRequests = events;
-          console.log('the email: ',target.email,'list out the requests', events);
+          console.log('the email: ',target,'list out the requests', events);
           events.forEach((entry)=> {
             var s = entry.startDate.startOf('day'); //this entry's start date
             var e = entry.endDate.startOf('day');

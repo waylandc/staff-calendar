@@ -157,7 +157,7 @@
           this.user = createUserModel(doc.data());
           //console.log(this.user);
           this.user.docId = this.userId;
-          this.user.dobstring = moment(this.user.dob, "MMDD").format("ddd MMM D YYYY")
+          this.user.dobstring = moment(this.user.dob, "MMDD").format("ddd MMM D")
           this.loaded = true;
         } else {
           this.$store.commit(mutant.SET_ERROR, 'Error, user does not exist');
