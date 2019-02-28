@@ -16,7 +16,7 @@
             <v-text-field name="lastName" label="Last Name" id="lastName" type="text" v-model="lastName" required></v-text-field>
           </v-flex>
           <v-flex>
-            <v-text-field name="dob" label="Date of Birth (MMDD)" id="dob" type="number" counter="4" v-model="dob" required></v-text-field>
+            <v-text-field name="dob" label="Date of Birth (MMDD)" id="dob" type="text" v-model="dob" required></v-text-field>
           </v-flex>
           <v-flex>
             <v-text-field name="email" label="Email" id="email" type="email" v-model="email" required></v-text-field>
@@ -39,11 +39,12 @@
 <script>
 	import * as mutant from '../store/mutation-types';
 	import * as action from '../store/action-types';
+  import moment from 'moment-business-days';
 
 export default {
   data() {
     // firstName and lastName not used for firebase auth.
-    // TODO we might want to store it somewhere for mmore personalization
+    // TODO we might want to store it somewhere for more personalization
     return {
       firstName: '',
       lastName: '',
@@ -71,8 +72,8 @@ export default {
         this.$store.commit(mutant.SET_ERROR, 'Passwords don\'t match');
         return;
       }
-      if (this.dob.length !== 4) {
-        this.$store.commit(mutant.SET_ERROR, 'DOB should be in DDMM format');
+      if (moment(this.dob, "MMDD").isValid() == false) {
+        this.$store.commit(mutant.SET_ERROR, 'Date of Birth should be in DDMM format');
         return;
       }
       this.$store.dispatch(action.USER_SIGNUP,
