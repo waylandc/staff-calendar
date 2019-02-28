@@ -117,6 +117,14 @@
 					   box>
 			    </v-text-field>
 			</v-flex>
+      <v-flex v-if="this.user.email == this.request.requestor && this.getStatus(this.request.aggregateStatus()) == 'Pending'" class="text-xs-center" mt-5>
+			    <v-btn
+				color="reject"
+				       @click.stop="deleteRequest"
+			    >
+				Delete
+			    </v-btn>
+			</v-flex>
       <v-flex v-if="canApproveReject" class="text-xs-center" mt-5>
 			    <v-btn
 				color="approve"
@@ -206,6 +214,7 @@ export default {
 			console.log('error getting document: ', error);
 		}).then(() => {
       this.getRequestorDob(this.request.requestor);
+      //console.log(this.documentRef);
     })
 	},
 	computed: {
@@ -332,7 +341,55 @@ export default {
            this.$store.commit(mutant.SET_ERROR, err.message);
          });
      },
-		 approve() {
+    deleteRequest() {
+      var item = this.request;
+      console.log('item is ', item);
+      this.$store.dispatch(action.DELETE_REQUEST, this.documentRef.id)
+        .then(() => {
+          this.$router.push({ path: `/leaveRequests` });
+        })
+        .then(() => {
+          var startDateSimple = moment(this.request.startDate.toDate()).format("DDMMMYYYY");
+          var endDateSimple = moment(this.request.endDate.toDate()).format("DDMMMYYYY");
+          if (['SICK','COMP','EXAM','MAT','PAT','MAR'].includes(item.leaveType)) {
+            if (this.request.leaveType == 'SICK') {
+              var aggrString = 'sick-leave-copy/'+this.request.requestor+'/'
+                                +startDateSimple+'-to-'+endDateSimple+'.pdf';
+              console.log('aggrstring: ', aggrString);
+            } else if (this.request.leaveType == 'COMP') {
+              var aggrString = 'compensation-leave-copy/'+this.request.requestor+'/'
+                                +startDateSimple+'-to-'+endDateSimple+'.pdf';
+            } else if (this.request.leaveType == 'EXAM') {
+              var aggrString = 'exam-leave-copy/'+this.request.requestor+'/'
+                                +startDateSimple+'-to-'+endDateSimple+'.pdf';
+            } else if (this.request.leaveType == 'MAT') {
+              var aggrString = 'maternity-leave-copy/'+this.request.requestor+'/'
+                                +startDateSimple+'-to-'+endDateSimple+'.pdf';
+            } else if (this.request.leaveType == 'PAT') {
+              var aggrString = 'paternity-leave-copy/'+this.request.requestor+'/'
+                                +startDateSimple+'-to-'+endDateSimple+'.pdf';
+            } else if (this.request.leaveType == 'MAR') {
+              var aggrString = 'marriage-leave-copy/'+this.request.requestor+'/'
+                                +startDateSimple+'-to-'+endDateSimple+'.pdf';
+            }
+
+            this.$store.dispatch(action.DELETE_SL, aggrString)
+            .then((res)=> {
+              console.log('the scan copy is also deleted', res)
+            }).catch((error) => {
+              console.error('error deleteing doc: ', error);
+            });
+          }
+        })
+        .then(() => {
+          this.successMessage = 'Request successfully deleted';
+        })
+        .catch((error) => {
+          this.$store.commit(mutant.SET_ERROR, error.message);
+          console.error('error deleting request: ', error);
+        });
+    },
+		approve() {
        this.getPublicHolidays();
 		},
     approveAction(){

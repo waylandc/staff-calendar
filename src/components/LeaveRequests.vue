@@ -53,14 +53,14 @@
                     info
                   </v-icon>
                 </td>
-                <td class='mdl-data-table__cell--non-numeric'>
+            <!-- can remove if the delete function in requestDetails works   <td class='mdl-data-table__cell--non-numeric'>
                   <v-icon v-if="props.item.firstStatus == 0
                   && props.item.secondStatus == 0
                   && props.item.requestor == userEmail
                   " @click='deleteRequest(props.item)'>
                     delete
                   </v-icon>
-                </td>
+                </td> -->
               </tr>
             </template>
           </v-data-table>
@@ -126,15 +126,11 @@
             value: 'halfDay',
           },
           {
-            text: 'Details/Approve',
+            text: 'Details/Delete/Approve',
             align: 'left',
             sortable: false,
           },
-          {
-            text: 'Delete',
-            align: 'left',
-            sortable: false,
-          },
+
         ],
         loaded: false,
         pendingRequests: [],
@@ -230,7 +226,7 @@
             this.getEvents(Constants.ALL);
         }
       },
-      deleteRequest (item) {
+/*      deleteRequest (item) {
         this.$store.dispatch(action.DELETE_REQUEST, item.docId)
           .then(() => {
             this.getEvents(Constants.PENDING);
@@ -272,7 +268,7 @@
             this.$store.commit(mutant.SET_ERROR, error.message);
             console.error('error deleting request: ', error);
           });
-      },
+      }, */
     }
   }
 
