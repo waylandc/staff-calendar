@@ -25,7 +25,7 @@
             </v-text-field>
           </v-flex>
           <v-flex xs6>
-            <v-text-field disabled box>
+            <v-text-field v-model='user.dobstring' label='Date of Birth' disabled box>
             </v-text-field>
           </v-flex>
           <v-flex xs6>
@@ -185,6 +185,7 @@
           .then((user) => {
             console.log('UserDetails loaded, ', user);
             this.user = user;
+            this.user.dobstring = moment(this.user.dob, "MMDD").format("ddd MMM D")
             this.loaded = true;
           })
           .catch((error) => {
