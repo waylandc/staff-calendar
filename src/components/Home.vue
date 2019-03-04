@@ -14,14 +14,14 @@
       <v-flex class="text-xs-center">
         <br/>
         <b>Public Holiday </b><v-icon color='red'>event</v-icon>
-        <b>Annual </b><v-icon color='purple'>event</v-icon>
+        <b>Annual </b><v-icon color='#4FC3F7'>event</v-icon>
         <b>Compensation </b><v-icon color='yellow'>event</v-icon>
         <br/>
         <b>Carry Over </b><v-icon color='purple accent-1'>event</v-icon>
-        <b>Sick </b><v-icon color='light-blue darken-2'>event</v-icon>
+        <b>Sick </b><v-icon color='#C0CA33'>event</v-icon>
         <b>No Pay </b><v-icon color='orange'>event</v-icon>
         <br/>
-        <b>Others </b><v-icon color='light-green accent-3'>event</v-icon>
+        <b>Others </b><v-icon color='#26C6DA'>event</v-icon>
       </v-flex>
     </v-layout>
   </v-container>
@@ -66,8 +66,8 @@ export default {
             ce = new CalendarEvent(h.title, h.startDate, h.endDate, '', '', '', '', Constants.PENDING, null, '');
             ce = ce.toCalendarEvent();
             ce.cssClass = 'holiday';
-            ce.textColor = 'red';
-            ce.backgroundColor = 'white';
+            ce.textColor = 'white';
+            ce.backgroundColor = 'red';
             ce.borderColor = 'grey lighten-2';
             this.events.push(ce);
           });
@@ -82,19 +82,21 @@ export default {
         events.forEach((e) => {
           let ce2;
           //console.log('each e:', e);
+          // take a look at https://saruwakakun.com/en/material-color for color suggestions
+          // I used the last 'orange' and first 'green' (for sick)
           ce2 = e.toCalendarEvent();
           if (e.leaveType == 'ANN') {
-            ce2.color = 'purple';
+            ce2.color = '#4FC3F7';
           } else if (e.leaveType == 'COMP') {
             ce2.color = 'Gold';
           } else if (e.leaveType == 'CO') {
             ce2.color = 'pink';
           } else if (e.leaveType == 'SICK') {
-            ce2.color = 'DodgerBlue';
+            ce2.color = '#C0CA33';
           } else if (e.leaveType == 'NP') {
             ce2.color = 'orange';
           } else {
-            ce2.color = 'Chartreuse';
+            ce2.color = '#26C6DA';
           }
           this.events.push(ce2);
         });
