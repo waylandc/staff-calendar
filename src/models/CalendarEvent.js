@@ -68,7 +68,7 @@ export class CalendarEvent {
   toCalendarEvent() {
     return {
       title: this.title,
-      allDay: (this.halfDay === ''),
+      allDay: (this.halfDay === 'Full'),
       start: this.startDate,
       end: this.endDate,
     };
