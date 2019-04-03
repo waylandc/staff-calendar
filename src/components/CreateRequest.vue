@@ -201,11 +201,6 @@
       },
       'endDate': function(val, oldVal) {
         this.eDate = new Date(Date.parse(val));
-        // default is 8am which doesn't work because it doesn't really show up as day off on the end day
-        this.eDate.setHours(23);
-        // console.log('start date, ' + this.sDate);
-        // console.log('end date, ' + this.eDate);
-        // console.log('watched end date');
       },
       error(value) {
         if (value) {
@@ -413,6 +408,15 @@
           null, // docId is populated on a fetch
           this.leaveType,
         );
+        if (this.halfDay !== 'Full') {
+          console.log('half day applied, applying hours to date')
+          if (this.halfDay === 'AM') {
+            this.sDate.setHours(9)
+          } else if (this.halfDay === 'PM') {
+            this.sDate.setHours(12)
+          }
+        }
+
         console.log(req);
         this.$store.dispatch(action.ADD_EVENT, req.toJSON())
           .then((docRef) => {
