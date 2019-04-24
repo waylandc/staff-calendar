@@ -1,6 +1,6 @@
 <template>
   <v-container grid-list-md text-xs-center>
-    <h1>Pending Leave Requests</h1>
+    <h1>Leave Requests</h1>
     <v-flex>
       <v-alert type="error" dismissible v-model="alert">
         {{ error }}
