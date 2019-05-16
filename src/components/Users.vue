@@ -249,7 +249,7 @@ export default {
               target.approvedAnn += s.businessDiff(e) + 1;
 
             //console.log('approvedAnn = ', target.approvedAnn);
-
+console.log(entry)
             //console.log('no. of days public holidays exluded', publicHolidayExclusion)
             target.approvedAnn -= publicHolidayExclusion;
             }

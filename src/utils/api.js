@@ -57,7 +57,8 @@ export function createUser(newUser, passwd) {
         db.collection('users').add(newUser.toJSON())
           .then((u) => {
             // TODO need to get doc.id to put in User object
-            // we put in id but when does it get saved?? we could just not set and use getUser instead
+            // we put in id but when does it get saved?? we could just
+            // not set and use getUser instead
             newUser.docId = u.id;
             resolve(newUser);
           })
@@ -87,7 +88,7 @@ export function getUsers() {
       .then((querySnapshot) => {
         let u;
         querySnapshot.forEach((doc) => {
-          //console.log('raw data here', doc.data());
+          // console.log('raw data here', doc.data());
           u = new User(
             doc.data().email,
             doc.data().isAdmin,
@@ -104,10 +105,10 @@ export function getUsers() {
             doc.data().dob,
           );
           u.comments = [];
-          u.approvedAnn = 0; //build initial value for users.vue
+          u.approvedAnn = 0; // build initial value for users.vue
           u.approvedComp = 0;
           u.approvedCarry = 0;
-/*          u.approvedSick = 0;
+  /*      u.approvedSick = 0;
           u.approvedBirthday = 0;
           u.approvedNoPay = 0;
           u.approvedExam = 0;
@@ -115,7 +116,7 @@ export function getUsers() {
           u.approvedPat = 0;
           u.approvedMar = 0;
           u.approvedJury = 0;
-          u.approvedCompa = 0;*/
+          u.approvedCompa = 0; */
           users.push(u);
         });
       })
@@ -253,17 +254,65 @@ export function getEvents(data) {
           // filter on status. this field is always present so don't need to check undefined.
           if (data.status !== Constants.ALL) {
             if (!isFiltered) {
-              // if there is a 2nd approver set, we need to check both statuses
-              if (ce.secondApprover !== '' && ce.secondApprover !== undefined) {
-                if (data.status !== ce.firstStatus && data.status !== ce.secondStatus) {
-                  isFiltered = true;
-                }
-              } else {
-                /* eslint-disable no-lonely-if */
-                if (data.status !== ce.firstStatus) {
-                  isFiltered = true;
-                }
+              switch (data.status) {
+                case Constants.APPROVED:
+                  // if there is a 2nd approver set, we need to check both statuses
+                  if (ce.secondApprover !== '' && ce.secondApprover !== undefined) {
+                    if (ce.firstStatus !== ce.secondStatus) {
+                      isFiltered = true;
+                    } else if (ce.firstStatus !== Constants.APPROVED ||
+                      ce.secondStatus !== Constants.APPROVED) {
+                      isFiltered = true;
+                    }
+                  } else {
+                    // only 1 approver
+                    /* eslint-disable no-lonely-if */
+                    if (data.status !== ce.firstStatus) {
+                      isFiltered = true;
+                    }
+                  }
+                  break;
+                case Constants.PENDING:
+                  if (ce.secondApprover !== '' && ce.secondApprover !== undefined) {
+                    if (!(ce.firstStatus === Constants.PENDING ||
+                      ce.secondStatus === Constants.PENDING)) {
+                      isFiltered = true;
+                    }
+                  } else {
+                    if (ce.firstStatus !== Constants.PENDING) {
+                      isFiltered = true;
+                    }
+                  }
+                  break;
+                case Constants.REJECTED:
+                  if (ce.secondApprover !== '' && ce.secondApprover !== undefined) {
+                    if (!(ce.firstStatus === Constants.REJECTED ||
+                      ce.secondStatus === Constants.REJECTED)) {
+                      isFiltered = true;
+                    }
+                  } else {
+                    if (ce.firstStatus !== Constants.REJECTED) {
+                      isFiltered = true;
+                    }
+                  }
+                  break;
+                default:
               }
+
+
+              // if there is a 2nd approver set, we need to check both statuses
+              // if (ce.secondApprover !== '' && ce.secondApprover !== undefined) {
+              //   if (data.status !== ce.firstStatus && data.status !== ce.secondStatus) {
+              //     console.log('getEvents [ ', ce.title, ' ] first and second not equal');
+              //     isFiltered = true;
+              //   }
+              // } else {
+              //   // no secondApprover specified so just check firstApprover
+              //   /* eslint-disable no-lonely-if */
+              //   if (data.status !== ce.firstStatus) {
+              //     isFiltered = true;
+              //   }
+              // }
             }
           }
 
@@ -302,7 +351,8 @@ export function getUser(email) {
             user.data().email, user.data().isAdmin,
             user.data().isApprover, user.data().daysAnnualLeave,
             user.data().daysBooked, user.data().daysCarryOver, user.data().daysCompLeave,
-            user.data().daysSick, user.data().daysBirthdayLeave, user.id, user.data().firstName, user.data().lastName, user.data().dob, [],
+            user.data().daysSick, user.data().daysBirthdayLeave, user.id, user.data().firstName,
+            user.data().lastName, user.data().dob, [],
           );
         });
       },
@@ -312,7 +362,10 @@ export function getUser(email) {
         .then((commentSnapshots) => {
           commentSnapshots.forEach((c) => {
             u.comments.push({
-              comment: c.data().comment, date: c.data().date, email: c.data().email, changedBy: c.data().changedBy });
+              comment: c.data().comment,
+              date: c.data().date,
+              email: c.data().email,
+              changedBy: c.data().changedBy });
           });
           // sort our comments as firestore query can't query on email and orderBy different field
           u.comments = u.comments.sort((a, b) => b.date.toDate() - a.date.toDate());
@@ -370,7 +423,7 @@ export function editEvent(data) {
   console.log('api.editEvent...', data[0]);
   return new Promise((resolve, reject) => {
     db.collection('leaveRequests').doc(data[0]).set(data[1])
-      .then( () => resolve())
+      .then(() => resolve())
       .catch((error) => {
         console.log(error);
         reject(error);
@@ -381,13 +434,13 @@ export function editEvent(data) {
 export function uploadSl(data) {
   console.log('api.uploadSl...', data);
   return new Promise((resolve, reject) => {
-    var file = data[0]
-    var metadata = {
-      contentType: file.type
-    }
-    var storageRef = firebase.storage().ref();
+    const file = data[0];
+    const metadata = {
+      contentType: file.type,
+    };
+    const storageRef = firebase.storage().ref();
     storageRef.child(data[1]).put(file, metadata)
-    .then( (snapshot) => {
+    .then((snapshot) => {
       console.log('successfully uploaded the file!');
       resolve(snapshot);
     }).catch((error) => {
@@ -400,15 +453,13 @@ export function uploadSl(data) {
 export function deleteSl(data) {
   console.log('api.deleteSl...', data);
   return new Promise((resolve, reject) => {
+    const storage = firebase.storage();
+    const storageRef = storage.ref();
     console.log('delete attachment: ', data);
-    var storage = firebase.storage();
-    var storageRef = storage.ref();
-    storageRef.child(data).delete().catch((error) =>
-    console.log('It doesnt really matter if your attachment is not deleted',error))
+    storageRef.child(data).delete().catch(error =>
+      console.log('It doesnt really matter if your attachment is not deleted', error));
   });
 }
-
-
 
 /**
  * Return a list of all the holidays

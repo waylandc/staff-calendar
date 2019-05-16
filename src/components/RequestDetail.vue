@@ -10,7 +10,7 @@
 	    <v-flex xs12 v-if="loaded" ml-5 mr-5>
 		<v-form @submit.prevent>
 		    <v-layout row wrap>
-			<v-flex xs12>
+			<v-flex xs6>
 			    <v-text-field
 				v-model='request.title'
 					 label='Title'
@@ -19,6 +19,16 @@
 					 box>
 			    </v-text-field>
 			</v-flex>
+      <v-flex xs6>
+			    <v-text-field
+            v-model='startString'
+            label='Days Remaining'
+            autocomplete="off"
+            :readonly="true"
+            box>
+			    </v-text-field>
+
+      </v-flex>
 			<v-flex xs6>
 			    <v-text-field
 				v-model='startString'
@@ -194,7 +204,8 @@ export default {
 		};
 	},
 	created() {
-		this.user = this.$store.state.loggedInUser;
+    this.user = this.$store.state.loggedInUser;
+    console.log('user has ', this.user.daysAnnualLeave)
 		this.loaded = false;
 		this.propId = this.$route.params.id;
 		const docRef = db.collection('leaveRequests').doc(this.propId);
