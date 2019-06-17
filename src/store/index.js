@@ -78,7 +78,8 @@ const store = new Vuex.Store({
       // Firestore which hasn't been created yet.
       // TODO - check if api.createUser returns a user object that contains the id
       // I think it's populated in the subsequent call to getUser
-      const u = new User(p.email, false, false, 0, 0, 0, 0, 0, 0, null, p.firstName, p.lastName, p.dob, []);
+      const u = new User(p.email, false, false, 0, 0, 0, 0, 0, 0,
+        null, p.firstName, p.lastName, p.dob, []);
       api.createUser(u, p.password)
         .then(() => {
           commit(mutant.SET_LOADING, true);
@@ -305,7 +306,7 @@ const store = new Vuex.Store({
 
     [action.DELETE_REQUEST]({ commit }, payload) {
       // payload should be { docID }
-      console.log("now in index.js");
+      console.log('now in index.js');
       commit(mutant.SET_LOADING, true);
       return new Promise((resolve, reject) => {
         console.log('DELETE_REQUEST, ', payload);
@@ -363,8 +364,6 @@ const store = new Vuex.Store({
     },
 
   },
-
-
 
   getters: {
     isAuthenticated(state) {
