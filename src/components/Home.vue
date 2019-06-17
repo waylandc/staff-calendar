@@ -41,7 +41,8 @@ export default {
   data () {
     return {
       loaded: false,
-      events: [],
+      events: [
+      ],
       // eventSources:[],
       // eventSelected: '',
       config: {
@@ -98,6 +99,7 @@ export default {
           } else {
             ce2.color = '#26C6DA';
           }
+          ce2.nextDayThreshold = '00:00:00';
           this.events.push(ce2);
         });
         // console.log(this.events);

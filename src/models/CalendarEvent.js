@@ -66,11 +66,15 @@ export class CalendarEvent {
   }
 
   toCalendarEvent() {
+    // console.log(this.startDate);
+    // https://gitlab.com/waylandc/oax-staff-calendar/issues/58
+    // I think this is a bug in fullcalendar. the allDay logic is reversed so I'm hard coding
+    // as false here
     return {
       title: this.title,
-      allDay: (this.halfDay === 'Full'),
-      start: this.startDate,
-      end: this.endDate,
+      allDay: false, // see above comment about issue #58
+      start: this.startDate.toDate(), // format('YYYY-MM-DD:hh:mm:ss'),
+      end: this.endDate.toDate(), // format('YYYY-MM-DD:hh:mm:ss'),
     };
   }
 
@@ -78,7 +82,6 @@ export class CalendarEvent {
    * @returns {Constants.PENDING|APPROVED|REJECTED}
    */
   aggregateStatus() {
-    // console.log('aggrStatus, ', this.toJSON());
     // if there is a 2nd approver, we need to figure overall status
     if (this.secondApprover !== '' && this.secondApprover !== undefined) {
       if (this.firstStatus === Constants.PENDING || this.secondStatus === Constants.PENDING) {

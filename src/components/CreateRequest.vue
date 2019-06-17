@@ -201,6 +201,11 @@
       },
       'endDate': function(val, oldVal) {
         this.eDate = new Date(Date.parse(val));
+        // default is 8am which doesn't work because it doesn't really show up as day off on the end day
+        // hack, needed to set end time to this for multi day leaves to display correctly
+        this.eDate.setHours(23);
+        this.eDate.setMinutes(59);
+        this.eDate.setSeconds(59);
       },
       error(value) {
         if (value) {
@@ -379,7 +384,6 @@
             return false;
           }
         }
-
 
         return true;
       },
