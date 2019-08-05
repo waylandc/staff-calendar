@@ -47,9 +47,7 @@
 							></v-text-field>
 							<v-btn
 								small
-								v-if="['Sick','Examination Leave',
-          'Compensation','Maternity Leave','Paternity Leave',
-          'Marriage Leave'].includes(this.convertLeaveType)"
+								v-if="['Sick','Examination Leave', 'Compensation','Maternity Leave','Paternity Leave', 'Marriage Leave'].includes(this.convertLeaveType)"
 								color="green"
 								@click.stop="downloadAttachment"
 							>Download proof scan copy</v-btn>
@@ -345,9 +343,7 @@ export default {
 						return;
 					}
 					snapshot.forEach(doc => {
-						this.requestorDob = moment(doc.data().dob, "MMDD").format(
-							"ddd MMM D YYYY"
-						);
+						this.requestorDob = moment(doc.data().dob, "MMDD").format("ddd MMM D YYYY");
 						//console.log(this.requestorDob);
 					});
 				})
@@ -359,8 +355,8 @@ export default {
 		getPublicHolidays() {
 			this.$store
 				.dispatch(action.GET_HOLIDAYS, {
-					startDate: moment().subtract(1, "y"),
-					endDate: moment().add(1, "y")
+					startDate: moment().startOf('year'),
+					endDate: moment().endOf('year')
 				})
 				.then(holidays => {
 					this.holidays = holidays;
@@ -380,17 +376,9 @@ export default {
 					this.$router.push({ path: `/leaveRequests` });
 				})
 				.then(() => {
-					var startDateSimple = moment(this.request.startDate.toDate()).format(
-						"DDMMMYYYY"
-					);
-					var endDateSimple = moment(this.request.endDate.toDate()).format(
-						"DDMMMYYYY"
-					);
-					if (
-						["SICK", "COMP", "EXAM", "MAT", "PAT", "MAR"].includes(
-							item.leaveType
-						)
-					) {
+					var startDateSimple = moment(this.request.startDate.toDate()).format("DDMMMYYYY");
+					var endDateSimple = moment(this.request.endDate.toDate()).format("DDMMMYYYY");
+					if (["SICK", "COMP", "EXAM", "MAT", "PAT", "MAR"].includes(item.leaveType)) {
 						if (this.request.leaveType == "SICK") {
 							var aggrString =
 								"sick-leave-copy/" +
@@ -467,8 +455,8 @@ export default {
 				});
 		},
 		approve() {
-		   this.getPublicHolidays();
-		   },
+			this.getPublicHolidays();
+		},
 		approveAction() {
 			if (this.validateDate() == false) {
 				console.log("the request seems exceeded the quota");

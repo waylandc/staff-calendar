@@ -485,9 +485,12 @@ export function getHolidays(start, end) {
             country: doc.data().country,
             docId: doc.id,
           };
-          holidays.push(u);
+          if (u.startDate.isAfter(start) && u.endDate.isBefore(end)) {
+            holidays.push(u);
+          }
         });
-        // console.log(holidays);
+        console.log('getHolidays...');
+        console.log(holidays);
         resolve(holidays);
       })
       .catch((error) => {

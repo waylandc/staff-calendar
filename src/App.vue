@@ -37,7 +37,6 @@
 
 <script>
 import * as action from './store/action-types';
-import moment from 'moment-business-days';
 
 export default {
     data: () => ({

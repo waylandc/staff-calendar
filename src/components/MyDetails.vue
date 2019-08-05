@@ -178,7 +178,7 @@
 
       getPublicHolidays() {
         this.$store.dispatch(action.GET_HOLIDAYS,
-          { startDate: moment().subtract(1, 'y'), endDate: moment().add(1, 'y') })
+          { startDate: moment().startOf('year'), endDate: moment().endOf('year') })
           .then(holidays => {
             this.holidays = holidays;
             console.log('holidays,', this.holidays);

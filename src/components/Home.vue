@@ -57,7 +57,7 @@ export default {
     NProgress.start();
     this.loaded = false;
     // fetch all holidays
-    this.$store.dispatch(action.GET_HOLIDAYS, { startDate: moment().subtract(3, 'M'), endDate: moment().add(1, 'y') })
+    this.$store.dispatch(action.GET_HOLIDAYS, { startDate: moment().startOf('year'), endDate: moment().endOf('year') })
         .then(holidays => {
           let ce;
 
@@ -78,7 +78,7 @@ export default {
         });
     // fetch all approved leave requests
     this.$store.dispatch(action.GET_EVENTS,
-      { start: moment().subtract(6, 'M'), end: moment().add(1, 'y'), user: '', status: Constants.APPROVED })
+      { start: moment().startOf('year'), end: moment().endOf('year'), user: '', status: Constants.APPROVED })
       .then((events) => {
         events.forEach((e) => {
           let ce2;

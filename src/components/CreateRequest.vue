@@ -272,7 +272,8 @@
         //get all pending
         this.$store.dispatch(action.GET_EVENTS,
         {
-          start: moment().subtract(1, 'y'), end: moment().add(1, 'y'),
+          start: moment().startOf('year'), 
+          end: moment().endOf('year'),
           status: Constants.PENDING,
           user: this.$store.state.loggedInUser.email
         })
@@ -294,7 +295,8 @@
         //get all approved
         this.$store.dispatch(action.GET_EVENTS,
         {
-          start: moment().subtract(1, 'y'), end: moment().add(1, 'y'),
+          start: moment().startOf('year'), 
+          end: moment().endOf('year'),
           status: Constants.APPROVED,
           user: this.$store.state.loggedInUser.email
         })
