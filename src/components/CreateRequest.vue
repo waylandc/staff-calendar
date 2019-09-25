@@ -329,16 +329,22 @@
               this.$store.commit(mutant.SET_ERROR, 'date of birth cannot be read, try to refresh page and try again');
               return false;
             }
-        } else if (this.leaveType == 'SICK' || this.leaveType == 'COMP'
-        || this.leaveType == 'EXAM' || this.leaveType == 'MAT'
-        || this.leaveType == 'PAT' || this.leaveType == 'MAR') {
-            if (this.imageFile == '') {
-              this.$store.commit(mutant.SET_ERROR, 'Please attach proof copy');
-              console.log('sensed error..');s
-              return false;
+        } else if (this.leaveType == 'COMP' || this.leaveType == 'EXAM' || this.leaveType == 'MAT'
+            || this.leaveType == 'PAT' || this.leaveType == 'MAR') {
+          if (this.imageFile == '') {
+            this.$store.commit(mutant.SET_ERROR, 'Please attach proof copy');
+            console.log('sensed error..');
+            return false;
+          }
+        } else if (this.leaveType == 'SICK' && (moment(this.eDate).diff(moment(this.sDate), 'days') > 1)) {
+          console.log(moment(this.eDate).diff(moment(this.sDate), 'days'));
+          // sick leaves more than 1 day require a doctors note
+          if (this.imageFile == '') {
+            this.$store.commit(mutant.SET_ERROR, 'Please attach proof copy');
+            console.log('sensed error..');
+            return false;
           }
         }
-
         if (this.firstApprover === '') {
           this.$store.commit(mutant.SET_ERROR, 'You must specify at least one approver');
           return false;
@@ -437,9 +443,7 @@
             this.$store.commit(mutant.SET_ERROR, error.message);
             console.log(error)
           }).then(()=> {
-            if (this.leaveType == 'SICK' || this.leaveType == 'COMP'
-            || this.leaveType == 'EXAM' || this.leaveType == 'MAT'
-            || this.leaveType == 'PAT' || this.leaveType == 'MAR') {
+            if (this.imageFile != '') {
               var sDateSimple = moment(this.sDate).format("DDMMMYYYY");
               var eDateSimple = moment(this.eDate).format("DDMMMYYYY");
               if (this.leaveType == 'SICK') {
