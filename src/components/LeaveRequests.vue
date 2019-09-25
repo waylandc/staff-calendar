@@ -27,7 +27,7 @@
             <template slot='items' slot-scope='props'>
               <tr >
                 <td class='mdl-data-table__cell--non-numeric'>
-                  {{ getStatus(props.item.aggregateStatus()) }}
+                  {{ props.item.firstApprover }}
                 </td>
                 <td class='mdl-data-table__cell--non-numeric'>
                   {{ props.item.requestor }}
@@ -84,10 +84,10 @@
       return {
         headers: [
           {
-            text: 'Status',
+            text: 'Approver',
             align: 'left',
             sortable: false,
-            value: 'status',
+            value: 'approver',
           },
           {
             text: 'Requestor',
