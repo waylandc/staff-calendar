@@ -281,9 +281,7 @@
           this.pendingRequests = events;
           console.log('list out the pending requests', this.pendingRequests);
           events.forEach((entry)=> {
-            var s = entry.startDate.format("DDMMMYYYY"); //this entry's start date
-            var e = entry.endDate.format("DDMMMYYYY");
-            this.selfHolidays.push([s,e]);
+            this.selfHolidays.push(entry);
             })
           //console.log(this.selfHolidays);
         })
@@ -304,9 +302,7 @@
           this.pendingRequests = events;
           console.log('list out the approved requests', this.pendingRequests);
           events.forEach((entry)=> {
-            var s = entry.startDate.format("DDMMMYYYY"); //this entry's start date
-            var e = entry.endDate.format("DDMMMYYYY");
-            this.selfHolidays.push([s,e]);
+            this.selfHolidays.push(entry);
             })
           //console.log(this.selfHolidays);
           })
@@ -378,10 +374,19 @@
         var eDateSimple = moment(this.eDate).format("DDMMMYYYY");
         //console.log('start and end of the request: ', sDateSimple, 'and', eDateSimple);
         for (var i = 0; i < this.selfHolidays.length; i++) {
-          let cri1 = moment(sDateSimple, "DDMMMYYYY").diff(moment(this.selfHolidays[i][1])) > 0; //new request is later than the ith holiday
-          let cri2 = moment(eDateSimple, "DDMMMYYYY").diff(moment(this.selfHolidays[i][0])) < 0; //new request is older than the ith holiday
+          
+          // this IF allows 2 non conflicting half day leaves on same day by short circuiting the
+          // following clash detection
+          if (this.selfHolidays[i].halfDay != 'Full' 
+              && moment(this.selfHolidays[i].startDate.format("DDMMMYYYY")).isSame(sDateSimple)
+              && this.selfHolidays[i].halfDay != this.halfDay) {
+                continue;
+          }
+
+          let cri1 = moment(sDateSimple, "DDMMMYYYY").diff(moment(this.selfHolidays[i].startDate.format("DDMMMYYYY"))) > 0; //new request is later than the ith holiday
+          let cri2 = moment(eDateSimple, "DDMMMYYYY").diff(moment(this.selfHolidays[i].endDate.format("DDMMMYYYY"))) < 0; //new request is older than the ith holiday
           if ((cri1 || cri2) == false) {
-            console.log('error in: ', sDateSimple, eDateSimple, this.selfHolidays[i][0], this.selfHolidays[i][1]);
+            console.log('error in: ', sDateSimple, eDateSimple, this.selfHolidays[i].startDate, this.selfHolidays[i].endDate);
             this.$store.commit(mutant.SET_ERROR, 'Your leave request clashed with your previous approved/pending requests!');
             return false;
           }
