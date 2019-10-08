@@ -380,7 +380,7 @@
         var eDateSimple = moment(this.eDate).format("DDMMMYYYY");
         //console.log('start and end of the request: ', sDateSimple, 'and', eDateSimple);
         for (var i = 0; i < this.selfHolidays.length; i++) {
-          
+          console.log('checking against: ', this.selfHolidays[i].title)
           // this IF allows 2 non conflicting half day leaves on same day by short circuiting the
           // following clash detection
           if (this.selfHolidays[i].halfDay != 'Full' 
@@ -389,10 +389,12 @@
                 continue;
           }
 
-          let cri1 = moment(sDateSimple, "DDMMMYYYY").diff(moment(this.selfHolidays[i].startDate.format("DDMMMYYYY"))) > 0; //new request is later than the ith holiday
-          let cri2 = moment(eDateSimple, "DDMMMYYYY").diff(moment(this.selfHolidays[i].endDate.format("DDMMMYYYY"))) < 0; //new request is older than the ith holiday
+          //new request is later than the ith holiday
+          let cri1 = moment(sDateSimple, "DDMMMYYYY").isAfter(this.selfHolidays[i].startDate);
+          //new request is older than the ith holiday
+          let cri2 = moment(eDateSimple, "DDMMMYYYY").isBefore(this.selfHolidays[i].endDate);
           if ((cri1 || cri2) == false) {
-            console.log('error in: ', sDateSimple, eDateSimple, this.selfHolidays[i].startDate, this.selfHolidays[i].endDate);
+            console.log('Date conflict with', this.selfHolidays[i].title, this.selfHolidays[i].startDate, this.selfHolidays[i].endDate);
             this.$store.commit(mutant.SET_ERROR, 'Your leave request clashed with your previous approved/pending requests!');
             return false;
           }
