@@ -173,7 +173,7 @@
         this.loaded = false;
         this.$store.dispatch(action.GET_EVENTS,
           {
-            start: moment().startOf('year'), 
+            start: moment().startOf('year').subtract(1, 'year'), 
             end: moment().endOf('year'),
             status: stat,
             user: (this.$store.state.loggedInUser.isApprover ? '' : this.$store.state.loggedInUser.email) //this.$store.state.loggedInUser.email
